@@ -122,6 +122,7 @@ public class QueryExecutor {
     options.addOption(input);
     options.addOption(output);
     options.addOption(koralMasterIP);
+    options.addOption(repetitions);
     return options;
   }
 

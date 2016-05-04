@@ -1,0 +1,19 @@
+/bin/
+/scripts/hosts
+/scripts/manageVM.py
+/scripts/environment.py
+
+# java
+*.class
+*.jar
+*.war
+*.ear
+
+# python
+*.pyc
+
+# backup files
+*~
+*.bak
+/koralConfig.xml
+/build/

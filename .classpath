@@ -8,5 +8,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/koral.jar" sourcepath="/koral"/>
+	<classpathentry kind="lib" path="lib/gral-core-0.11.jar"/>
+	<classpathentry kind="lib" path="lib/VectorGraphics2D-0.10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

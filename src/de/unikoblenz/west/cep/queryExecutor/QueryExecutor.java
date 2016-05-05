@@ -12,10 +12,14 @@ import de.uni_koblenz.west.koral.client.KoralClient;
 import de.uni_koblenz.west.koral.common.config.impl.Configuration;
 import de.uni_koblenz.west.koral.common.query.parser.QueryExecutionTreeType;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Executes a set of Queries.
@@ -30,7 +34,7 @@ public class QueryExecutor {
     if (!masterIp.contains(":")) {
       masterIp += ":" + Configuration.DEFAULT_CLIENT_PORT;
     }
-    if (!outputDir.exists()) {
+    if ((outputDir != null) && !outputDir.exists()) {
       outputDir.mkdirs();
     }
     for (QueryExecutionTreeType treeType : QueryExecutionTreeType.values()) {
@@ -59,9 +63,13 @@ public class QueryExecutor {
 
   private void executeQuery(File queryFile, File outputDir, String masterIp,
           QueryExecutionTreeType treeType, int currentRepetition) {
-    try (Writer outputWriter = currentRepetition == 0 ? new ResultNumberWriter(
-            outputDir.getAbsolutePath() + File.separator + queryFile.getName() + ".resultSize")
-            : new NullWriter()) {
+    try (Writer outputWriter = (currentRepetition == 0)
+            && (outputDir != null)
+                    ? new BufferedWriter(new OutputStreamWriter(
+                            new GZIPOutputStream(new FileOutputStream(outputDir.getAbsolutePath()
+                                    + File.separator + queryFile.getName() + "_result.csv.gz")),
+                            "UTF-8"))
+                    : new NullWriter()) {
 
       KoralClient client = new KoralClient();
       for (int connectionAttempt = 0; connectionAttempt < 100; connectionAttempt++) {
@@ -89,7 +97,10 @@ public class QueryExecutor {
     }
 
     File queryInput = new File(line.getOptionValue('i'));
-    File outputDir = new File(line.getOptionValue('o'));
+    File outputDir = null;
+    if (line.hasOption('o')) {
+      outputDir = new File(line.getOptionValue('o'));
+    }
     String masterIp = line.getOptionValue('m');
 
     int repetitions = Integer.parseInt(line.getOptionValue('r'));
@@ -106,7 +117,7 @@ public class QueryExecutor {
             .desc("File or directory that contains the queries").required(true).build();
 
     Option output = Option.builder("o").longOpt("output").hasArg().argName("dirctory")
-            .desc("Directory where the query results are stored.").required(true).build();
+            .desc("Directory where the query results are stored.").required(false).build();
 
     Option koralMasterIP = Option.builder("m").longOpt("master").hasArg().argName("ip:port")
             .desc("IP an port of the Koral master. If port is not specified the default port is used.")
@@ -134,7 +145,7 @@ public class QueryExecutor {
   protected static void printUsage(Options options) {
     HelpFormatter formatter = new HelpFormatter();
     formatter.printHelp("java " + QueryExecutor.class.getName()
-            + " [-h] -i <fileOrDirctory> -o <directory> -m <ip:port> -r <int>", options);
+            + " [-h] -i <fileOrDirctory> [-o <directory>] -m <ip:port> -r <int>", options);
   }
 
 }

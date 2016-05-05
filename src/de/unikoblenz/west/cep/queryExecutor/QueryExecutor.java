@@ -76,6 +76,10 @@ public class QueryExecutor {
         if (client.startUp(masterIp)) {
           break;
         }
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+        }
       }
       client.processQueryFromFile(queryFile, outputWriter, treeType, false);
       client.shutDown();

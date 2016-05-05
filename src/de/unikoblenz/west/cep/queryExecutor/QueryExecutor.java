@@ -63,6 +63,8 @@ public class QueryExecutor {
 
   private void executeQuery(File queryFile, File outputDir, String masterIp,
           QueryExecutionTreeType treeType, int currentRepetition) {
+    System.out.println("Executing " + queryFile.getName() + " with query execution tree " + treeType
+            + " the " + (currentRepetition + 1) + "th time");
     try (Writer outputWriter = (currentRepetition == 0)
             && (outputDir != null)
                     ? new BufferedWriter(new OutputStreamWriter(

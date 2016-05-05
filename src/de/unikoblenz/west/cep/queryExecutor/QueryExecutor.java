@@ -12,12 +12,9 @@ import de.uni_koblenz.west.koral.client.KoralClient;
 import de.uni_koblenz.west.koral.common.config.impl.Configuration;
 import de.uni_koblenz.west.koral.common.query.parser.QueryExecutionTreeType;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 /**
@@ -62,10 +59,8 @@ public class QueryExecutor {
 
   private void executeQuery(File queryFile, File outputDir, String masterIp,
           QueryExecutionTreeType treeType, int currentRepetition) {
-    try (Writer outputWriter = currentRepetition == 0
-            ? new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(outputDir.getAbsolutePath()
-                            + File.separator + queryFile.getName() + ".result.csv"), "UTF-8"))
+    try (Writer outputWriter = currentRepetition == 0 ? new ResultNumberWriter(
+            outputDir.getAbsolutePath() + File.separator + queryFile.getName() + ".resultSize")
             : new NullWriter()) {
 
       KoralClient client = new KoralClient();

@@ -43,7 +43,7 @@ public class QueryExecutor {
 
             @Override
             public boolean accept(File pathname) {
-              return pathname.isFile() && pathname.getName().endsWith(".splodge");
+              return pathname.isFile() && pathname.getName().endsWith(".sparql");
             }
 
           })) {

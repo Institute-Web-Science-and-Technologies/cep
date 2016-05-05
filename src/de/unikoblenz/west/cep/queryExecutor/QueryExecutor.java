@@ -52,6 +52,10 @@ public class QueryExecutor {
         } else {
           executeQuery(queryInput, outputDir, masterIp, treeType, currentRepetition);
         }
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+        }
       }
     }
   }

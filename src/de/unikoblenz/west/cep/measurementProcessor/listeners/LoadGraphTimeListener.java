@@ -9,7 +9,7 @@ import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
  *
  */
-public abstract class LoadGraphListener implements MeasurmentListener {
+public abstract class LoadGraphTimeListener implements MeasurmentListener {
 
   private CoverStrategyType graphCoverStrategy;
 

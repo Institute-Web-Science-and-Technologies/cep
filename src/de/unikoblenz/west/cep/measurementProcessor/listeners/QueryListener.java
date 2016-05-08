@@ -3,7 +3,7 @@ package de.unikoblenz.west.cep.measurementProcessor.listeners;
 import de.uni_koblenz.west.koral.common.measurement.MeasurementType;
 import de.uni_koblenz.west.koral.common.query.parser.QueryExecutionTreeType;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
-import de.unikoblenz.west.cep.measurementProcessor.MeasurmentListener;
+import de.unikoblenz.west.cep.measurementProcessor.MeasurementListener;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
 import java.io.File;
@@ -14,7 +14,7 @@ import java.util.Map;
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
  *
  */
-public abstract class QueryListener implements MeasurmentListener {
+public abstract class QueryListener implements MeasurementListener {
 
   private final Map<String, Integer> queryIdMap;
 
@@ -37,35 +37,11 @@ public abstract class QueryListener implements MeasurmentListener {
     queryRepetition = new HashMap<>();
   }
 
-  public QueryListener(CoverStrategyType graphCoverStrategy) {
-    this(graphCoverStrategy, 0);
-  }
-
-  public QueryListener(CoverStrategyType graphCoverStrategy, int nHopReplication) {
-    this();
+  @Override
+  public void setUp(File outputDirectory, Map<String, String> query2fileName,
+          CoverStrategyType graphCoverStrategy, int nHopReplication) {
     this.graphCoverStrategy = graphCoverStrategy;
     this.nHopReplication = nHopReplication;
-  }
-
-  @Override
-  public void notifyAboutInputFile(File inputFile) {
-    String fileName = inputFile.getName();
-    int nameEnd = fileName.indexOf(".");
-    String coverStrategy = null;
-    if (nameEnd != -1) {
-      coverStrategy = fileName.substring(0, nameEnd);
-    }
-    try {
-      graphCoverStrategy = CoverStrategyType.valueOf(coverStrategy);
-      String nhop = fileName.substring(nameEnd + 1);
-      nameEnd = fileName.indexOf(".");
-      if (nameEnd != -1) {
-        nHopReplication = Integer.parseInt(nhop.substring(0, nameEnd));
-      }
-    } catch (IllegalArgumentException e) {
-      // the graph cover strategy could not be estimated
-      // no n-hop factor present
-    }
   }
 
   @Override
@@ -98,6 +74,7 @@ public abstract class QueryListener implements MeasurmentListener {
           treeType = QueryExecutionTreeType.valueOf(measurements[7]);
           break;
         case QUERY_COORDINATOR_END:
+          processQueryFinish(currentQueryId);
           currentQueryId = -1;
           currentQueryRepetition = -1;
           treeType = null;
@@ -110,5 +87,7 @@ public abstract class QueryListener implements MeasurmentListener {
   }
 
   protected abstract void processQuery(String queryString, int queryId);
+
+  protected abstract void processQueryFinish(int queryId);
 
 }

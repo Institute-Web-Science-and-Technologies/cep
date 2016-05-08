@@ -11,18 +11,6 @@ import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
  */
 public abstract class QueryMappingSentListener extends QueryListener {
 
-  public QueryMappingSentListener() {
-    super();
-  }
-
-  public QueryMappingSentListener(CoverStrategyType graphCoverStrategy) {
-    super(graphCoverStrategy);
-  }
-
-  public QueryMappingSentListener(CoverStrategyType graphCoverStrategy, int nHopReplication) {
-    super(graphCoverStrategy, nHopReplication);
-  }
-
   @Override
   public void processMeasurement(String... measurements) {
     super.processMeasurement(measurements);

@@ -2,24 +2,18 @@ package de.unikoblenz.west.cep.measurementProcessor.listeners;
 
 import de.uni_koblenz.west.koral.common.measurement.MeasurementType;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
-import de.unikoblenz.west.cep.measurementProcessor.MeasurmentListener;
+import de.unikoblenz.west.cep.measurementProcessor.MeasurementListener;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
-
-import java.io.File;
 
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
  *
  */
-public abstract class GraphStatisticsListener implements MeasurmentListener {
+public abstract class GraphStatisticsListener implements MeasurementListener {
 
   private CoverStrategyType graphCoverStrategy;
 
   private int nHopReplication;
-
-  @Override
-  public void notifyAboutInputFile(File inputFile) {
-  }
 
   @Override
   public void processMeasurement(String... measurements) {

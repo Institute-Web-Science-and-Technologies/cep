@@ -15,18 +15,6 @@ public abstract class QueryTimesListener extends QueryListener {
 
   private boolean hasProcessedQueryResults;
 
-  public QueryTimesListener() {
-    super();
-  }
-
-  public QueryTimesListener(CoverStrategyType graphCoverStrategy) {
-    super(graphCoverStrategy);
-  }
-
-  public QueryTimesListener(CoverStrategyType graphCoverStrategy, int nHopReplication) {
-    super(graphCoverStrategy, nHopReplication);
-  }
-
   @Override
   public void processMeasurement(String... measurements) {
     super.processMeasurement(measurements);

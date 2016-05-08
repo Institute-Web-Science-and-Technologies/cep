@@ -14,7 +14,6 @@ import de.uni_koblenz.west.koral.common.query.parser.QueryExecutionTreeType;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -40,14 +39,7 @@ public class QueryExecutor {
     for (QueryExecutionTreeType treeType : QueryExecutionTreeType.values()) {
       for (int currentRepetition = 0; currentRepetition < numberOfRepetitions; currentRepetition++) {
         if (queryInput.isDirectory()) {
-          for (File queryFile : queryInput.listFiles(new FileFilter() {
-
-            @Override
-            public boolean accept(File pathname) {
-              return pathname.isFile() && pathname.getName().endsWith(".sparql");
-            }
-
-          })) {
+          for (File queryFile : queryInput.listFiles(new QueryFileFilter())) {
             executeQuery(queryFile, outputDir, masterIp, treeType, currentRepetition);
           }
         } else {

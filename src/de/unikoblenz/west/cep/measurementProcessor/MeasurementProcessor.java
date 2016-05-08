@@ -11,6 +11,7 @@ import org.apache.jena.query.QueryFactory;
 
 import de.uni_koblenz.west.koral.common.measurement.MeasurementCollector;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.StorageBalance;
 import de.unikoblenz.west.cep.queryExecutor.QueryFileFilter;
 
 import java.io.BufferedReader;
@@ -204,7 +205,8 @@ public class MeasurementProcessor implements Closeable {
   // TODO add listeners
 
   @SuppressWarnings("unchecked")
-  private static Class<? extends MeasurementListener>[] loadListeners = new Class[] {};
+  private static Class<? extends MeasurementListener>[] loadListeners = new Class[] {
+          StorageBalance.class };
 
   @SuppressWarnings("unchecked")
   private static Class<? extends MeasurementListener>[] queryListeners = new Class[] {};

@@ -47,6 +47,10 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
                   totalGraphSize);
           processGraphChunkSizesAfterReplication(graphCoverStrategy, nHopReplication,
                   graphChunkSizes);
+          break;
+        case LOAD_GRAPH_FINISHED:
+          processLoadingFinished(graphCoverStrategy, nHopReplication);
+          break;
         default:
           // all other types are not required
           break;
@@ -65,5 +69,8 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
 
   protected abstract void processGraphChunkSizesAfterReplication(
           CoverStrategyType graphCoverStrategy, int nHopReplication, long... graphChunkSizes);
+
+  protected abstract void processLoadingFinished(CoverStrategyType graphCoverStrategy,
+          int nHopReplication);
 
 }

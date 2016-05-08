@@ -106,7 +106,9 @@ public class StorageBalance extends GraphStatisticsListener {
   @Override
   public void tearDown() {
     try {
-      output.close();
+      if (output != null) {
+        output.close();
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

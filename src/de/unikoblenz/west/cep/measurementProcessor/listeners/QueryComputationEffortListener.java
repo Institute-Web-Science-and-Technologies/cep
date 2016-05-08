@@ -18,9 +18,11 @@ public abstract class QueryComputationEffortListener extends QueryListener {
     if (measurementType != null) {
       switch (measurementType) {
         case QUERY_OPERATION_JOIN_NUMBER_OF_COMPARISONS:
-          processComputationEffort(graphCoverStrategy, nHopReplication, currentQueryFileName,
-                  currentQueryRepetition, treeType, Utilities.getComputerId(measurements),
-                  Integer.parseInt(measurements[5]), Long.parseLong(measurements[6]));
+          if (currentQueryRepetition == 0) {
+            processComputationEffort(graphCoverStrategy, nHopReplication, currentQueryFileName,
+                    currentQueryRepetition, treeType, Utilities.getComputerId(measurements),
+                    Integer.parseInt(measurements[5]), Long.parseLong(measurements[6]));
+          }
           break;
         default:
           // all other types are not required

@@ -11,6 +11,7 @@ import org.apache.jena.query.QueryFactory;
 
 import de.uni_koblenz.west.koral.common.measurement.MeasurementCollector;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.DataTransfer;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.LoadTime;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.StorageBalance;
 import de.unikoblenz.west.cep.queryExecutor.QueryFileFilter;
@@ -131,6 +132,11 @@ public class MeasurementProcessor implements Closeable {
         }
       }
 
+      @Override
+      public String toString() {
+        return "" + id;
+      }
+
     }
 
     boolean isGZip = inputFile.getName().endsWith(".gz");
@@ -163,14 +169,17 @@ public class MeasurementProcessor implements Closeable {
           SortedSet<MeasurementWrapper> storedMeasurements = server2storedMeasurements
                   .get(measurements[0]);
           if (storedMeasurements != null) {
-            for (MeasurementWrapper measurementWrapper : storedMeasurements) {
-              if (measurementWrapper.id != nextMeasurement) {
-                break;
-              }
+            for (MeasurementWrapper measurementWrapper = storedMeasurements
+                    .first(); measurementWrapper.id == nextMeasurement; measurementWrapper = storedMeasurements
+                            .first()) {
               for (MeasurementListener listener : listeners) {
                 listener.processMeasurement(measurementWrapper.measurement);
               }
               nextMeasurement += 1;
+              storedMeasurements.remove(measurementWrapper);
+              if (storedMeasurements.isEmpty()) {
+                break;
+              }
             }
             if (storedMeasurements.isEmpty()) {
               server2storedMeasurements.remove(measurements[0]);
@@ -210,7 +219,8 @@ public class MeasurementProcessor implements Closeable {
           StorageBalance.class, LoadTime.class };
 
   @SuppressWarnings("unchecked")
-  private static Class<? extends MeasurementListener>[] queryListeners = new Class[] {};
+  private static Class<? extends MeasurementListener>[] queryListeners = new Class[] {
+          DataTransfer.class };
 
   public static void main(String[] args) throws ParseException {
     Options options = MeasurementProcessor.createCommandLineOptions();

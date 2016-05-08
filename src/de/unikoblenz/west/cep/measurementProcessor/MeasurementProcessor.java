@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
@@ -44,6 +46,7 @@ public class MeasurementProcessor implements Closeable {
   }
 
   public void processLoadMeasurement(File inputFile, File outputDir) {
+    ensureOutputDir(outputDir);
     for (MeasurementListener listener : listeners) {
       listener.setUp(outputDir, null, null, 0);
     }
@@ -52,6 +55,7 @@ public class MeasurementProcessor implements Closeable {
 
   public void processQueryMeasurement(File queryDir, File inputFile, CoverStrategyType cover,
           int nhop, File outputDir) {
+    ensureOutputDir(outputDir);
     Map<String, String> query2fileName = generateQuery2fileNameMap(queryDir);
     for (MeasurementListener listener : listeners) {
       listener.setUp(outputDir, query2fileName, cover, nhop);
@@ -60,11 +64,18 @@ public class MeasurementProcessor implements Closeable {
   }
 
   public void processLoadAndQueryMeasurement(File queryDir, File inputFile, File outputDir) {
+    ensureOutputDir(outputDir);
     Map<String, String> query2fileName = generateQuery2fileNameMap(queryDir);
     for (MeasurementListener listener : listeners) {
       listener.setUp(outputDir, query2fileName, null, 0);
     }
     processMeasurements(inputFile);
+  }
+
+  private void ensureOutputDir(File outputDir) {
+    if (!outputDir.exists()) {
+      outputDir.mkdirs();
+    }
   }
 
   private Map<String, String> generateQuery2fileNameMap(File queryDir) {
@@ -96,22 +107,87 @@ public class MeasurementProcessor implements Closeable {
   }
 
   private void processMeasurements(File inputFile) {
+    class MeasurementWrapper implements Comparable<MeasurementWrapper> {
+
+      private final long id;
+
+      private final String[] measurement;
+
+      public MeasurementWrapper(String[] measurement) {
+        this.measurement = measurement;
+        id = Long.parseLong(measurement[1]);
+      }
+
+      @Override
+      public int compareTo(MeasurementWrapper o) {
+        if (id < o.id) {
+          return -1;
+        } else if (id == o.id) {
+          return 0;
+        } else {
+          return 1;
+        }
+      }
+
+    }
+
     boolean isGZip = inputFile.getName().endsWith(".gz");
     try (LineNumberReader reader = new LineNumberReader(new BufferedReader(
             new InputStreamReader(isGZip ? new GZIPInputStream(new FileInputStream(inputFile))
                     : new FileInputStream(inputFile), "UTF-8")));) {
+      Map<String, Long> server2NextMeasurementId = new HashMap<>();
+      Map<String, SortedSet<MeasurementWrapper>> server2storedMeasurements = new HashMap<>();
       for (String line = reader.readLine(); line != null; line = reader.readLine()) {
         if (line.trim().isEmpty()) {
           continue;
         }
         String[] measurements = line.split(Pattern.quote("\t"));
-        if ((reader.getLineNumber() == 1) && measurements.equals("SERVER")) {
+        if ((reader.getLineNumber() == 1) && measurements[0].equals("SERVER")) {
           // this is the CSV header
           continue;
         }
-        for (MeasurementListener listener : listeners) {
-          listener.processMeasurement(measurements);
+        Long nextMeasurement = server2NextMeasurementId.get(measurements[0]);
+        if (nextMeasurement == null) {
+          nextMeasurement = Long.MIN_VALUE;
+          server2NextMeasurementId.put(measurements[0], nextMeasurement);
         }
+        if (Long.parseLong(measurements[1]) == nextMeasurement) {
+          // this is the following measurement
+          for (MeasurementListener listener : listeners) {
+            listener.processMeasurement(measurements);
+          }
+          nextMeasurement += 1;
+          // check if there are stored measurements, that have been too early
+          SortedSet<MeasurementWrapper> storedMeasurements = server2storedMeasurements
+                  .get(measurements[0]);
+          if (storedMeasurements != null) {
+            for (MeasurementWrapper measurementWrapper : storedMeasurements) {
+              if (measurementWrapper.id != nextMeasurement) {
+                break;
+              }
+              for (MeasurementListener listener : listeners) {
+                listener.processMeasurement(measurementWrapper.measurement);
+              }
+              nextMeasurement += 1;
+            }
+            if (storedMeasurements.isEmpty()) {
+              server2storedMeasurements.remove(measurements[0]);
+            }
+          }
+          server2NextMeasurementId.put(measurements[0], nextMeasurement);
+        } else {
+          // this measurement is too early, store it
+          SortedSet<MeasurementWrapper> storedMeasurements = server2storedMeasurements
+                  .get(measurements[0]);
+          if (storedMeasurements == null) {
+            storedMeasurements = new TreeSet<>();
+            server2storedMeasurements.put(measurements[0], storedMeasurements);
+          }
+          storedMeasurements.add(new MeasurementWrapper(measurements));
+        }
+      }
+      if (!server2storedMeasurements.isEmpty()) {
+        throw new RuntimeException("Some measurements are missing.");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);

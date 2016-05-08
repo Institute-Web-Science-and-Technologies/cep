@@ -6,6 +6,7 @@ import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.MeasurmentListener;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,6 +49,27 @@ public abstract class QueryTimesListener implements MeasurmentListener {
     this();
     this.graphCoverStrategy = graphCoverStrategy;
     this.nHopReplication = nHopReplication;
+  }
+
+  @Override
+  public void notifyAboutInputFile(File inputFile) {
+    String fileName = inputFile.getName();
+    int nameEnd = fileName.indexOf(".");
+    String coverStrategy = null;
+    if (nameEnd != -1) {
+      coverStrategy = fileName.substring(0, nameEnd);
+    }
+    try {
+      graphCoverStrategy = CoverStrategyType.valueOf(coverStrategy);
+      String nhop = fileName.substring(nameEnd + 1);
+      nameEnd = fileName.indexOf(".");
+      if (nameEnd != -1) {
+        nHopReplication = Integer.parseInt(nhop.substring(0, nameEnd));
+      }
+    } catch (IllegalArgumentException e) {
+      // the graph cover strategy could not be estimated
+      // no n-hop factor present
+    }
   }
 
   @Override

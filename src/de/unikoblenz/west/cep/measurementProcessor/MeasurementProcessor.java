@@ -6,4 +6,6 @@ package de.unikoblenz.west.cep.measurementProcessor;
  */
 public class MeasurementProcessor {
 
+  // TODO handle headlines of csv
+
 }

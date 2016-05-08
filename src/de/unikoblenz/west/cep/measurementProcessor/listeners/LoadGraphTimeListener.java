@@ -5,6 +5,8 @@ import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.MeasurmentListener;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
+import java.io.File;
+
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
  *
@@ -14,6 +16,10 @@ public abstract class LoadGraphTimeListener implements MeasurmentListener {
   private CoverStrategyType graphCoverStrategy;
 
   private int nHopReplication;
+
+  @Override
+  public void notifyAboutInputFile(File inputFile) {
+  }
 
   @Override
   public void processMeasurement(String... measurements) {

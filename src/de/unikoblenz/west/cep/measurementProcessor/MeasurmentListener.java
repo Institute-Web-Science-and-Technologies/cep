@@ -10,6 +10,8 @@ public interface MeasurmentListener {
 
   public void setUp(File outputDirectory);
 
+  public void notifyAboutInputFile(File inputFile);
+
   public void processMeasurement(String... measurements);
 
   public void tearDown();

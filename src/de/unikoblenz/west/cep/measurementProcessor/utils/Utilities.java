@@ -19,6 +19,10 @@ public class Utilities {
 
   public static int getComputerId(String... measurements) {
     String computerId = measurements[0];
+    int index = computerId.indexOf(':');
+    if (index >= 0) {
+      computerId = computerId.substring(0, index);
+    }
     if (!computerId.startsWith("slave")) {
       return 0;
     } else {

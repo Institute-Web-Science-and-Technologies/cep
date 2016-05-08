@@ -29,7 +29,7 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_COVER_CREATION_END:
-          if (nHopReplication > 0) {
+          if (nHopReplication == 0) {
             processGraphCoverCreationEnd(graphCoverStrategy, nHopReplication,
                     Long.parseLong(measurements[4]));
           }
@@ -62,6 +62,9 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
           processIndexingEnd(graphCoverStrategy, nHopReplication,
                   Utilities.getComputerId(measurements), Long.parseLong(measurements[4]));
           break;
+        case LOAD_GRAPH_FINISHED:
+          processLoadingFinished(graphCoverStrategy, nHopReplication);
+          break;
         default:
           // all other types are not required
           break;
@@ -92,5 +95,8 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
 
   protected abstract void processIndexingEnd(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int slave, long endTime);
+
+  protected abstract void processLoadingFinished(CoverStrategyType graphCoverStrategy,
+          int nHopReplication);
 
 }

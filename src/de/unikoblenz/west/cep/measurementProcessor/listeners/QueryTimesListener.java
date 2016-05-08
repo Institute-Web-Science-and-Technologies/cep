@@ -26,20 +26,20 @@ public abstract class QueryTimesListener extends QueryListener {
           break;
         case QUERY_COORDINATOR_SEND_QUERY_RESULTS_TO_CLIENT:
           if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy, nHopReplication, currentQueryId,
+            processQueryStart(graphCoverStrategy, nHopReplication, currentQueryFileName,
                     currentQueryRepetition, treeType, queryStartTime);
           }
-          processQueryResult(graphCoverStrategy, nHopReplication, currentQueryId,
+          processQueryResult(graphCoverStrategy, nHopReplication, currentQueryFileName,
                   currentQueryRepetition, treeType, Long.parseLong(measurements[4]),
                   Long.parseLong(measurements[6]), Long.parseLong(measurements[7]));
           hasProcessedQueryResults = true;
           break;
         case QUERY_COORDINATOR_END:
           if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy, nHopReplication, currentQueryId,
+            processQueryStart(graphCoverStrategy, nHopReplication, currentQueryFileName,
                     currentQueryRepetition, treeType, queryStartTime);
           }
-          processQueryStart(graphCoverStrategy, nHopReplication, currentQueryId,
+          processQueryStart(graphCoverStrategy, nHopReplication, currentQueryFileName,
                   currentQueryRepetition, treeType, Long.parseLong(measurements[4]));
           hasProcessedQueryResults = false;
           break;
@@ -51,16 +51,15 @@ public abstract class QueryTimesListener extends QueryListener {
   }
 
   protected abstract void processQueryStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int currentQueryId, int currentQueryRepetition,
+          int nHopReplication, String query, int currentQueryRepetition,
           QueryExecutionTreeType treeType, long queryStartTime);
 
   protected abstract void processQueryResult(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int currentQueryId, int currentQueryRepetition,
+          int nHopReplication, String query, int currentQueryRepetition,
           QueryExecutionTreeType treeType, long queryResultSentTime, long firstResultNumber,
           long lastResultNumber);
 
   protected abstract void processQueryEnd(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          int currentQueryId, int currentQueryRepetition, QueryExecutionTreeType treeType,
-          long queryEndTime);
+          int currentQueryId, String query, QueryExecutionTreeType treeType, long queryEndTime);
 
 }

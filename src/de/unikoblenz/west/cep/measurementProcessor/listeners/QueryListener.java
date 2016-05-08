@@ -16,11 +16,12 @@ import java.util.Map;
  */
 public abstract class QueryListener implements MeasurementListener {
 
-  private final Map<String, Integer> queryIdMap;
+  private Map<String, String> query2fileName;
 
-  private int nextQueryId;
-
-  private final Map<Integer, Integer> queryRepetition;
+  /**
+   * maps query file names to number of repetitions
+   */
+  private final Map<String, Integer> queryRepetition;
 
   protected CoverStrategyType graphCoverStrategy;
 
@@ -28,12 +29,11 @@ public abstract class QueryListener implements MeasurementListener {
 
   protected QueryExecutionTreeType treeType;
 
-  protected int currentQueryId;
+  protected String currentQueryFileName;
 
   protected int currentQueryRepetition;
 
   public QueryListener() {
-    queryIdMap = new HashMap<>();
     queryRepetition = new HashMap<>();
   }
 
@@ -42,6 +42,7 @@ public abstract class QueryListener implements MeasurementListener {
           CoverStrategyType graphCoverStrategy, int nHopReplication) {
     this.graphCoverStrategy = graphCoverStrategy;
     this.nHopReplication = nHopReplication;
+    this.query2fileName = query2fileName;
   }
 
   @Override
@@ -55,27 +56,26 @@ public abstract class QueryListener implements MeasurementListener {
           break;
         case QUERY_COORDINATOR_START:
           String queryString = measurements[6];
-          Integer queryId = queryIdMap.get(queryString);
-          Integer currentQueryRepetition = null;
-          if (queryId == null) {
-            queryId = Integer.valueOf(nextQueryId++);
-            queryIdMap.put(queryString, queryId);
-            currentQueryRepetition = Integer.valueOf(1);
-            queryRepetition.put(queryId, currentQueryRepetition);
-          } else {
-            currentQueryRepetition = queryRepetition.get(queryId) + 1;
-            queryRepetition.put(queryId, currentQueryRepetition);
+          currentQueryFileName = query2fileName.get(queryString);
+          if (currentQueryFileName == null) {
+            throw new RuntimeException("unknown query " + queryString);
           }
-          currentQueryId = queryId;
+          Integer currentQueryRepetition = queryRepetition.get(currentQueryFileName);
+          if (currentQueryRepetition == null) {
+            currentQueryRepetition = Integer.valueOf(1);
+            queryRepetition.put(currentQueryFileName, currentQueryRepetition);
+          } else {
+            currentQueryRepetition = currentQueryRepetition + 1;
+            queryRepetition.put(currentQueryFileName, currentQueryRepetition);
+          }
           this.currentQueryRepetition = currentQueryRepetition;
-          processQuery(queryString, queryId);
           break;
         case QUERY_COORDINATOR_PARSE_START:
           treeType = QueryExecutionTreeType.valueOf(measurements[7]);
           break;
         case QUERY_COORDINATOR_END:
-          processQueryFinish(currentQueryId);
-          currentQueryId = -1;
+          processQueryFinish(currentQueryFileName);
+          currentQueryFileName = null;
           currentQueryRepetition = -1;
           treeType = null;
           break;
@@ -86,8 +86,6 @@ public abstract class QueryListener implements MeasurementListener {
     }
   }
 
-  protected abstract void processQuery(String queryString, int queryId);
-
-  protected abstract void processQueryFinish(int queryId);
+  protected abstract void processQueryFinish(String query);
 
 }

@@ -24,7 +24,7 @@ public abstract class QueryMappingSentListener extends QueryListener {
           for (int i = firstIndex; i <= (lastIndex - 1); i += 2) {
             sentMappings[Integer.parseInt(measurements[i])] = Long.parseLong(measurements[i + 1]);
           }
-          processMappingSent(graphCoverStrategy, nHopReplication, currentQueryId,
+          processMappingSent(graphCoverStrategy, nHopReplication, currentQueryFileName,
                   currentQueryRepetition, treeType, Utilities.getComputerId(measurements),
                   Integer.parseInt(measurements[5]), sentMappings,
                   Integer.parseInt(measurements[measurements.length - 1]));
@@ -37,7 +37,7 @@ public abstract class QueryMappingSentListener extends QueryListener {
   }
 
   protected abstract void processMappingSent(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int currentQueryId, int currentQueryRepetition,
+          int nHopReplication, String query, int currentQueryRepetition,
           QueryExecutionTreeType treeType, int slaveId, int taskId, long[] sentMappings,
           int numberOfVariablesPerMapping);
 

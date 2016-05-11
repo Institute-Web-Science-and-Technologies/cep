@@ -61,15 +61,6 @@ public class MeasurementProcessor implements Closeable {
     processMeasurements(inputFile);
   }
 
-  public void processLoadAndQueryMeasurement(File queryDir, File inputFile, File outputDir) {
-    ensureOutputDir(outputDir);
-    Map<String, String> query2fileName = generateQuery2fileNameMap(queryDir);
-    for (MeasurementListener listener : listeners) {
-      listener.setUp(outputDir, query2fileName, null, 0);
-    }
-    processMeasurements(inputFile);
-  }
-
   private void ensureOutputDir(File outputDir) {
     if (!outputDir.exists()) {
       outputDir.mkdirs();
@@ -180,22 +171,8 @@ public class MeasurementProcessor implements Closeable {
 
         measurementProcessor.processQueryMeasurement(queryDir, inputFile, cover, nhop, outputDir);
 
-      } else if (line.hasOption('m')) {
-        MeasurementProcessor.registerListeners(measurementProcessor,
-                MeasurementProcessor.loadListeners);
-        MeasurementProcessor.registerListeners(measurementProcessor,
-                MeasurementProcessor.queryListeners);
-        File inputFile = new File(line.getOptionValue('m'));
-        File queryDir = null;
-        if (line.hasOption('Q')) {
-          queryDir = new File(line.getOptionValue('Q'));
-        } else {
-          throw new RuntimeException("Loading a querying file requires the option -Q.");
-        }
-        measurementProcessor.processLoadAndQueryMeasurement(queryDir, inputFile, outputDir);
-
       } else {
-        throw new RuntimeException("Option -l, -q or -m is required.");
+        throw new RuntimeException("Option -l or -q is required.");
       }
     } finally {
       measurementProcessor.close();
@@ -227,10 +204,6 @@ public class MeasurementProcessor implements Closeable {
     Option queryFile = Option.builder("q").longOpt("queryFile").hasArg().argName("queryFile")
             .desc("csv file with measurements of querying").required(false).build();
 
-    Option mixedFile = Option.builder("m").longOpt("mixedFile").hasArg().argName("mixedFile")
-            .desc("csv file with measurements of loading a graph and querying").required(false)
-            .build();
-
     Option cover = Option.builder("c").longOpt("cover").hasArg().argName("coverStrategy")
             .desc("the graph cover strategy used during querying. Possible valueas are "
                     + Arrays.toString(CoverStrategyType.values()))
@@ -248,7 +221,6 @@ public class MeasurementProcessor implements Closeable {
     options.addOption(output);
     options.addOption(loadFile);
     options.addOption(queryFile);
-    options.addOption(mixedFile);
     options.addOption(cover);
     options.addOption(nhop);
     options.addOption(queryFiles);

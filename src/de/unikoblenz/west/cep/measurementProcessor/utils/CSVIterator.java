@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -28,9 +29,12 @@ public class CSVIterator
 
   private String[] next;
 
+  private int currentQueryId;
+
   public CSVIterator(File csvFile, int bufferSize) {
     maxBufferSize = bufferSize;
     buffer = new TreeSet<>();
+    currentQueryId = -1;
     boolean isGZip = csvFile.getName().endsWith(".gz");
     try {
       reader = new LineNumberReader(new BufferedReader(
@@ -80,7 +84,11 @@ public class CSVIterator
           // this is the CSV header
           continue;
         }
-        buffer.add(new MeasurmentWrapper(measurement));
+        MeasurmentWrapper wrapper = new MeasurmentWrapper(measurement, currentQueryId);
+        if (wrapper.getQueryId() > currentQueryId) {
+          currentQueryId = wrapper.getQueryId();
+        }
+        buffer.add(wrapper);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -105,6 +113,8 @@ public class CSVIterator
 
 class MeasurmentWrapper implements Comparable<MeasurmentWrapper> {
 
+  private final int queryId;
+
   private final long timestamp;
 
   private final long id;
@@ -113,32 +123,71 @@ class MeasurmentWrapper implements Comparable<MeasurmentWrapper> {
 
   public final String[] measurement;
 
-  public MeasurmentWrapper(String[] measurement) {
+  public MeasurmentWrapper(String[] measurement, int previousQueryId) {
     this.measurement = measurement;
     timestamp = Long.parseLong(measurement[2]);
     id = Long.parseLong(measurement[1]);
     computerId = Utilities.getComputerId(measurement);
+    switch (Utilities.getMeasurementType(measurement)) {
+      case QUERY_COORDINATOR_END:
+      case QUERY_COORDINATOR_PARSE_END:
+      case QUERY_COORDINATOR_PARSE_START:
+      case QUERY_COORDINATOR_SEND_QUERY_RESULTS_TO_CLIENT:
+      case QUERY_COORDINATOR_SEND_QUERY_START:
+      case QUERY_COORDINATOR_SEND_QUERY_TO_SLAVE:
+      case QUERY_COORDINATOR_START:
+      case QUERY_OPERATION_CLOSED:
+      case QUERY_OPERATION_FINISH:
+      case QUERY_OPERATION_START:
+      case QUERY_SLAVE_QUERY_CREATION_END:
+      case QUERY_SLAVE_QUERY_CREATION_START:
+      case QUERY_SLAVE_QUERY_EXECUTION_ABORT:
+      case QUERY_SLAVE_QUERY_EXECUTION_START:
+        queryId = Integer.parseInt(measurement[5]);
+        break;
+      case QUERY_COORDINATOR_QET_NODES:
+      case QUERY_OPERATION_JOIN_NUMBER_OF_COMPARISONS:
+      case QUERY_OPERATION_SENT_FINISH_NOTIFICATIONS_TO_OTHER_SLAVES:
+      case QUERY_OPERATION_SENT_MAPPINGS_TO_SLAVE:
+        queryId = Integer.parseInt(measurement[4]);
+        break;
+      case QUERY_MESSAGE_RECEIPTION:
+        queryId = previousQueryId == -1 ? -1 : previousQueryId + 1;
+        break;
+      default:
+        queryId = -1;
+    }
+  }
+
+  public int getQueryId() {
+    return queryId;
   }
 
   @Override
   public int compareTo(MeasurmentWrapper o) {
-    if (timestamp == o.timestamp) {
-      if ((computerId == 0) && (o.computerId != 0)) {
-        return 1;
-      } else if ((o.computerId == 0) && (computerId != 0)) {
-        return -1;
-      } else if (computerId == o.computerId) {
-        if (id == o.id) {
-          return 0;
-        } else if (id < o.id) {
-          return -1;
-        } else {
+    if (queryId == o.queryId) {
+      if (timestamp == o.timestamp) {
+        if ((computerId == 0) && (o.computerId != 0)) {
           return 1;
+        } else if ((o.computerId == 0) && (computerId != 0)) {
+          return -1;
+        } else if (computerId == o.computerId) {
+          if (id == o.id) {
+            return 0;
+          } else if (id < o.id) {
+            return -1;
+          } else {
+            return 1;
+          }
+        } else {
+          return computerId - o.computerId;
         }
+      } else if (timestamp < o.timestamp) {
+        return -1;
       } else {
-        return computerId - o.computerId;
+        return 1;
       }
-    } else if (timestamp < o.timestamp) {
+    } else if (queryId < o.queryId) {
       return -1;
     } else {
       return 1;
@@ -151,6 +200,8 @@ class MeasurmentWrapper implements Comparable<MeasurmentWrapper> {
     int result = 1;
     result = (prime * result) + computerId;
     result = (prime * result) + (int) (id ^ (id >>> 32));
+    result = (prime * result) + Arrays.hashCode(measurement);
+    result = (prime * result) + queryId;
     result = (prime * result) + (int) (timestamp ^ (timestamp >>> 32));
     return result;
   }
@@ -171,6 +222,12 @@ class MeasurmentWrapper implements Comparable<MeasurmentWrapper> {
       return false;
     }
     if (id != other.id) {
+      return false;
+    }
+    if (!Arrays.equals(measurement, other.measurement)) {
+      return false;
+    }
+    if (queryId != other.queryId) {
       return false;
     }
     if (timestamp != other.timestamp) {

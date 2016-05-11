@@ -75,10 +75,6 @@ public abstract class QueryListener implements MeasurementListener {
     MeasurementType measurementType = Utilities.getMeasurementType(measurements);
     if (measurementType != null) {
       switch (measurementType) {
-        case LOAD_GRAPH_START:
-          graphCoverStrategy = CoverStrategyType.valueOf(measurements[5]);
-          nHopReplication = Integer.parseInt(measurements[6]);
-          break;
         case QUERY_COORDINATOR_START:
           performFinishTasks();
           String queryString = measurements[6];

@@ -14,6 +14,7 @@ import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.ComputationalEffort;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.DataTransfer;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.LoadTime;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.OverallQueryExecutionTime;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.StorageBalance;
 import de.unikoblenz.west.cep.measurementProcessor.utils.CSVIterator;
 import de.unikoblenz.west.cep.queryExecutor.QueryFileFilter;
@@ -46,17 +47,17 @@ public class MeasurementProcessor implements Closeable {
   public void processLoadMeasurement(File inputFile, File outputDir) {
     ensureOutputDir(outputDir);
     for (MeasurementListener listener : listeners) {
-      listener.setUp(outputDir, null, null, 0);
+      listener.setUp(outputDir, null, null, 0, 1);
     }
     processMeasurements(inputFile);
   }
 
   public void processQueryMeasurement(File queryDir, File inputFile, CoverStrategyType cover,
-          int nhop, File outputDir) {
+          int nhop, int repetitions, File outputDir) {
     ensureOutputDir(outputDir);
     Map<String, String> query2fileName = generateQuery2fileNameMap(queryDir);
     for (MeasurementListener listener : listeners) {
-      listener.setUp(outputDir, query2fileName, cover, nhop);
+      listener.setUp(outputDir, query2fileName, cover, nhop, repetitions);
     }
     processMeasurements(inputFile);
   }
@@ -122,7 +123,7 @@ public class MeasurementProcessor implements Closeable {
 
   @SuppressWarnings("unchecked")
   private static Class<? extends MeasurementListener>[] queryListeners = new Class[] {
-          DataTransfer.class, ComputationalEffort.class };
+          DataTransfer.class, ComputationalEffort.class, OverallQueryExecutionTime.class };
 
   public static void main(String[] args) throws ParseException {
     Options options = MeasurementProcessor.createCommandLineOptions();
@@ -162,6 +163,13 @@ public class MeasurementProcessor implements Closeable {
           nhop = Integer.parseInt(line.getOptionValue('n'));
         }
 
+        int repetitions = 0;
+        if (line.hasOption('r')) {
+          repetitions = Integer.parseInt(line.getOptionValue('r'));
+        } else {
+          throw new RuntimeException("Loading a querying file requires the option -r.");
+        }
+
         File queryDir = null;
         if (line.hasOption('Q')) {
           queryDir = new File(line.getOptionValue('Q'));
@@ -169,7 +177,8 @@ public class MeasurementProcessor implements Closeable {
           throw new RuntimeException("Loading a querying file requires the option -Q.");
         }
 
-        measurementProcessor.processQueryMeasurement(queryDir, inputFile, cover, nhop, outputDir);
+        measurementProcessor.processQueryMeasurement(queryDir, inputFile, cover, nhop, repetitions,
+                outputDir);
 
       } else {
         throw new RuntimeException("Option -l or -q is required.");
@@ -213,6 +222,9 @@ public class MeasurementProcessor implements Closeable {
             .desc("the used n-hop replication. Default is 0, i.e., noh n-hop replication")
             .required(false).build();
 
+    Option repetitions = Option.builder("r").longOpt("repetitions").hasArg().argName("int")
+            .desc("the number of performed repetitions").required(false).build();
+
     Option queryFiles = Option.builder("Q").longOpt("queryFiles").hasArg().argName("directory")
             .desc("the directory that contains the query").required(false).build();
 
@@ -223,6 +235,7 @@ public class MeasurementProcessor implements Closeable {
     options.addOption(queryFile);
     options.addOption(cover);
     options.addOption(nhop);
+    options.addOption(repetitions);
     options.addOption(queryFiles);
     return options;
   }

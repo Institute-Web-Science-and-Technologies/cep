@@ -1,7 +1,6 @@
 package de.unikoblenz.west.cep.measurementProcessor.listeners;
 
 import de.uni_koblenz.west.koral.common.measurement.MeasurementType;
-import de.uni_koblenz.west.koral.common.query.parser.QueryExecutionTreeType;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
@@ -19,9 +18,11 @@ public abstract class QueryComputationEffortListener extends QueryListener {
       switch (measurementType) {
         case QUERY_OPERATION_JOIN_NUMBER_OF_COMPARISONS:
           if (currentQueryRepetition == 1) {
-            processComputationEffort(graphCoverStrategy, nHopReplication, currentQueryFileName,
-                    currentQueryRepetition, treeType, Utilities.getComputerId(measurements),
-                    Integer.parseInt(measurements[5]), Long.parseLong(measurements[6]));
+            processComputationEffort(graphCoverStrategy, nHopReplication,
+                    new ExtendedQuerySignature(Integer.parseInt(measurements[4]), currentQueryFileName,
+                            treeType, currentQueryRepetition),
+                    Utilities.getComputerId(measurements), Integer.parseInt(measurements[5]),
+                    Long.parseLong(measurements[6]));
           }
           break;
         default:
@@ -32,7 +33,7 @@ public abstract class QueryComputationEffortListener extends QueryListener {
   }
 
   protected abstract void processComputationEffort(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, String query, int currentQueryRepetition,
-          QueryExecutionTreeType treeType, int slaveId, int taskId, long numberOfComparisons);
+          int nHopReplication, ExtendedQuerySignature query, int slaveId, int taskId,
+          long numberOfComparisons);
 
 }

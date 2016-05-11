@@ -12,7 +12,7 @@ import java.util.Map;
 public interface MeasurementListener {
 
   public void setUp(File outputDirectory, Map<String, String> query2fileName,
-          CoverStrategyType graphCoverStrategy, int nHopReplication);
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions);
 
   public void processMeasurement(String... measurements);
 

@@ -53,4 +53,12 @@ public class Utilities {
     return Math.sqrt(summ / individualValues.length);
   }
 
+  public static long computeArithmeticMean(long[] values) {
+    long sum = 0;
+    for (long value : values) {
+      sum += value;
+    }
+    return sum / values.length;
+  }
+
 }

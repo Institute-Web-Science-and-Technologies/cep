@@ -1,7 +1,6 @@
 package de.unikoblenz.west.cep.measurementProcessor.listeners;
 
 import de.uni_koblenz.west.koral.common.measurement.MeasurementType;
-import de.uni_koblenz.west.koral.common.query.parser.QueryExecutionTreeType;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
@@ -26,21 +25,29 @@ public abstract class QueryTimesListener extends QueryListener {
           break;
         case QUERY_COORDINATOR_SEND_QUERY_RESULTS_TO_CLIENT:
           if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy, nHopReplication, currentQueryFileName,
-                    currentQueryRepetition, treeType, queryStartTime);
+            processQueryStart(graphCoverStrategy,
+                    nHopReplication, new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
+                            currentQueryFileName, treeType, currentQueryRepetition),
+                    queryStartTime);
           }
-          processQueryResult(graphCoverStrategy, nHopReplication, currentQueryFileName,
-                  currentQueryRepetition, treeType, Long.parseLong(measurements[4]),
-                  Long.parseLong(measurements[6]), Long.parseLong(measurements[7]));
+          processQueryResult(graphCoverStrategy, nHopReplication,
+                  new ExtendedQuerySignature(Integer.parseInt(measurements[5]), currentQueryFileName,
+                          treeType, currentQueryRepetition),
+                  Long.parseLong(measurements[4]), Long.parseLong(measurements[6]),
+                  Long.parseLong(measurements[7]));
           hasProcessedQueryResults = true;
           break;
         case QUERY_COORDINATOR_END:
           if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy, nHopReplication, currentQueryFileName,
-                    currentQueryRepetition, treeType, queryStartTime);
+            processQueryStart(graphCoverStrategy,
+                    nHopReplication, new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
+                            currentQueryFileName, treeType, currentQueryRepetition),
+                    queryStartTime);
           }
-          processQueryStart(graphCoverStrategy, nHopReplication, currentQueryFileName,
-                  currentQueryRepetition, treeType, Long.parseLong(measurements[4]));
+          processQueryStart(graphCoverStrategy,
+                  nHopReplication, new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
+                          currentQueryFileName, treeType, currentQueryRepetition),
+                  Long.parseLong(measurements[4]));
           hasProcessedQueryResults = false;
           break;
         default:
@@ -51,15 +58,10 @@ public abstract class QueryTimesListener extends QueryListener {
   }
 
   protected abstract void processQueryStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, String query, int currentQueryRepetition,
-          QueryExecutionTreeType treeType, long queryStartTime);
+          int nHopReplication, ExtendedQuerySignature query, long queryStartTime);
 
   protected abstract void processQueryResult(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, String query, int currentQueryRepetition,
-          QueryExecutionTreeType treeType, long queryResultSentTime, long firstResultNumber,
-          long lastResultNumber);
-
-  protected abstract void processQueryEnd(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          int currentQueryId, String query, QueryExecutionTreeType treeType, long queryEndTime);
+          int nHopReplication, ExtendedQuerySignature query, long queryResultSentTime,
+          long firstResultNumber, long lastResultNumber);
 
 }

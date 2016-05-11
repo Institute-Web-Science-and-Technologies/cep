@@ -39,7 +39,11 @@ public abstract class QueryListener implements MeasurementListener {
 
   protected int currentQueryRepetition;
 
+  protected int currentQueryId;
+
   private Writer output;
+
+  protected int numberOfRepetitions;
 
   public QueryListener() {
     queryRepetition = new HashMap<>();
@@ -47,9 +51,10 @@ public abstract class QueryListener implements MeasurementListener {
 
   @Override
   public void setUp(File outputDirectory, Map<String, String> query2fileName,
-          CoverStrategyType graphCoverStrategy, int nHopReplication) {
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions) {
     this.graphCoverStrategy = graphCoverStrategy;
     this.nHopReplication = nHopReplication;
+    numberOfRepetitions = repetitions;
     this.query2fileName = query2fileName;
     File outputFile = getOutputFile(outputDirectory);
     boolean existsOutputFile = outputFile.exists();
@@ -82,6 +87,7 @@ public abstract class QueryListener implements MeasurementListener {
           if (currentQueryFileName == null) {
             throw new RuntimeException("unknown query " + queryString);
           }
+          currentQueryId = Integer.parseInt(measurements[5]);
           break;
         case QUERY_COORDINATOR_PARSE_START:
           treeType = QueryExecutionTreeType.valueOf(measurements[7]);
@@ -105,14 +111,15 @@ public abstract class QueryListener implements MeasurementListener {
 
   protected void performFinishTasks() {
     if (currentQueryFileName != null) {
-      processQueryFinish(currentQueryFileName, currentQueryRepetition);
+      processQueryFinish(new ExtendedQuerySignature(currentQueryId, currentQueryFileName, treeType,
+              currentQueryRepetition));
     }
     currentQueryFileName = null;
     currentQueryRepetition = -1;
     treeType = null;
   }
 
-  protected abstract void processQueryFinish(String query, int currentQueryRepetition);
+  protected abstract void processQueryFinish(ExtendedQuerySignature query);
 
   protected void writeLine(String line) {
     if (!line.startsWith("\t")) {

@@ -1,7 +1,6 @@
 package de.unikoblenz.west.cep.measurementProcessor.listeners;
 
 import de.uni_koblenz.west.koral.common.measurement.MeasurementType;
-import de.uni_koblenz.west.koral.common.query.parser.QueryExecutionTreeType;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
@@ -28,10 +27,11 @@ public abstract class QueryMappingSentListener extends QueryListener {
             for (int i = firstIndex; i <= (lastIndex - 1); i += 2) {
               sentMappings[Integer.parseInt(measurements[i])] = Long.parseLong(measurements[i + 1]);
             }
-            processMappingSent(graphCoverStrategy, nHopReplication, currentQueryFileName,
-                    currentQueryRepetition, treeType, Utilities.getComputerId(measurements),
-                    Integer.parseInt(measurements[5]), sentMappings,
-                    Integer.parseInt(measurements[measurements.length - 1]));
+            processMappingSent(graphCoverStrategy, nHopReplication,
+                    new ExtendedQuerySignature(Integer.parseInt(measurements[4]), currentQueryFileName,
+                            treeType, currentQueryRepetition),
+                    Utilities.getComputerId(measurements), Integer.parseInt(measurements[5]),
+                    sentMappings, Integer.parseInt(measurements[measurements.length - 1]));
           }
           break;
         default:
@@ -42,8 +42,7 @@ public abstract class QueryMappingSentListener extends QueryListener {
   }
 
   protected abstract void processMappingSent(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, String query, int currentQueryRepetition,
-          QueryExecutionTreeType treeType, int slaveId, int taskId, long[] sentMappings,
+          int nHopReplication, ExtendedQuerySignature query, int slaveId, int taskId, long[] sentMappings,
           int numberOfVariablesPerMapping);
 
 }

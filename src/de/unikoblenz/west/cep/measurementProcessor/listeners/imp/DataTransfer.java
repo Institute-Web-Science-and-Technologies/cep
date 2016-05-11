@@ -1,8 +1,8 @@
 package de.unikoblenz.west.cep.measurementProcessor.listeners.imp;
 
-import de.uni_koblenz.west.koral.common.query.parser.QueryExecutionTreeType;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryMappingSentListener;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
 
 import java.io.File;
 
@@ -26,8 +26,8 @@ public class DataTransfer extends QueryMappingSentListener {
 
   @Override
   protected void processMappingSent(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          String query, int currentQueryRepetition, QueryExecutionTreeType treeType, int slaveId,
-          int taskId, long[] sentMappings, int numberOfVariablesPerMapping) {
+          ExtendedQuerySignature query, int slaveId, int taskId, long[] sentMappings,
+          int numberOfVariablesPerMapping) {
     if (numberOfVariablesPerMapping == 0) {
       numberOfVariablesPerMapping = 1;
     }
@@ -41,7 +41,7 @@ public class DataTransfer extends QueryMappingSentListener {
   }
 
   @Override
-  protected void processQueryFinish(String query, int currentQueryRepetition) {
+  protected void processQueryFinish(ExtendedQuerySignature query) {
     if (currentQueryRepetition == 1) {
       writeLine("\t" + totalDataTransfer);
       totalDataTransfer = 0;

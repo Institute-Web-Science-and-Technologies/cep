@@ -33,7 +33,7 @@ public class LoadTime extends LoadGraphTimeListener {
 
   @Override
   public void setUp(File outputDirectory, Map<String, String> query2fileName,
-          CoverStrategyType graphCoverStrategy, int nHopReplication) {
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions) {
     File outputFile = new File(
             outputDirectory.getAbsolutePath() + File.separator + "loadingTime.csv");
     boolean existsOutputFile = outputFile.exists();

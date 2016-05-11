@@ -1,8 +1,8 @@
 package de.unikoblenz.west.cep.measurementProcessor.listeners.imp;
 
-import de.uni_koblenz.west.koral.common.query.parser.QueryExecutionTreeType;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryComputationEffortListener;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
 import java.io.File;
@@ -28,8 +28,7 @@ public class ComputationalEffort extends QueryComputationEffortListener {
 
   @Override
   protected void processComputationEffort(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          String query, int currentQueryRepetition, QueryExecutionTreeType treeType, int slaveId,
-          int taskId, long numberOfComparisons) {
+          ExtendedQuerySignature query, int slaveId, int taskId, long numberOfComparisons) {
     slaveId -= 1;
     if (numberOfComparisonsPerSlave == null) {
       numberOfComparisonsPerSlave = new long[slaveId + 1];
@@ -40,7 +39,7 @@ public class ComputationalEffort extends QueryComputationEffortListener {
   }
 
   @Override
-  protected void processQueryFinish(String query, int currentQueryRepetition) {
+  protected void processQueryFinish(ExtendedQuerySignature query) {
     if (numberOfComparisonsPerSlave == null) {
       return;
     }

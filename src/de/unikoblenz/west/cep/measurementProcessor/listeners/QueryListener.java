@@ -100,11 +100,6 @@ public abstract class QueryListener implements MeasurementListener {
           }
           this.currentQueryRepetition = currentQueryRepetition;
           break;
-        // case CLIENT_CLOSES_CONNECTION:
-        // case CLIENT_ABORTS_CONNECTION:
-        // case CLIENT_CONNECTION_TIMEOUT:
-        // performFinishTasks();
-        // break;
         default:
           // all other types are not required
           break;

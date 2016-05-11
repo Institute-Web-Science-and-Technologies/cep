@@ -11,6 +11,7 @@ import org.apache.jena.query.QueryFactory;
 
 import de.uni_koblenz.west.koral.common.measurement.MeasurementCollector;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.ComputationalEffort;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.DataTransfer;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.LoadTime;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.StorageBalance;
@@ -103,6 +104,8 @@ public class MeasurementProcessor implements Closeable {
     }
   }
 
+  // TODO handle restarted load attempts
+
   private void processMeasurements(File inputFile) {
     try (CSVIterator iterator = new CSVIterator(inputFile, 1000);) {
       for (String[] measurement : iterator) {
@@ -128,7 +131,7 @@ public class MeasurementProcessor implements Closeable {
 
   @SuppressWarnings("unchecked")
   private static Class<? extends MeasurementListener>[] queryListeners = new Class[] {
-          DataTransfer.class };
+          DataTransfer.class, ComputationalEffort.class };
 
   public static void main(String[] args) throws ParseException {
     Options options = MeasurementProcessor.createCommandLineOptions();

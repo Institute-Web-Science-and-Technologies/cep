@@ -30,4 +30,27 @@ public class Utilities {
     }
   }
 
+  public static double computeEntropy(long[] individualValues, long totalSize) {
+    double result = 0;
+    double log = Math.log(2);
+    for (long value : individualValues) {
+      if (value == 0) {
+        continue;
+      }
+      double factor = value / (double) totalSize;
+      result += factor * (Math.log(factor) / log);
+    }
+    return -result;
+  }
+
+  public static double computeStandardDeviation(long[] individualValues, long totalSize) {
+    double factor = totalSize / (double) individualValues.length;
+    double summ = 0;
+    for (long value : individualValues) {
+      double difference = value - factor;
+      summ += difference * difference;
+    }
+    return Math.sqrt(summ / individualValues.length);
+  }
+
 }

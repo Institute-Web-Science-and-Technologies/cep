@@ -2,6 +2,7 @@ package de.unikoblenz.west.cep.measurementProcessor.listeners.imp;
 
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.GraphStatisticsListener;
+import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -72,8 +73,8 @@ public class StorageBalance extends GraphStatisticsListener {
     try {
       output.write("\n" + graphCoverStrategy + "\t" + nHopReplication + "\t"
               + computeRedundancy(totalGraphCoverSize, originalGraphSize) + "\t"
-              + computeEntropy(chunkSizes, totalGraphCoverSize) + "\t"
-              + computeStandardDeviation(chunkSizes, totalGraphCoverSize));
+              + Utilities.computeEntropy(chunkSizes, totalGraphCoverSize) + "\t"
+              + Utilities.computeStandardDeviation(chunkSizes, totalGraphCoverSize));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -81,26 +82,6 @@ public class StorageBalance extends GraphStatisticsListener {
 
   private double computeRedundancy(long totalGraphCoverSize, long originalGraphSize) {
     return totalGraphCoverSize / (double) originalGraphSize;
-  }
-
-  private double computeEntropy(long[] chunkSizes, long totalGraphCoverSize) {
-    double result = 0;
-    double log = Math.log(2);
-    for (long chunkSize : chunkSizes) {
-      double factor = chunkSize / (double) totalGraphCoverSize;
-      result += factor * (Math.log(factor) / log);
-    }
-    return -result;
-  }
-
-  private double computeStandardDeviation(long[] chunkSizes, long totalGraphCoverSize) {
-    double factor = totalGraphCoverSize / (double) chunkSizes.length;
-    double summ = 0;
-    for (long chunkSize : chunkSizes) {
-      double difference = chunkSize - factor;
-      summ += difference * difference;
-    }
-    return Math.sqrt(summ / chunkSizes.length);
   }
 
   @Override

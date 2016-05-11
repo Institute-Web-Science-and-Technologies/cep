@@ -40,7 +40,7 @@ public class Utilities {
       double factor = value / (double) totalSize;
       result += factor * (Math.log(factor) / log);
     }
-    return -result;
+    return result == 0 ? result : -result;
   }
 
   public static double computeStandardDeviation(long[] individualValues, long totalSize) {

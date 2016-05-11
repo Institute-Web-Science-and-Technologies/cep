@@ -76,7 +76,7 @@ public class CSVIterator
           continue;
         }
         String[] measurement = line.split(Pattern.quote("\t"));
-        if ((reader.getLineNumber() == 1) && measurement[0].equals("SERVER")) {
+        if (measurement[0].equals("SERVER")) {
           // this is the CSV header
           continue;
         }

@@ -1,8 +1,8 @@
 package de.unikoblenz.west.cep.measurementProcessor.listeners.imp;
 
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
-import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryComputationEffortListener;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryComputationEffortListener;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
 import java.io.File;

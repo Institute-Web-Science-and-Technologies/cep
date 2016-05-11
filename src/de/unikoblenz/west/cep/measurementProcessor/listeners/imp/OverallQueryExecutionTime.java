@@ -73,7 +73,6 @@ public class OverallQueryExecutionTime extends QueryTimesListener {
       }
       writeLine("\t" + Utilities.computeArithmeticMean(repetitions));
     }
-    // TODO Auto-generated method stub
     queryStartTime = 0;
     totalQueryExecutionTime = 0;
   }

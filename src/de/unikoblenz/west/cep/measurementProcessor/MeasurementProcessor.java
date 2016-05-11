@@ -106,8 +106,6 @@ public class MeasurementProcessor implements Closeable {
   private void processMeasurements(File inputFile) {
     try (CSVIterator iterator = new CSVIterator(inputFile, 1000);) {
       for (String[] measurement : iterator) {
-        // TODO remove
-        System.out.println(Arrays.toString(measurement));
         for (MeasurementListener listener : listeners) {
           listener.processMeasurement(measurement);
         }

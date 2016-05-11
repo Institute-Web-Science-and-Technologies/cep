@@ -80,6 +80,7 @@ public abstract class QueryListener implements MeasurementListener {
           nHopReplication = Integer.parseInt(measurements[6]);
           break;
         case QUERY_COORDINATOR_START:
+          performFinishTasks();
           String queryString = measurements[6];
           currentQueryFileName = query2fileName.get(queryString);
           if (currentQueryFileName == null) {
@@ -99,17 +100,25 @@ public abstract class QueryListener implements MeasurementListener {
           }
           this.currentQueryRepetition = currentQueryRepetition;
           break;
-        case QUERY_COORDINATOR_END:
-          processQueryFinish(currentQueryFileName, this.currentQueryRepetition);
-          currentQueryFileName = null;
-          this.currentQueryRepetition = -1;
-          treeType = null;
-          break;
+        // case CLIENT_CLOSES_CONNECTION:
+        // case CLIENT_ABORTS_CONNECTION:
+        // case CLIENT_CONNECTION_TIMEOUT:
+        // performFinishTasks();
+        // break;
         default:
           // all other types are not required
           break;
       }
     }
+  }
+
+  protected void performFinishTasks() {
+    if (currentQueryFileName != null) {
+      processQueryFinish(currentQueryFileName, currentQueryRepetition);
+    }
+    currentQueryFileName = null;
+    currentQueryRepetition = -1;
+    treeType = null;
   }
 
   protected abstract void processQueryFinish(String query, int currentQueryRepetition);
@@ -130,6 +139,7 @@ public abstract class QueryListener implements MeasurementListener {
 
   @Override
   public void tearDown() {
+    performFinishTasks();
     try {
       if (output != null) {
         output.close();

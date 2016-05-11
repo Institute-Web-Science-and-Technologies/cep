@@ -25,29 +25,25 @@ public abstract class QueryTimesListener extends QueryListener {
           break;
         case QUERY_COORDINATOR_SEND_QUERY_RESULTS_TO_CLIENT:
           if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy,
-                    nHopReplication, new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
+            processQueryStart(graphCoverStrategy, nHopReplication,
+                    new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
                             currentQueryFileName, treeType, currentQueryRepetition),
                     queryStartTime);
           }
           processQueryResult(graphCoverStrategy, nHopReplication,
-                  new ExtendedQuerySignature(Integer.parseInt(measurements[5]), currentQueryFileName,
-                          treeType, currentQueryRepetition),
+                  new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
+                          currentQueryFileName, treeType, currentQueryRepetition),
                   Long.parseLong(measurements[4]), Long.parseLong(measurements[6]),
                   Long.parseLong(measurements[7]));
           hasProcessedQueryResults = true;
           break;
         case QUERY_COORDINATOR_END:
           if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy,
-                    nHopReplication, new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
+            processQueryStart(graphCoverStrategy, nHopReplication,
+                    new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
                             currentQueryFileName, treeType, currentQueryRepetition),
                     queryStartTime);
           }
-          processQueryStart(graphCoverStrategy,
-                  nHopReplication, new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
-                          currentQueryFileName, treeType, currentQueryRepetition),
-                  Long.parseLong(measurements[4]));
           hasProcessedQueryResults = false;
           break;
         default:

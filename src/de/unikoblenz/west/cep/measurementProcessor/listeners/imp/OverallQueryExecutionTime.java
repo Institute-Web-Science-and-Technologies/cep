@@ -41,8 +41,6 @@ public class OverallQueryExecutionTime extends QueryTimesListener {
   @Override
   protected void processQueryStart(CoverStrategyType graphCoverStrategy, int nHopReplication,
           ExtendedQuerySignature query, long queryStartTime) {
-    // TODO remove
-    System.out.println("start " + queryStartTime);
     this.queryStartTime = queryStartTime;
   }
 
@@ -58,8 +56,6 @@ public class OverallQueryExecutionTime extends QueryTimesListener {
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
-    // TODO remove
-    System.out.println("end " + totalQueryExecutionTime);
     QuerySignature basicSignature = query.getBasicSignature();
     long[] repetitions = query2repetitiontimes.get(basicSignature);
     if (repetitions == null) {
@@ -68,8 +64,6 @@ public class OverallQueryExecutionTime extends QueryTimesListener {
     }
     repetitions[query.repetition - 1] = totalQueryExecutionTime;
     if (query.repetition == numberOfRepetitions) {
-      // TODO remove
-      System.out.println(Arrays.toString(repetitions));
       query2repetitiontimes.remove(basicSignature);
       int numberOfSkippedValues = numberOfRepetitions / 10;
       if (numberOfSkippedValues > 0) {
@@ -77,8 +71,6 @@ public class OverallQueryExecutionTime extends QueryTimesListener {
         repetitions = Arrays.copyOfRange(repetitions, numberOfSkippedValues,
                 repetitions.length - numberOfSkippedValues);
       }
-      // TODO remove
-      System.out.println(Arrays.toString(repetitions));
       writeLine("\t" + Utilities.computeArithmeticMean(repetitions));
     }
     // TODO Auto-generated method stub

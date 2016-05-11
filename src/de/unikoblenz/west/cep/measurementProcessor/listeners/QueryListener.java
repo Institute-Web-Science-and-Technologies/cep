@@ -109,7 +109,7 @@ public abstract class QueryListener implements MeasurementListener {
     }
   }
 
-  protected void performFinishTasks() {
+  private void performFinishTasks() {
     if (currentQueryFileName != null) {
       processQueryFinish(new ExtendedQuerySignature(currentQueryId, currentQueryFileName, treeType,
               currentQueryRepetition));

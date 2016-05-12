@@ -75,16 +75,24 @@ public class ResultsOverTime extends QueryTimesListener {
     }
     queryStartTime = 0;
     sequenceOfResults = new LinkedList<>();
+    numberOfResults = 0;
   }
 
   private void computeAverageTimeLines(Queue<long[]>[] timeLines) {
     StringBuilder timePoints = new StringBuilder();
     StringBuilder resultPercents = new StringBuilder();
+    long[] previousTimeSegment = null;
     for (long[] timeSegment = getNextTimeSegment(
             timeLines); timeSegment != null; timeSegment = getNextTimeSegment(timeLines)) {
-      timePoints.append("\t").append(timeSegment[0]);
-      resultPercents.append("\t").append(timeSegment[1] / (double) numberOfResults);
+      if ((previousTimeSegment != null) && (previousTimeSegment[0] != timeSegment[0])) {
+        // write previous result segment if the timestamp has changed
+        timePoints.append("\t").append(previousTimeSegment[0]);
+        resultPercents.append("\t").append(previousTimeSegment[1] / (double) numberOfResults);
+      }
+      previousTimeSegment = timeSegment;
     }
+    timePoints.append("\t").append(previousTimeSegment[0]);
+    resultPercents.append("\t").append(previousTimeSegment[1] / (double) numberOfResults);
     writeLine(timePoints.toString());
     writeLine(resultPercents.toString());
   }
@@ -92,7 +100,6 @@ public class ResultsOverTime extends QueryTimesListener {
   private long[] getNextTimeSegment(Queue<long[]>[] timeLines) {
     long[] times = new long[timeLines.length];
     long maxNumberOfResults = Long.MAX_VALUE;
-    int index2remove = -1;
     for (int i = 0; i < timeLines.length; i++) {
       long[] currentSegment = timeLines[i].peek();
       if (currentSegment == null) {
@@ -101,11 +108,13 @@ public class ResultsOverTime extends QueryTimesListener {
       times[i] = currentSegment[0];
       if (currentSegment[1] < maxNumberOfResults) {
         maxNumberOfResults = currentSegment[1];
-        index2remove = i;
       }
     }
-    // TODO Auto-generated method stub
-    timeLines[index2remove].poll();
+    for (Queue<long[]> queue : timeLines) {
+      if (queue.peek()[1] == maxNumberOfResults) {
+        queue.poll();
+      }
+    }
     int numberOfSkippedValues = numberOfRepetitions / 10;
     if (numberOfSkippedValues > 0) {
       Arrays.sort(times);

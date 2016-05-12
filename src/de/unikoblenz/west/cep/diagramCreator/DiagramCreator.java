@@ -8,6 +8,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import de.unikoblenz.west.cep.diagramCreator.listeners.LoadingTimeListener;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
@@ -27,18 +29,23 @@ import java.util.regex.Pattern;
  */
 public class DiagramCreator implements Closeable {
 
+  private static final int DEFAULT_WIDTH = 800;
+
+  private static final int DEFAULT_HEIGHT = 600;
+
   private List<DiagramListener> listeners = new ArrayList<>();
 
   public void registerListener(DiagramListener listener) {
     listeners.add(listener);
   }
 
-  private void createDiagrams(File inputFile, OutputFormat format, File outputDir) {
+  private void createDiagrams(File inputFile, OutputFormat format, int width, int height,
+          File outputDir) {
     if (!outputDir.exists()) {
       outputDir.mkdirs();
     }
     for (DiagramListener listener : listeners) {
-      listener.setUp(format, outputDir);
+      listener.setUp(format, width, height, outputDir);
     }
     try (LineNumberReader in = new LineNumberReader(
             new BufferedReader(new InputStreamReader(new FileInputStream(inputFile), "UTF-8")));) {
@@ -76,7 +83,8 @@ public class DiagramCreator implements Closeable {
   // TODO add listeners here
 
   @SuppressWarnings("unchecked")
-  private static Class<? extends DiagramListener>[] loadingTimeListeners = new Class[] {};
+  private static Class<? extends DiagramListener>[] loadingTimeListeners = new Class[] {
+          LoadingTimeListener.class };
 
   @SuppressWarnings("unchecked")
   private static Class<? extends DiagramListener>[] dataTransferListeners = new Class[] {};
@@ -106,13 +114,23 @@ public class DiagramCreator implements Closeable {
 
     OutputFormat format = OutputFormat.valueOf(line.getOptionValue('f').toUpperCase());
 
+    int width = DiagramCreator.DEFAULT_WIDTH;
+    if (line.hasOption('w')) {
+      width = Integer.parseInt(line.getOptionValue('w'));
+    }
+
+    int height = DiagramCreator.DEFAULT_HEIGHT;
+    if (line.hasOption('h')) {
+      height = Integer.parseInt(line.getOptionValue('h'));
+    }
+
     DiagramCreator diagramCreator = new DiagramCreator();
     try {
       if (line.hasOption("loadingTime")) {
         diagramCreator.removeAllListeners();
         DiagramCreator.registerListeners(diagramCreator, DiagramCreator.loadingTimeListeners);
-        diagramCreator.createDiagrams(new File(line.getOptionValue("loadingTime")), format,
-                outputDir);
+        diagramCreator.createDiagrams(new File(line.getOptionValue("loadingTime")), format, width,
+                height, outputDir);
       }
 
       if (line.hasOption("computationalEffortTime")) {
@@ -120,14 +138,14 @@ public class DiagramCreator implements Closeable {
         DiagramCreator.registerListeners(diagramCreator,
                 DiagramCreator.computationalEffortListeners);
         diagramCreator.createDiagrams(new File(line.getOptionValue("computationalEffort")), format,
-                outputDir);
+                width, height, outputDir);
       }
 
       if (line.hasOption("dataTransfer")) {
         diagramCreator.removeAllListeners();
         DiagramCreator.registerListeners(diagramCreator, DiagramCreator.dataTransferListeners);
-        diagramCreator.createDiagrams(new File(line.getOptionValue("dataTransfer")), format,
-                outputDir);
+        diagramCreator.createDiagrams(new File(line.getOptionValue("dataTransfer")), format, width,
+                height, outputDir);
       }
 
       if (line.hasOption("totalExecutionTime")) {
@@ -135,14 +153,14 @@ public class DiagramCreator implements Closeable {
         DiagramCreator.registerListeners(diagramCreator,
                 DiagramCreator.totalExecutionTimeListeners);
         diagramCreator.createDiagrams(new File(line.getOptionValue("totalExecutionTime")), format,
-                outputDir);
+                width, height, outputDir);
       }
 
       if (line.hasOption("resultsOverTime")) {
         diagramCreator.removeAllListeners();
         DiagramCreator.registerListeners(diagramCreator, DiagramCreator.resultsOverTimeListeners);
         diagramCreator.createDiagrams(new File(line.getOptionValue("resultsOverTime")), format,
-                outputDir);
+                width, height, outputDir);
       }
     } finally {
       diagramCreator.close();
@@ -173,6 +191,14 @@ public class DiagramCreator implements Closeable {
                     + Arrays.toString(OutputFormat.values()))
             .required(true).build();
 
+    Option width = Option.builder("w").longOpt("width").hasArg().argName("int").desc(
+            "the width of the created diagramm. Default is " + DiagramCreator.DEFAULT_WIDTH + ".")
+            .required(false).build();
+
+    Option height = Option.builder("h").longOpt("heigth").hasArg().argName("int").desc(
+            "the height of the created diagramm. Default is " + DiagramCreator.DEFAULT_HEIGHT + ".")
+            .required(false).build();
+
     Option loadingTimeFile = Option.builder("l").longOpt("loadingTime").hasArg()
             .argName("loadingTime.csv").desc("the loadingTime.csv to be processed").required(false)
             .build();
@@ -197,6 +223,8 @@ public class DiagramCreator implements Closeable {
     options.addOption(help);
     options.addOption(output);
     options.addOption(format);
+    options.addOption(height);
+    options.addOption(width);
     options.addOption(loadingTimeFile);
     options.addOption(computationalEffortFile);
     options.addOption(dataTransferFile);

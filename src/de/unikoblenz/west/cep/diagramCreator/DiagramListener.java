@@ -9,7 +9,7 @@ import java.io.File;
  */
 public interface DiagramListener extends Closeable {
 
-  public void setUp(OutputFormat format, File outputDir);
+  public void setUp(OutputFormat format, int width, int height, File outputDir);
 
   public void process(String[] parts);
 

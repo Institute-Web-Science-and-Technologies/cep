@@ -5,5 +5,13 @@ package de.unikoblenz.west.cep.diagramCreator;
  *
  */
 public enum OutputFormat {
-  PNG, GIF, JPEG, EDS, PDF, SVG;
+
+  PNG("image/png"), GIF("image/gif"), JPEG("image/jpeg"), EPS("application/postscript"), PDF(
+          "application/pdf"), SVG("image/svg+xml");
+
+  public final String mimeType;
+
+  private OutputFormat(String mimeType) {
+    this.mimeType = mimeType;
+  }
 }

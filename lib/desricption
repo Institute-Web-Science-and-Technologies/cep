@@ -3,3 +3,5 @@ These libraries are:
 - Apache Commons CLI version: 1.3.1 from http://apache.mirror.digionline.de//commons/cli/binaries/commons-cli-1.3.1-bin.tar.gz (Apache Licence Version 2.0 - compatible with LGPL v3)
 - GRAL version: 0.11 from http://www.erichseifert.de/dev/gral/0.11/gral-core-0.11.jar (LGPL v3)
 - VectorGraphics2D version: 0.10 from http://www.erichseifert.de/dev/vectorgraphics2d/0.10/VectorGraphics2D-0.10.jar (LGPL v3)
+
+matplotlib

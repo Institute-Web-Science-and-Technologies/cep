@@ -35,35 +35,35 @@ with open(inputFile, 'rb') as f:
     if int(row[1]) != 0:
       cover += row[1] + "HOP_"
     cover += row[0]
-    joinNumber = row[5]
+    dataSource = row[6]
     if not cover in coverTypes:
       coverTypes[cover] = {}
-    if not joinNumber in coverTypes[cover]:
-      coverTypes[cover][joinNumber] = {}
-    query = ("ss" if row[4]=='SUBJECT_SUBJECT_JOIN' else "so") + " tree=" + ("ll" if row[2]=='LEFT_LINEAR' else ("rl" if row[2]=='RIGHT_LINEAR' else "b")) + " #ds=" + row[6] + " sel=" + row[7]
-    coverTypes[cover][joinNumber][query] = { "Total":long(row[8]), "Entropy":float(row[9]), "Standard Deviation":float(row[10])}
+    if not dataSource in coverTypes[cover]:
+      coverTypes[cover][dataSource] = {}
+    query = ("ss" if row[4]=='SUBJECT_SUBJECT_JOIN' else "so") + " tree=" + ("ll" if row[2]=='LEFT_LINEAR' else ("rl" if row[2]=='RIGHT_LINEAR' else "b")) + " #j=" + row[5] + " sel=" + row[7]
+    coverTypes[cover][dataSource][query] = { "Total":long(row[8]), "Entropy":float(row[9]), "Standard Deviation":float(row[10])}
 
 for measurementType in ["Total", "Entropy", "Standard Deviation"]:
   for cover in coverTypes.keys():
-    joinNumberSet = list(sorted(coverTypes[cover].keys()))
+    dataSourceSet = list(sorted(coverTypes[cover].keys()))
     dataRows = []
     queryGroups = []
-    for i, joinNumber in enumerate(joinNumberSet):
+    for i, dataSource in enumerate(dataSourceSet):
       if i == 0:
-        queryGroups = list(sorted(coverTypes[cover][joinNumber].keys()))
+        queryGroups = list(sorted(coverTypes[cover][dataSource].keys()))
       dataRows.append([])
       for query in queryGroups:
-        dataRows[i].append(coverTypes[cover][joinNumber][query][measurementType]);
+        dataRows[i].append(coverTypes[cover][dataSource][query][measurementType]);
     # create diagramm
     n_groups = len(queryGroups)
     fig, ax = plt.subplots()
     index = np.arange(n_groups)
-    bar_width = 1/float(len(joinNumberSet)+1)
+    bar_width = 1/float(len(dataSourceSet)+1)
     rects = []
-    colorBase = 1 / float(len(joinNumberSet)+1)
-    for i, joinNumber in enumerate(joinNumberSet):
+    colorBase = 1 / float(len(dataSourceSet)+1)
+    for i, dataSource in enumerate(dataSourceSet):
       colorValue = "{:f}".format(colorBase*(i+0.5))
-      rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=joinNumber + ' join' + ("" if int(joinNumber) == 1 else "s")))
+      rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=dataSource + ' data source' + ("" if int(dataSource) == 1 else "s")))
     plt.xlabel("Queries")
     plt.ylabel(measurementType)
     plt.title('Computational effort for graph cover ' + cover)
@@ -71,5 +71,5 @@ for measurementType in ["Total", "Entropy", "Standard Deviation"]:
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.axis('tight')
     plt.legend()
-    plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_cover-'+cover+'_forAll_joinNumbers.'+imageType, bbox_inches='tight')
+    plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_cover-'+cover+'_forAll_dataSources.'+imageType, bbox_inches='tight')
 

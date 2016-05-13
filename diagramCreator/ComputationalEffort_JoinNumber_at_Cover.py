@@ -35,35 +35,35 @@ with open(inputFile, 'rb') as f:
     if int(row[1]) != 0:
       cover += row[1] + "HOP_"
     cover += row[0]
-    treeType = row[2]
+    joinNumber = row[5]
     if not cover in coverTypes:
       coverTypes[cover] = {}
-    if not treeType in coverTypes[cover]:
-      coverTypes[cover][treeType] = {}
-    query = ("ss" if row[4]=='SUBJECT_SUBJECT_JOIN' else "so") + " #j=" + row[5] + " #ds=" + row[6] + " sel=" + row[7]
-    coverTypes[cover][treeType][query] = { "Total":long(row[8]), "Entropy":float(row[9]), "Standard Deviation":float(row[10])}
+    if not joinNumber in coverTypes[cover]:
+      coverTypes[cover][joinNumber] = {}
+    query = ("ss" if row[4]=='SUBJECT_SUBJECT_JOIN' else "so") + " tree=" + ("ll" if row[2]=='LEFT_LINEAR' else ("rl" if row[2]=='RIGHT_LINEAR' else "b")) + " #ds=" + row[6] + " sel=" + row[7]
+    coverTypes[cover][joinNumber][query] = { "Total":long(row[8]), "Entropy":float(row[9]), "Standard Deviation":float(row[10])}
 
 for measurementType in ["Total", "Entropy", "Standard Deviation"]:
   for cover in coverTypes.keys():
-    treeTypeSet = list(sorted(coverTypes[cover].keys()))
+    joinNumberSet = list(sorted(coverTypes[cover].keys()))
     dataRows = []
     queryGroups = []
-    for i, treeType in enumerate(treeTypeSet):
+    for i, joinNumber in enumerate(joinNumberSet):
       if i == 0:
-        queryGroups = list(sorted(coverTypes[cover][treeType].keys()))
+        queryGroups = list(sorted(coverTypes[cover][joinNumber].keys()))
       dataRows.append([])
       for query in queryGroups:
-        dataRows[i].append(coverTypes[cover][treeType][query][measurementType]);
+        dataRows[i].append(coverTypes[cover][joinNumber][query][measurementType]);
     # create diagramm
     n_groups = len(queryGroups)
     fig, ax = plt.subplots()
     index = np.arange(n_groups)
-    bar_width = 1/float(len(treeTypeSet)+1)
+    bar_width = 1/float(len(joinNumberSet)+1)
     rects = []
-    colorBase = 1 / float(len(treeTypeSet)+1)
-    for i, treeType in enumerate(treeTypeSet):
+    colorBase = 1 / float(len(joinNumberSet)+1)
+    for i, joinNumber in enumerate(joinNumberSet):
       colorValue = "{:f}".format(colorBase*(i+0.5))
-      rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=treeType))
+      rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=joinNumber))
     plt.xlabel("Queries")
     plt.ylabel(measurementType)
     plt.title('Computational effort for graph cover ' + cover)
@@ -71,5 +71,5 @@ for measurementType in ["Total", "Entropy", "Standard Deviation"]:
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.axis('tight')
     plt.legend()
-    plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_cover-'+cover+'_forAll_treeTypes.'+imageType, bbox_inches='tight')
+    plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_cover-'+cover+'_forAll_joinNumbers.'+imageType, bbox_inches='tight')
 

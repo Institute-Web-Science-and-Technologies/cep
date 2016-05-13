@@ -19,13 +19,13 @@ if not os.path.exists(outputDir):
   os.makedirs(outputDir)
 
 # for totalComputationalEffort, entropy, standard deviation
-# for each tree type create a diagram that
+# for each joinnumber create a diagram that
 # shows for each query
 # the computational effort per cover in a separate bar
 
-# required map: treetype -> cover -> query -> measurmentType -> value
+# required map: joinNumber -> cover -> query -> measurmentType -> value
 
-treeTypes = {}
+joinNumbers = {}
 
 with open(inputFile, 'rb') as f:
   reader = csv.reader(f, delimiter='\t')
@@ -35,25 +35,25 @@ with open(inputFile, 'rb') as f:
     if int(row[1]) != 0:
       cover += row[1] + "HOP_"
     cover += row[0]
-    treeType = row[2]
-    if not treeType in treeTypes:
-      treeTypes[treeType] = {}
-    if not cover in treeTypes[treeType]:
-      treeTypes[treeType][cover] = {}
-    query = ("ss" if row[4]=='SUBJECT_SUBJECT_JOIN' else "so") + " #j=" + row[5] + " #ds=" + row[6] + " sel=" + row[7]
-    treeTypes[treeType][cover][query] = { "Total":long(row[8]), "Entropy":float(row[9]), "Standard Deviation":float(row[10])}
+    joinNumber = row[5]
+    if not joinNumber in joinNumbers:
+      joinNumbers[joinNumber] = {}
+    if not cover in joinNumbers[joinNumber]:
+      joinNumbers[joinNumber][cover] = {}
+    query = ("ss" if row[4]=='SUBJECT_SUBJECT_JOIN' else "so") + " tree=" + ("ll" if row[2]=='LEFT_LINEAR' else ("rl" if row[2]=='RIGHT_LINEAR' else "b")) + " #ds=" + row[6] + " sel=" + row[7]
+    joinNumbers[joinNumber][cover][query] = { "Total":long(row[8]), "Entropy":float(row[9]), "Standard Deviation":float(row[10])}
 
 for measurementType in ["Total", "Entropy", "Standard Deviation"]:
-  for treeType in treeTypes.keys():
-    coverSet = list(sorted(treeTypes[treeType].keys()))
+  for joinNumber in joinNumbers.keys():
+    coverSet = list(sorted(joinNumbers[joinNumber].keys()))
     dataRows = []
     queryGroups = []
     for i, cover in enumerate(coverSet):
       if i == 0:
-        queryGroups = list(sorted(treeTypes[treeType][cover].keys()))
+        queryGroups = list(sorted(joinNumbers[joinNumber][cover].keys()))
       dataRows.append([])
       for query in queryGroups:
-        dataRows[i].append(treeTypes[treeType][cover][query][measurementType]);
+        dataRows[i].append(joinNumbers[joinNumber][cover][query][measurementType]);
     # create diagramm
     n_groups = len(queryGroups)
     fig, ax = plt.subplots()
@@ -66,10 +66,12 @@ for measurementType in ["Total", "Entropy", "Standard Deviation"]:
       rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=cover))
     plt.xlabel("Queries")
     plt.ylabel(measurementType)
-    plt.title('Computational effort for query execution tree type ' + treeType)
+    plt.title('Computational effort for ' + joinNumber + ' join' + ( "" if int(joinNumber) == 1 else "s"))
     plt.xticks(index + 0.5, np.array(queryGroups))
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.axis('tight')
+    fig_size = plt.rcParams["figure.figsize"]
+    fig_size[0] = fig_size[0]
     plt.legend()
-    plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_treeType-'+treeType+'_forAll_covers.'+imageType, bbox_inches='tight')
+    plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_joinNumber-'+joinNumber+'_forAll_covers.'+imageType, bbox_inches='tight')
 

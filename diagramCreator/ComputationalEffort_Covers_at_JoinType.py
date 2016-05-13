@@ -63,12 +63,13 @@ for measurementType in ["Total", "Entropy", "Standard Deviation"]:
     colorBase = 1 / float(len(coverSet)+1)
     for i, cover in enumerate(coverSet):
       colorValue = "{:f}".format(colorBase*(i+0.5))
-      rects.append(plt.bar(index + i * bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=cover))
+      rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=cover))
     plt.xlabel("Queries")
     plt.ylabel(measurementType)
     plt.title('Computational effort for join type ' + joinType)
-    plt.xticks(index + bar_width, np.array(queryGroups))
+    plt.xticks(index + 0.5, np.array(queryGroups))
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
+    plt.axis('tight')
     plt.legend()
     plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_joinType-'+joinType+'_forAll_covers.'+imageType, bbox_inches='tight')
 

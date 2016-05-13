@@ -58,11 +58,11 @@ for measurementType in ["Total", "Entropy", "Standard Deviation"]:
     n_groups = len(queryGroups)
     fig, ax = plt.subplots()
     index = np.arange(n_groups)
-    bar_width = 0.35
+    bar_width = 1/float(len(coverSet)+1)
     rects = []
-    colorBase = 1 / float(len(coverSet)+2)
+    colorBase = 1 / float(len(coverSet)+1)
     for i, cover in enumerate(coverSet):
-      colorValue = "{:f}".format(colorBase*(i+1))
+      colorValue = "{:f}".format(colorBase*(i+0.5))
       rects.append(plt.bar(index + i * bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=cover))
     plt.xlabel("Queries")
     plt.ylabel(measurementType)
@@ -70,50 +70,5 @@ for measurementType in ["Total", "Entropy", "Standard Deviation"]:
     plt.xticks(index + bar_width, np.array(queryGroups))
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.legend()
-    plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_treeType-'+treeType+'.'+imageType, bbox_inches='tight')
+    plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_treeType-'+treeType+'_forAll_covers.'+imageType, bbox_inches='tight')
 
-#coverNames = np.array(coverNames)
-#coverCreationTimes = np.array(coverCreationTimes)
-#encodingTimes = np.array(encodingTimes)
-#transferTimes = np.array(transferTimes)
-#indexingTimes = np.array(indexingTimes)
-
-sys.exit()
-
-n_groups = 5
-
-means_men = (20, 35, 30, 35, 27)
-std_men = (2, 3, 4, 1, 2)
-
-means_women = (25, 32, 34, 20, 25)
-std_women = (3, 5, 2, 3, 3)
-
-fig, ax = plt.subplots()
-
-index = np.arange(n_groups)
-bar_width = 0.35
-
-opacity = 0.4
-error_config = {'ecolor': '0.3'}
-
-rects1 = plt.bar(index, means_men, bar_width,
-                 alpha=opacity,
-                 color='b',
-                 yerr=std_men,
-                 error_kw=error_config,
-                 label='Men')
-
-rects2 = plt.bar(index + bar_width, means_women, bar_width,
-                 alpha=opacity,
-                 color='r',
-                 yerr=std_women,
-                 error_kw=error_config,
-                 label='Women')
-
-plt.xlabel('Group')
-plt.ylabel('Scores')
-plt.title('Scores by group and gender')
-plt.xticks(index + bar_width, ('A', 'B', 'C', 'D', 'E'))
-plt.legend()
-
-plt.savefig(outputDir+'/computationalEffort_CoverXTreeType-Time.'+imageType, bbox_inches='tight')

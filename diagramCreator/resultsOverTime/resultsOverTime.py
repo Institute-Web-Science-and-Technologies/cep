@@ -33,42 +33,28 @@ with open(inputFile, 'rb') as f:
       cover += row[1] + "HOP_"
     cover += row[0]
     query = ("ss" if row[4]=='SUBJECT_SUBJECT_JOIN' else "so") + " tree=" + ("ll" if row[2]=='LEFT_LINEAR' else ("rl" if row[2]=='RIGHT_LINEAR' else "b")) + " #j=" + row[5] + " #ds=" + row[6] + " sel=" + row[7]
-    row_time = map(int, row[8:len(row)])
-    row_percent = map(float, row[8:len(reader.next())])
+    row2 = reader.next();
+    row = row[8:len(row)]
+    row_time = []
+    row_time.append(0)
+    for time in row:
+      row_time.append(long(time)-1)
+      row_time.append(long(time))
+    row2 = row2[8:len(row2)]
+    row_percent = []
+    row_percent.append(0)
+    previous = 0
+    for percent in row2:
+      row_percent.append(previous)
+      previous = float(percent)
+      row_percent.append(previous)
     # create diagram
-    plt.plot(row_time, row_percent)
+    fig, ax = plt.subplots()
+    ax.plot(row_time, row_percent)
+    plt.title(query + ' for '+ cover + ' cover')
+    plt.xlabel("Time (in msec)")
+    plt.ylabel("Percentage of returned results")
+    plt.axis('tight')
     plt.savefig(outputDir+'/resultsOverTime_'+cover+'_'+query+'.'+imageType, bbox_inches='tight')
-
-sys.exit()
-
-for measurementType in ["Execution Time"]:
-  coverSet = list(sorted(covers.keys()))
-  dataRows = []
-  queryGroups = []
-  for i, cover in enumerate(coverSet):
-    if i == 0:
-      queryGroups = list(sorted(covers[cover].keys()))
-    dataRows.append([])
-    for query in queryGroups:
-      dataRows[i].append(covers[cover][query][measurementType]);
-  # create diagramm
-  n_groups = len(queryGroups)
-  fig, ax = plt.subplots()
-  index = np.arange(n_groups)
-  bar_width = 1/float(len(coverSet)+1)
-  rects = []
-  colorBase = 1 / float(len(coverSet)+1)
-  for i, cover in enumerate(coverSet):
-    colorValue = "{:f}".format(colorBase*(i+0.5))
-    rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=cover, log=True, bottom=1))
-  plt.xlabel("Queries")
-  plt.ylabel(measurementType + " (in msec, log-scale)")
-  plt.xticks(index + 0.5, np.array(queryGroups))
-  plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
-  plt.axis('tight')
-  fig_size = plt.rcParams["figure.figsize"]
-  fig_size[0] = fig_size[0]
-  fig_size[1] = fig_size[1]
-  plt.legend()
-  plt.savefig(outputDir+'/queryExecution_'+measurementType+'.'+imageType, bbox_inches='tight')
+    plt.close(fig)
 

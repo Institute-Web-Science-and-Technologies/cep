@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 import csv
+from itertools import cycle
 
 if len(sys.argv) != 4:
   print("You must have the following arguments: <computationalEffort.csv> <outputDir> <imageType>")
@@ -18,11 +19,7 @@ imageType = sys.argv[3]
 if not os.path.exists(outputDir):
   os.makedirs(outputDir)
 
-# for totalComputationalEffort, entropy, standard deviation
-# shows for each query
-# the computational effort per cover in a separate bar
-
-# required map: cover -> query -> measurmentType -> value
+queries = {}
 
 with open(inputFile, 'rb') as f:
   reader = csv.reader(f, delimiter='\t')
@@ -48,13 +45,26 @@ with open(inputFile, 'rb') as f:
       row_percent.append(previous)
       previous = float(percent)
       row_percent.append(previous)
-    # create diagram
-    fig, ax = plt.subplots()
-    ax.plot(row_time, row_percent, color='0.5')
-    plt.title(query + ' for '+ cover + ' cover')
-    plt.xlabel("Time (in msec)")
-    plt.ylabel("Percentage of returned results")
-    plt.axis('tight')
-    plt.savefig(outputDir+'/resultsOverTime_'+cover+'_'+query+'.'+imageType, bbox_inches='tight')
-    plt.close(fig)
+    if not query in queries.keys():
+      queries[query] = {}
+    queries[query][cover] = { 'time':row_time, 'percent':row_percent}
+
+lines = ["-","--","-.",":"]
+
+for query in sorted(queries.keys()):
+  # create diagram
+  fig, ax = plt.subplots()
+  coverSet = sorted(queries[query].keys())
+  colorBase = 1 / float(len(coverSet)+1)
+  linecycler = cycle(lines)
+  for i, cover in enumerate(coverSet):
+    colorValue = "{:f}".format(colorBase*(i+0.5))
+    plt.plot(queries[query][cover]['time'], queries[query][cover]['percent'], label=cover, color=colorValue, linestyle=next(linecycler))
+  plt.title(query)
+  plt.xlabel("Time (in msec)")
+  plt.ylabel("Percentage of returned results")
+  plt.axis('tight')
+  plt.legend(loc='upper left', ncol=len(sorted(queries[query].keys())), bbox_to_anchor=(0., -0.2, 1., .102))
+  plt.savefig(outputDir+'/resultsOverTime_'+query+'.'+imageType, bbox_inches='tight')
+  plt.close(fig)
 

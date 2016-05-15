@@ -51,6 +51,10 @@ public class QueryExecutor {
         }
       }
     }
+    try {
+      Thread.sleep(60000);
+    } catch (InterruptedException e) {
+    }
   }
 
   private void executeQuery(File queryFile, File outputDir, String masterIp,

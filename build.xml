@@ -39,20 +39,6 @@
 			</fileset>
 			<globmapper from="META-INF/*" to="META-INF-koral/*" />
 		</unjar>
-		<unjar dest="${class.dir}">
-			<fileset dir="${lib.dir}">
-				<include name="**/gral-core-*.jar" />
-				<exclude name="**/*javadoc.jar" />
-			</fileset>
-			<globmapper from="META-INF/*" to="META-INF-gral-core/*" />
-		</unjar>
-		<unjar dest="${class.dir}">
-			<fileset dir="${lib.dir}">
-				<include name="**/VectorGraphics2D-*.jar" />
-				<exclude name="**/*javadoc.jar" />
-			</fileset>
-			<globmapper from="META-INF/*" to="META-INF-VectorGraphics2D/*" />
-		</unjar>
 	</target>
 
 	<target name="jar" depends="compile, unjar_dependencies">

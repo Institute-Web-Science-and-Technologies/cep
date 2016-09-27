@@ -19,9 +19,17 @@ public class LoadTime extends LoadGraphTimeListener {
 
   private Writer output;
 
+  private long initialEncodingTime;
+
   private long coverCreationTime;
 
-  private long encodingTime;
+  private long finalEncodingTime;
+
+  private long nHopReplicationTime;
+
+  private long statisticCollectionTime;
+
+  private long ownershipAdjustmentTime;
 
   private long transferStartTime;
 
@@ -41,7 +49,8 @@ public class LoadTime extends LoadGraphTimeListener {
       output = new BufferedWriter(
               new OutputStreamWriter(new FileOutputStream(outputFile, true), "UTF-8"));
       if (!existsOutputFile) {
-        output.write("cover\tnhop\tcoverCreationTime\tencodingTime\ttransferTime\tindexingTime");
+        output.write(
+                "cover\tnhop\tinitialEncodingTime\tcoverCreationTime\tfinalEncodingTime\tnHopReplicationTime\tstatisticCollectionTime\townershipAdjustmentTime\ttransferTime\tindexingTime");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -50,6 +59,18 @@ public class LoadTime extends LoadGraphTimeListener {
     transferEndTime = Long.MIN_VALUE;
     indexingStartTime = Long.MAX_VALUE;
     indexingEndTime = Long.MIN_VALUE;
+  }
+
+  @Override
+  protected void processInitialDictionaryEncodingStart(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long startTime) {
+    initialEncodingTime = startTime;
+  }
+
+  @Override
+  protected void processInitialDictionaryEncodingEnd(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long endTime) {
+    initialEncodingTime = endTime - initialEncodingTime;
   }
 
   @Override
@@ -65,15 +86,51 @@ public class LoadTime extends LoadGraphTimeListener {
   }
 
   @Override
-  protected void processDictionaryEncodingStart(CoverStrategyType graphCoverStrategy,
+  protected void processFinalDictionaryEncodingStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, long startTime) {
-    encodingTime = startTime;
+    finalEncodingTime = startTime;
   }
 
   @Override
-  protected void processDictionaryEncodingEnd(CoverStrategyType graphCoverStrategy,
+  protected void processFinalDictionaryEncodingEnd(CoverStrategyType graphCoverStrategy,
           int nHopReplication, long endTime) {
-    encodingTime = endTime - encodingTime;
+    finalEncodingTime = endTime - finalEncodingTime;
+  }
+
+  @Override
+  protected void processNHopReplicationStart(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long startTime) {
+    nHopReplicationTime = startTime;
+  }
+
+  @Override
+  protected void processNHopReplicationEnd(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long endTime) {
+    nHopReplicationTime = endTime - nHopReplicationTime;
+  }
+
+  @Override
+  protected void processStatisticCollectionStart(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long startTime) {
+    statisticCollectionTime = startTime;
+  }
+
+  @Override
+  protected void processStatisticCollectionEnd(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long endTime) {
+    statisticCollectionTime = endTime - statisticCollectionTime;
+  }
+
+  @Override
+  protected void processOwnershipAdjustmentStart(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long startTime) {
+    ownershipAdjustmentTime = startTime;
+  }
+
+  @Override
+  protected void processOwnershipAdjustmentEnd(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long endTime) {
+    ownershipAdjustmentTime = endTime - ownershipAdjustmentTime;
   }
 
   @Override
@@ -111,8 +168,10 @@ public class LoadTime extends LoadGraphTimeListener {
   @Override
   protected void processLoadingFinished(CoverStrategyType graphCoverStrategy, int nHopReplication) {
     try {
-      output.write("\n" + graphCoverStrategy + "\t" + nHopReplication + "\t" + coverCreationTime
-              + "\t" + encodingTime + "\t" + (transferEndTime - transferStartTime) + "\t"
+      output.write("\n" + graphCoverStrategy + "\t" + nHopReplication + "\t" + initialEncodingTime
+              + "\t" + coverCreationTime + "\t" + finalEncodingTime + "\t" + nHopReplicationTime
+              + "\t" + statisticCollectionTime + "\t" + ownershipAdjustmentTime + "\t"
+              + (transferEndTime - transferStartTime) + "\t"
               + (indexingEndTime - indexingStartTime));
     } catch (IOException e) {
       throw new RuntimeException(e);

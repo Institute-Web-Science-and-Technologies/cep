@@ -24,6 +24,14 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
           graphCoverStrategy = CoverStrategyType.valueOf(measurements[5]);
           nHopReplication = Integer.parseInt(measurements[6]);
           break;
+        case LOAD_GRAPH_INITIAL_ENCODING_START:
+          processInitialDictionaryEncodingStart(graphCoverStrategy, nHopReplication,
+                  Long.parseLong(measurements[4]));
+          break;
+        case LOAD_GRAPH_INITIAL_ENCODING_END:
+          processInitialDictionaryEncodingEnd(graphCoverStrategy, nHopReplication,
+                  Long.parseLong(measurements[4]));
+          break;
         case LOAD_GRAPH_COVER_CREATION_START:
           processGraphCoverCreationStart(graphCoverStrategy, nHopReplication,
                   Long.parseLong(measurements[4]));
@@ -34,16 +42,36 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
                     Long.parseLong(measurements[4]));
           }
           break;
+        case LOAD_GRAPH_FINAL_ENCODING_START:
+          processFinalDictionaryEncodingStart(graphCoverStrategy, nHopReplication,
+                  Long.parseLong(measurements[4]));
+          break;
+        case LOAD_GRAPH_FINAL_ENCODING_END:
+          processFinalDictionaryEncodingEnd(graphCoverStrategy, nHopReplication,
+                  Long.parseLong(measurements[4]));
+          break;
+        case LOAD_GRAPH_NHOP_REPLICATION_START:
+          processNHopReplicationStart(graphCoverStrategy, nHopReplication,
+                  Long.parseLong(measurements[4]));
+          break;
         case LOAD_GRAPH_NHOP_REPLICATION_END:
-          processGraphCoverCreationEnd(graphCoverStrategy, nHopReplication,
+          processNHopReplicationEnd(graphCoverStrategy, nHopReplication,
                   Long.parseLong(measurements[4]));
           break;
-        case LOAD_GRAPH_ENCODING_START:
-          processDictionaryEncodingStart(graphCoverStrategy, nHopReplication,
+        case LOAD_GRAPH_COLLECTING_STATISTICS_START:
+          processStatisticCollectionStart(graphCoverStrategy, nHopReplication,
                   Long.parseLong(measurements[4]));
           break;
-        case LOAD_GRAPH_ENCODING_END:
-          processDictionaryEncodingEnd(graphCoverStrategy, nHopReplication,
+        case LOAD_GRAPH_COLLECTING_STATISTICS_END:
+          processStatisticCollectionEnd(graphCoverStrategy, nHopReplication,
+                  Long.parseLong(measurements[4]));
+          break;
+        case LOAD_GRAPH_ADJUSTING_OWNERSHIP_START:
+          processOwnershipAdjustmentStart(graphCoverStrategy, nHopReplication,
+                  Long.parseLong(measurements[4]));
+          break;
+        case LOAD_GRAPH_ADJUSTING_OWNERSHIP_END:
+          processOwnershipAdjustmentEnd(graphCoverStrategy, nHopReplication,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_FILE_TRANSFER_TO_SLAVES_START:
@@ -72,16 +100,40 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
     }
   }
 
+  protected abstract void processInitialDictionaryEncodingStart(
+          CoverStrategyType graphCoverStrategy, int nHopReplication, long startTime);
+
+  protected abstract void processInitialDictionaryEncodingEnd(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long endTime);
+
   protected abstract void processGraphCoverCreationStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, long startTime);
 
   protected abstract void processGraphCoverCreationEnd(CoverStrategyType graphCoverStrategy,
           int nHopReplication, long endTime);
 
-  protected abstract void processDictionaryEncodingStart(CoverStrategyType graphCoverStrategy,
+  protected abstract void processFinalDictionaryEncodingStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, long startTime);
 
-  protected abstract void processDictionaryEncodingEnd(CoverStrategyType graphCoverStrategy,
+  protected abstract void processFinalDictionaryEncodingEnd(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long endTime);
+
+  protected abstract void processNHopReplicationStart(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long startTime);
+
+  protected abstract void processNHopReplicationEnd(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long endTime);
+
+  protected abstract void processStatisticCollectionStart(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long startTime);
+
+  protected abstract void processStatisticCollectionEnd(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long endTime);
+
+  protected abstract void processOwnershipAdjustmentStart(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, long startTime);
+
+  protected abstract void processOwnershipAdjustmentEnd(CoverStrategyType graphCoverStrategy,
           int nHopReplication, long endTime);
 
   protected abstract void processChunkTransferToSlavesStart(CoverStrategyType graphCoverStrategy,

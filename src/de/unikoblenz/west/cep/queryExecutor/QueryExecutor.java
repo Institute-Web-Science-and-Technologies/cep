@@ -46,7 +46,7 @@ public class QueryExecutor {
           executeQuery(queryInput, outputDir, masterIp, treeType, currentRepetition);
         }
         try {
-          Thread.sleep(500);
+          Thread.sleep(60000);
         } catch (InterruptedException e) {
         }
       }

@@ -75,7 +75,7 @@ public class QueryExecutor {
           break;
         }
         try {
-          Thread.sleep(500);
+          Thread.sleep(30000);
         } catch (InterruptedException e) {
         }
       }

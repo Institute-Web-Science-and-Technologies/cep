@@ -79,7 +79,15 @@ public class QueryExecutor {
         } catch (InterruptedException e) {
         }
       }
-      client.processQueryFromFile(queryFile, outputWriter, treeType, false);
+	  boolean wasExecuted = false;
+	  while (!wasExecuted) {
+	    try {
+          client.processQueryFromFile(queryFile, outputWriter, treeType, false);
+		  wasExecuted = true;
+		} catch (RuntimeException e) {
+		  // reexecute query
+		}
+	  }
       client.shutDown();
     } catch (IOException e) {
       throw new RuntimeException(e);

@@ -97,8 +97,6 @@ public class MeasurementProcessor implements Closeable {
     }
   }
 
-  // TODO handle restarted load attempts
-
   private void processMeasurements(File inputFile) {
     try (CSVIterator iterator = new CSVIterator(inputFile, 1000);) {
       for (String[] measurement : iterator) {

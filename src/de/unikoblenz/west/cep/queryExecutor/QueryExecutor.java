@@ -71,24 +71,20 @@ public class QueryExecutor {
 
       KoralClient client = new KoralClient();
       for (int connectionAttempt = 0; connectionAttempt < 100; connectionAttempt++) {
-        if (client.startUp(masterIp)) {
+        client.startUp(masterIp);
+        try {
+          client.processQueryFromFile(queryFile, outputWriter, treeType, false);
+          client.shutDown();
           break;
+        } catch (RuntimeException e) {
+          e.printStackTrace();
+          client.shutDown();
         }
         try {
           Thread.sleep(30000);
         } catch (InterruptedException e) {
         }
       }
-	  boolean wasExecuted = false;
-	  while (!wasExecuted) {
-	    try {
-          client.processQueryFromFile(queryFile, outputWriter, treeType, false);
-		  wasExecuted = true;
-		} catch (RuntimeException e) {
-		  // reexecute query
-		}
-	  }
-      client.shutDown();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

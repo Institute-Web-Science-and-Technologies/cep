@@ -55,6 +55,11 @@ public class LoadTime extends LoadGraphTimeListener {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  protected void initialize(String[] measurements) {
+    super.initialize(measurements);
     transferStartTime = Long.MAX_VALUE;
     transferEndTime = Long.MIN_VALUE;
     indexingStartTime = Long.MAX_VALUE;
@@ -176,10 +181,6 @@ public class LoadTime extends LoadGraphTimeListener {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    transferStartTime = Long.MAX_VALUE;
-    transferEndTime = Long.MIN_VALUE;
-    indexingStartTime = Long.MAX_VALUE;
-    indexingEndTime = Long.MIN_VALUE;
   }
 
   @Override

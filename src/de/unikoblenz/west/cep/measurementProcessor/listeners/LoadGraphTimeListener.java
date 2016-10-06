@@ -21,8 +21,7 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
     if (measurementType != null) {
       switch (measurementType) {
         case LOAD_GRAPH_START:
-          graphCoverStrategy = CoverStrategyType.valueOf(measurements[5]);
-          nHopReplication = Integer.parseInt(measurements[6]);
+          initialize(measurements);
           break;
         case LOAD_GRAPH_INITIAL_ENCODING_START:
           processInitialDictionaryEncodingStart(graphCoverStrategy, nHopReplication,
@@ -98,6 +97,11 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
           break;
       }
     }
+  }
+
+  protected void initialize(String[] measurements) {
+    graphCoverStrategy = CoverStrategyType.valueOf(measurements[5]);
+    nHopReplication = Integer.parseInt(measurements[6]);
   }
 
   protected abstract void processInitialDictionaryEncodingStart(

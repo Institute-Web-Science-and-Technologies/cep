@@ -66,10 +66,10 @@ for measurementType in ["Total", "Entropy", "Standard Deviation"]:
       rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=cover))
     plt.xlabel("Queries")
     plt.ylabel(measurementType)
-    plt.title('Computational effort for query execution tree type ' + treeType)
+    plt.title('Computational effort for query execution tree type ' + treeType, y=1.2)
     plt.xticks(index + 0.5, np.array(queryGroups))
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.axis('tight')
-    plt.legend()
+    plt.legend(bbox_to_anchor=(0., 1.04, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
     plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_treeType-'+treeType+'_forAll_covers.'+imageType, bbox_inches='tight')
 

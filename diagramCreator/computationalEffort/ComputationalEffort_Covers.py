@@ -63,13 +63,16 @@ for measurementType in ["Total", "Entropy", "Standard Deviation"]:
     else:
       rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=cover, log=True, bottom=1))
   plt.xlabel("Queries")
-  plt.ylabel(measurementType + " (log-scale)")
+  if measurementType == "Entropy":
+    plt.ylabel(measurementType)
+  else:
+    plt.ylabel(measurementType + " (log-scale)")
   plt.xticks(index + 0.5, np.array(queryGroups))
   plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
   plt.axis('tight')
   fig_size = plt.rcParams["figure.figsize"]
   fig_size[0] = fig_size[0]
   fig_size[1] = fig_size[1]
-  plt.legend()
+  plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
   plt.savefig(outputDir+'/computationalEffort_'+measurementType+'.'+imageType, bbox_inches='tight')
 

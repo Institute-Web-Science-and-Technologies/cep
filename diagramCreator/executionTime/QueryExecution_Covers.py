@@ -37,7 +37,7 @@ with open(inputFile, 'rb') as f:
     if not cover in covers:
       covers[cover] = {}
     query = ("ss" if row[4]=='SUBJECT_SUBJECT_JOIN' else "so") + " tree=" + ("ll" if row[2]=='LEFT_LINEAR' else ("rl" if row[2]=='RIGHT_LINEAR' else "b")) + " #j=" + row[5] + " #ds=" + row[6] + " sel=" + row[7]
-    covers[cover][query] = { "Execution Time":long(row[8])}
+    covers[cover][query] = { "Execution Time":(long(row[8])/1000)}
 
 for measurementType in ["Execution Time"]:
   coverSet = list(sorted(covers.keys()))
@@ -60,13 +60,13 @@ for measurementType in ["Execution Time"]:
     colorValue = "{:f}".format(colorBase*(i+0.5))
     rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=cover, log=True, bottom=1))
   plt.xlabel("Queries")
-  plt.ylabel(measurementType + " (in msec, log-scale)")
+  plt.ylabel(measurementType + " (in sec, log-scale)")
   plt.xticks(index + 0.5, np.array(queryGroups))
   plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
   plt.axis('tight')
   fig_size = plt.rcParams["figure.figsize"]
   fig_size[0] = fig_size[0]
   fig_size[1] = fig_size[1]
-  plt.legend()
+  plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
   plt.savefig(outputDir+'/queryExecution_'+measurementType+'.'+imageType, bbox_inches='tight')
 

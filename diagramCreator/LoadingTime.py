@@ -19,8 +19,12 @@ if not os.path.exists(outputDir):
   os.makedirs(outputDir)
 
 coverNames = []
+initialEncodingTimes = []
 coverCreationTimes = []
-encodingTimes = []
+finalEncodingTimes = []
+nHopReplicationTimes = []
+statisticCollectionTimes = []
+containmentAdjustmentTimes = []
 transferTimes = []
 indexingTimes = []
 
@@ -33,14 +37,22 @@ with open(inputFile, 'rb') as f:
       coverName += row[1] + "HOP_"
     coverName += row[0]
     coverNames.append(coverName)
-    coverCreationTimes.append(long(row[2])/1000)
-    encodingTimes.append(long(row[3])/1000)
-    transferTimes.append(long(row[4])/1000)
-    indexingTimes.append(long(row[5])/1000)
+    initialEncodingTimes.append(long(row[2])/1000/3600)
+    coverCreationTimes.append(long(row[3])/1000/3600)
+    finalEncodingTimes.append(long(row[4])/1000/3600)
+    nHopReplicationTimes.append(long(row[5])/1000/3600)
+    statisticCollectionTimes.append(long(row[6])/1000/3600)
+    containmentAdjustmentTimes.append(long(row[7])/1000/3600)
+    transferTimes.append(long(row[8])/1000/3600)
+    indexingTimes.append(long(row[9])/1000/3600)
 
 coverNames = np.array(coverNames)
+initialEncodingTimes = np.array(initialEncodingTimes)
 coverCreationTimes = np.array(coverCreationTimes)
-encodingTimes = np.array(encodingTimes)
+finalEncodingTimes = np.array(finalEncodingTimes)
+nHopReplicationTimes = np.array(nHopReplicationTimes)
+statisticCollectionTimes = np.array(statisticCollectionTimes)
+containmentAdjustmentTimes = np.array(containmentAdjustmentTimes)
 transferTimes = np.array(transferTimes)
 indexingTimes = np.array(indexingTimes)
 
@@ -48,14 +60,18 @@ N = len(coverNames)
 ind = np.arange(N)    # the x locations for the groups
 width = 0.5       # the width of the bars: can also be len(x) sequence
 
-p1 = plt.bar(ind, coverCreationTimes, width, color='#222222')
-p2 = plt.bar(ind, encodingTimes, width, color='#aaaaaa', bottom=coverCreationTimes)
-p3 = plt.bar(ind, transferTimes, width, color='#666666', bottom=encodingTimes+coverCreationTimes)
-p4 = plt.bar(ind, indexingTimes, width, color='#ffffff', bottom=transferTimes+encodingTimes+coverCreationTimes)
+p1 = plt.bar(ind, initialEncodingTimes, width, color='#cccccc')
+p2 = plt.bar(ind, coverCreationTimes, width, color='#222222', bottom=initialEncodingTimes)
+p3 = plt.bar(ind, finalEncodingTimes, width, color='#888888', bottom=coverCreationTimes+initialEncodingTimes)
+p4 = plt.bar(ind, nHopReplicationTimes, width, color='#666666', bottom=finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
+p5 = plt.bar(ind, statisticCollectionTimes, width, color='#444444', bottom=nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
+p6 = plt.bar(ind, containmentAdjustmentTimes, width, color='#aaaaaa', bottom=statisticCollectionTimes+nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
+p7 = plt.bar(ind, transferTimes, width, color='#000000', bottom=containmentAdjustmentTimes+statisticCollectionTimes+nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
+p8 = plt.bar(ind, indexingTimes, width, color='#ffffff', bottom=transferTimes+containmentAdjustmentTimes+statisticCollectionTimes+nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
 
-plt.ylabel('Time (in sec)')
+plt.ylabel('Time (in h)')
 plt.xticks(ind + width/2., coverNames)
-plt.yticks(np.arange(0, 5000, 500))
-plt.legend((p4[0], p3[0], p2[0], p1[0]), ('indexing time', 'transfer time', 'encoding time', 'cover creation time'))
+plt.yticks(np.arange(0, 300, 10))
+plt.legend((p8[0], p7[0], p6[0], p5[0], p4[0], p3[0], p2[0], p1[0]), ('indexing time', 'transfer time', 'containment adjustment time', 'statistics collection time', 'n-hop replication time', 'final encoding time', 'cover creation time', 'initial encoding time'), bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
 
 plt.savefig(outputDir+'/loadingTimes.'+imageType, bbox_inches='tight')

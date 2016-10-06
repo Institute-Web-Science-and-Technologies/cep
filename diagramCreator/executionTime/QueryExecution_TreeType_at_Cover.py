@@ -41,7 +41,7 @@ with open(inputFile, 'rb') as f:
     if not treeType in coverTypes[cover]:
       coverTypes[cover][treeType] = {}
     query = ("ss" if row[4]=='SUBJECT_SUBJECT_JOIN' else "so") + " #j=" + row[5] + " #ds=" + row[6] + " sel=" + row[7]
-    coverTypes[cover][treeType][query] = { "Execution Time":long(row[8])}
+    coverTypes[cover][treeType][query] = { "Execution Time":(long(row[8])/1000)}
 
 for measurementType in ["Execution Time"]:
   for cover in coverTypes.keys():
@@ -65,11 +65,11 @@ for measurementType in ["Execution Time"]:
       colorValue = "{:f}".format(colorBase*(i+0.5))
       rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=treeType, log=True, bottom=1))
     plt.xlabel("Queries")
-    plt.ylabel(measurementType + " (in msec, log-scale)")
-    plt.title('Query execution time ' + cover)
+    plt.ylabel(measurementType + " (in sec, log-scale)")
+    plt.title('Query execution time ' + cover, y=1.12)
     plt.xticks(index + 0.5, np.array(queryGroups))
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.axis('tight')
-    plt.legend()
+    plt.legend(bbox_to_anchor=(0., 1.04, 1., .102), loc=3, ncol=3, mode="expand", borderaxespad=0.)
     plt.savefig(outputDir+'/queryExecution_'+measurementType+'_cover-'+cover+'_forAll_treeTypes.'+imageType, bbox_inches='tight')
 

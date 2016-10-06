@@ -67,6 +67,6 @@ for measurementType in ["Data Transfer"]:
   fig_size = plt.rcParams["figure.figsize"]
   fig_size[0] = fig_size[0]
   fig_size[1] = fig_size[1]
-  plt.legend()
+  plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
   plt.savefig(outputDir+'/dataTransfer_'+measurementType+'.'+imageType, bbox_inches='tight')
 

@@ -38,8 +38,8 @@ with open(inputFile, 'rb') as f:
     row_time = []
     row_time.append(0)
     for time in row:
-      row_time.append(long(time)-1)
-      row_time.append(long(time))
+      row_time.append((long(time)-1)/1000)
+      row_time.append(long(time)/1000)
     row2 = row2[8:len(row2)]
     row_percent = []
     row_percent.append(0)
@@ -52,7 +52,7 @@ with open(inputFile, 'rb') as f:
     fig, ax = plt.subplots()
     ax.plot(row_time, row_percent, color='0.5')
     plt.title(query + ' for '+ cover + ' cover')
-    plt.xlabel("Time (in msec)")
+    plt.xlabel("Time (in sec)")
     plt.ylabel("Percentage of returned results")
     plt.axis('tight')
     plt.savefig(outputDir+'/resultsOverTime_'+cover+'_'+query+'.'+imageType, bbox_inches='tight')

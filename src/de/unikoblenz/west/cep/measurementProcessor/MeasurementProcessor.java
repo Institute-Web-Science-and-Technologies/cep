@@ -11,6 +11,7 @@ import org.apache.jena.query.QueryFactory;
 
 import de.uni_koblenz.west.koral.common.measurement.MeasurementCollector;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.ChunkSizes;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.ComputationalEffort;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.DataTransfer;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.LoadTime;
@@ -116,7 +117,7 @@ public class MeasurementProcessor implements Closeable {
 
   @SuppressWarnings("unchecked")
   private static Class<? extends MeasurementListener>[] loadListeners = new Class[] {
-          StorageBalance.class, LoadTime.class };
+          StorageBalance.class, LoadTime.class, ChunkSizes.class };
 
   @SuppressWarnings("unchecked")
   private static Class<? extends MeasurementListener>[] queryListeners = new Class[] {

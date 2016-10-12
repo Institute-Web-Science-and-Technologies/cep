@@ -13,6 +13,7 @@ import de.uni_koblenz.west.koral.common.measurement.MeasurementCollector;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.ChunkSizes;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.ComputationalEffort;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.ComputationalEffortPerChunk;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.DataTransfer;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.LoadTime;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.OverallQueryExecutionTime;
@@ -122,7 +123,7 @@ public class MeasurementProcessor implements Closeable {
   @SuppressWarnings("unchecked")
   private static Class<? extends MeasurementListener>[] queryListeners = new Class[] {
           DataTransfer.class, ComputationalEffort.class, OverallQueryExecutionTime.class,
-          ResultsOverTime.class };
+          ResultsOverTime.class, ComputationalEffortPerChunk.class };
 
   public static void main(String[] args) throws ParseException {
     Options options = MeasurementProcessor.createCommandLineOptions();

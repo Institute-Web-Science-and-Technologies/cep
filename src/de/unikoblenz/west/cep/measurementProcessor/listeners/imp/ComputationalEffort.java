@@ -14,7 +14,7 @@ import java.util.Arrays;
  */
 public class ComputationalEffort extends QueryComputationEffortListener {
 
-  private long[] numberOfComparisonsPerSlave;
+  protected long[] numberOfComparisonsPerSlave;
 
   @Override
   protected File getOutputFile(File outputDirectory) {

@@ -46,6 +46,7 @@
 			<manifest>
 				<attribute name="Main-Class" value="${mainclass}" />
 			</manifest>
+			<fileset dir="${licence.dir}"> <include name="**/*" /> </fileset>
 			<!--<fileset dir="${build.dir}"> <include name="**/*.class" /> </fileset> -->
 		</jar>
 	</target>

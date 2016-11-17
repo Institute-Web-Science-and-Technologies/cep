@@ -75,12 +75,17 @@ public class MeasurementProcessor implements Closeable {
 
   public void processQueryMeasurement(File queryDir, File inputFile, CoverStrategyType cover,
           int nhop, int repetitions, File outputDir) {
-    ensureOutputDir(outputDir);
-    Map<String, String> query2fileName = generateQuery2fileNameMap(queryDir);
-    for (MeasurementListener listener : listeners) {
-      listener.setUp(outputDir, query2fileName, cover, nhop, repetitions);
+    try {
+      ensureOutputDir(outputDir);
+      Map<String, String> query2fileName = generateQuery2fileNameMap(queryDir);
+      for (MeasurementListener listener : listeners) {
+        listener.setUp(outputDir, query2fileName, cover, nhop, repetitions);
+      }
+      processMeasurements(inputFile);
+    } catch (Exception e) {
+      clear();
+      throw e;
     }
-    processMeasurements(inputFile);
   }
 
   private void ensureOutputDir(File outputDir) {
@@ -124,6 +129,12 @@ public class MeasurementProcessor implements Closeable {
           listener.processMeasurement(measurement);
         }
       }
+    }
+  }
+
+  public void clear() {
+    for (MeasurementListener listener : listeners) {
+      listener.clear();
     }
   }
 

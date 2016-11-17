@@ -39,6 +39,7 @@ public abstract class QueryTimesListener extends QueryListener {
     if (measurementType != null) {
       switch (measurementType) {
         case QUERY_MESSAGE_RECEIPTION:
+          hasProcessedQueryResults = false;
           queryStartTime = Long.parseLong(measurements[4]);
           break;
         case QUERY_COORDINATOR_SEND_QUERY_RESULTS_TO_CLIENT:

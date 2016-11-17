@@ -36,4 +36,6 @@ public interface MeasurementListener {
 
   public void tearDown();
 
+  public void clear();
+
 }

@@ -91,4 +91,8 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
   protected abstract void processLoadingFinished(CoverStrategyType graphCoverStrategy,
           int nHopReplication);
 
+  @Override
+  public void clear() {
+  }
+
 }

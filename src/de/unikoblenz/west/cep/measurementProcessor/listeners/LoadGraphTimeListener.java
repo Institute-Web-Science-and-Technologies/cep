@@ -173,4 +173,8 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
   protected abstract void processLoadingFinished(CoverStrategyType graphCoverStrategy,
           int nHopReplication);
 
+  @Override
+  public void clear() {
+  }
+
 }

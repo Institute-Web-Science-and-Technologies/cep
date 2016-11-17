@@ -55,6 +55,8 @@ public abstract class QueryListener implements MeasurementListener {
 
   protected String currentQueryFileName;
 
+  private boolean wasPreviousExecutionAbborted;
+
   protected int currentQueryRepetition;
 
   protected int currentQueryId;
@@ -101,7 +103,9 @@ public abstract class QueryListener implements MeasurementListener {
         case QUERY_COORDINATOR_START:
           performFinishTasks();
           String queryString = measurements[6];
-          currentQueryFileName = query2fileName.get(queryString);
+          String nextFile = query2fileName.get(queryString);
+          wasPreviousExecutionAbborted = nextFile.equals(currentQueryFileName);
+          currentQueryFileName = nextFile;
           if (currentQueryFileName == null) {
             throw new RuntimeException("unknown query " + queryString);
           }
@@ -114,7 +118,7 @@ public abstract class QueryListener implements MeasurementListener {
           if (currentQueryRepetition == null) {
             currentQueryRepetition = Integer.valueOf(1);
             queryRepetition.put(currentQueryFileName + "\n" + treeType, currentQueryRepetition);
-          } else {
+          } else if (!wasPreviousExecutionAbborted) {
             currentQueryRepetition = currentQueryRepetition + 1;
             queryRepetition.put(currentQueryFileName + "\n" + treeType, currentQueryRepetition);
           }
@@ -128,11 +132,10 @@ public abstract class QueryListener implements MeasurementListener {
   }
 
   private void performFinishTasks() {
-    if (currentQueryFileName != null) {
+    if ((currentQueryRepetition >= 0) && (treeType != null)) {
       processQueryFinish(new ExtendedQuerySignature(currentQueryId, currentQueryFileName, treeType,
               currentQueryRepetition));
     }
-    currentQueryFileName = null;
     currentQueryRepetition = -1;
     treeType = null;
   }
@@ -163,6 +166,12 @@ public abstract class QueryListener implements MeasurementListener {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public void clear() {
+    currentQueryRepetition = -1;
+    treeType = null;
   }
 
 }

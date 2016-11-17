@@ -63,8 +63,6 @@ public class ResultsOverTime extends QueryTimesListener {
   @Override
   protected void processQueryStart(CoverStrategyType graphCoverStrategy, int nHopReplication,
           ExtendedQuerySignature query, long queryStartTime) {
-    // TODO remove
-    System.out.println("start " + query);
     this.queryStartTime = queryStartTime;
     sequenceOfResults = new LinkedList<>();
   }
@@ -73,10 +71,6 @@ public class ResultsOverTime extends QueryTimesListener {
   protected void processQueryResult(CoverStrategyType graphCoverStrategy, int nHopReplication,
           ExtendedQuerySignature query, long queryResultSentTime, long firstResultNumber,
           long lastResultNumber) {
-    // TODO remove
-    if (firstResultNumber == 1) {
-      System.out.println("results " + firstResultNumber + "-" + lastResultNumber + " " + query);
-    }
     sequenceOfResults.add(new long[] { queryResultSentTime - queryStartTime, lastResultNumber });
     if (lastResultNumber > numberOfResults) {
       numberOfResults = lastResultNumber;
@@ -86,8 +80,6 @@ public class ResultsOverTime extends QueryTimesListener {
   @SuppressWarnings("unchecked")
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
-    // TODO remove
-    System.out.println("finish " + query);
     QuerySignature signature = query.getBasicSignature();
     Queue<long[]>[] timeLines = query2repetitiontimes.get(signature);
     if (timeLines == null) {
@@ -117,12 +109,9 @@ public class ResultsOverTime extends QueryTimesListener {
       }
       previousTimeSegment = timeSegment;
     }
-    if (previousTimeSegment == null) {
-      // TODO add
-    } else {
-      timePoints.append("\t").append(previousTimeSegment[0]);
-      resultPercents.append("\t").append(previousTimeSegment[1] / (double) numberOfResults);
-    }
+    timePoints.append("\t").append(previousTimeSegment[0]);
+    resultPercents.append("\t").append(
+            numberOfResults > 0 ? previousTimeSegment[1] / (double) numberOfResults : "1.0");
     writeLine(timePoints.toString());
     writeLine(resultPercents.toString());
   }

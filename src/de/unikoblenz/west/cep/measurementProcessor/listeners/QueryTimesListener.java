@@ -43,25 +43,24 @@ public abstract class QueryTimesListener extends QueryListener {
           queryStartTime = Long.parseLong(measurements[4]);
           break;
         case QUERY_COORDINATOR_SEND_QUERY_RESULTS_TO_CLIENT:
+          ExtendedQuerySignature query = new ExtendedQuerySignature(
+                  Integer.parseInt(measurements[5]), currentQueryFileName, treeType,
+                  currentQueryRepetition);
           if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy, nHopReplication,
-                    new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
-                            currentQueryFileName, treeType, currentQueryRepetition),
-                    queryStartTime);
+            processQueryStart(graphCoverStrategy, nHopReplication, query, queryStartTime);
           }
-          processQueryResult(graphCoverStrategy, nHopReplication,
-                  new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
-                          currentQueryFileName, treeType, currentQueryRepetition),
+          processQueryResult(graphCoverStrategy, nHopReplication, query,
                   Long.parseLong(measurements[4]), Long.parseLong(measurements[6]),
                   Long.parseLong(measurements[7]));
           hasProcessedQueryResults = true;
           break;
         case QUERY_COORDINATOR_END:
+          query = new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
+                  currentQueryFileName, treeType, currentQueryRepetition);
           if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy, nHopReplication,
-                    new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
-                            currentQueryFileName, treeType, currentQueryRepetition),
-                    queryStartTime);
+            processQueryStart(graphCoverStrategy, nHopReplication, query, queryStartTime);
+            processQueryResult(graphCoverStrategy, nHopReplication, query,
+                    Long.parseLong(measurements[4]), 0, 0);
           }
           hasProcessedQueryResults = false;
           break;

@@ -47,45 +47,52 @@ with open(inputFile, 'rb') as f:
   reader.next()
   for row in reader:
     cover = ""
-    if int(row[1]) != 0:
-      cover += row[1] + "HOP_"
+    if int(row[2]) != 0:
+      cover += row[2] + "HOP_"
     cover += row[0]
     if not cover in covers:
       covers[cover] = {}
+    scale = int(row[1]);
+    if not scale in covers[cover]:
+      covers[cover][scale] = {}
     for i in range(len(row)):
-      if i >= 2 :
-        chunk = i - 2
-        covers[cover][chunk] = long(row[i])
+      if i >= 3 :
+        chunk = i - 3
+        covers[cover][scale][chunk] = long(row[i])
 
 for measurementType in ["Chunk Sizes"]:
   coverSet = list(sorted(covers.keys()))
-  dataRows = []
-  numberOfChunks = []
+  scaleSet = list(sorted(covers[coverSet[0]]))
+  dataRows = {}
   for i, cover in enumerate(coverSet):
-    numberOfChunks = []
-    dataRows.append([])
-    for j, chunk in enumerate(covers[cover]):
-      dataRows[i].append(covers[cover][chunk]);
-      numberOfChunks.append(chunk);
-  # create diagramm
-  n_groups = len(numberOfChunks)
-  fig, ax = plt.subplots()
-  index = np.arange(n_groups)
-  bar_width = 1/float(len(coverSet)+1)
-  rects = []
-  colorBase = 1 / float(len(coverSet)+1)
-  for i, cover in enumerate(coverSet):
-    colorValue = "{:f}".format(colorBase*(i+0.5))
-    rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=cover, log=False, bottom=0))
-  plt.xlabel("Chunks")
-  plt.ylabel(measurementType)
-  plt.xticks(index + 0.5, np.array(numberOfChunks))
-  plt.setp(plt.gca().get_xticklabels())#, rotation=0, horizontalalignment='right')
-  #plt.axis('tight')
-  fig_size = plt.rcParams["figure.figsize"]
-  fig_size[0] = fig_size[0]
-  fig_size[1] = fig_size[1]
-  #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
-  plt.legend()
-  plt.savefig(outputDir+'/chunkSizes.'+imageType, bbox_inches='tight')
+    dataRows[cover] = {}
+    for j, scale in enumerate(scaleSet):
+      dataRows[cover][scale] = []
+      for k, chunk in enumerate(covers[cover][scale]):
+        dataRows[cover][scale].append(covers[cover][scale][chunk]);
+
+  # create diagramms per scale
+  for j, scale in enumerate(scaleSet):
+    n_groups = scale
+    fig, ax = plt.subplots()
+    fig = plt.figure(figsize=(fig.get_figwidth()*(scale/20.),5))
+    index = np.arange(n_groups)
+    bar_width = 1/float(len(coverSet)+1)
+    rects = []
+    colorBase = 1 / float(len(coverSet)+1)
+    for i, cover in enumerate(coverSet):
+      colorValue = "{:f}".format(colorBase*(i+0.5))
+      rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover, log=False, bottom=0))
+    plt.xlabel("Chunks")
+    plt.ylabel(measurementType)
+    plt.xticks(index + 0.5, np.array(list(range(scale))))
+    plt.setp(plt.gca().get_xticklabels())#, rotation=0, horizontalalignment='right')
+    #plt.axis('tight')
+    fig_size = plt.rcParams["figure.figsize"]
+    #fig_size[0] = fig_size[0]
+    #fig_size[1] = fig_size[1]
+    #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+    plt.legend()
+    plt.title('Chunk sizes for ' + str(scale) + ' chunks', y=1.05)
+    plt.savefig(outputDir+'/chunkSizes_scale='+str(scale)+'.'+imageType, bbox_inches='tight')
 

@@ -53,18 +53,18 @@ with open(inputFile, 'rb') as f:
   reader.next()
   for row in reader:
     coverName = ""
-    if int(row[1]) != 0:
-      coverName += row[1] + "HOP_"
-    coverName += row[0]
+    if int(row[2]) != 0:
+      coverName += row[2] + "HOP_"
+    coverName += row[0] + '\n' + row[1] + ' chunks'
     coverNames.append(coverName)
-    initialEncodingTimes.append(long(row[2])/1000/3600)
-    coverCreationTimes.append(long(row[3])/1000/3600)
-    finalEncodingTimes.append(long(row[4])/1000/3600)
-    nHopReplicationTimes.append(long(row[5])/1000/3600)
-    statisticCollectionTimes.append(long(row[6])/1000/3600)
-    containmentAdjustmentTimes.append(long(row[7])/1000/3600)
-    transferTimes.append(long(row[8])/1000/3600)
-    indexingTimes.append(long(row[9])/1000/3600)
+    initialEncodingTimes.append(long(row[3])/1000/3600)
+    coverCreationTimes.append(long(row[4])/1000/3600)
+    finalEncodingTimes.append(long(row[5])/1000/3600)
+    nHopReplicationTimes.append(long(row[6])/1000/3600)
+    statisticCollectionTimes.append(long(row[7])/1000/3600)
+    containmentAdjustmentTimes.append(long(row[8])/1000/3600)
+    transferTimes.append(long(row[9])/1000/3600)
+    indexingTimes.append(long(row[10])/1000/3600)
 
 coverNames = np.array(coverNames)
 initialEncodingTimes = np.array(initialEncodingTimes)
@@ -77,6 +77,8 @@ transferTimes = np.array(transferTimes)
 indexingTimes = np.array(indexingTimes)
 
 N = len(coverNames)
+fig, ax = plt.subplots()
+fig = plt.figure(figsize=(fig.get_figwidth()*2,fig.get_figheight()*3))
 ind = np.arange(N)    # the x locations for the groups
 width = 0.5       # the width of the bars: can also be len(x) sequence
 
@@ -91,7 +93,7 @@ p8 = plt.bar(ind, indexingTimes, width, color='#ffffff', bottom=transferTimes+co
 
 plt.ylabel('Time (in h)')
 plt.xticks(ind + width/2., coverNames)
-plt.yticks(np.arange(0, 300, 10))
-plt.legend((p8[0], p7[0], p6[0], p5[0], p4[0], p3[0], p2[0], p1[0]), ('indexing time', 'transfer time', 'containment adjustment time', 'statistics collection time', 'n-hop replication time', 'final encoding time', 'cover creation time', 'initial encoding time'), bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+plt.yticks(np.arange(0, 1000, 24))
+plt.legend((p8[0], p7[0], p6[0], p5[0], p4[0], p3[0], p2[0], p1[0]), ('local index creation', 'transfer to slaves', 'join resp. adjustment', 'statistics collection', 'n-hop replication', 'final dictionary encoding', 'cover creation', 'initial dictionary encoding'), bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
 
 plt.savefig(outputDir+'/loadingTimes.'+imageType, bbox_inches='tight')

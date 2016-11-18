@@ -62,15 +62,15 @@ public class ResultsOverTime extends QueryTimesListener {
 
   @Override
   protected void processQueryStart(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          ExtendedQuerySignature query, long queryStartTime) {
+          int numberOfChunks, ExtendedQuerySignature query, long queryStartTime) {
     this.queryStartTime = queryStartTime;
     sequenceOfResults = new LinkedList<>();
   }
 
   @Override
   protected void processQueryResult(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          ExtendedQuerySignature query, long queryResultSentTime, long firstResultNumber,
-          long lastResultNumber) {
+          int numberOfChunks, ExtendedQuerySignature query, long queryResultSentTime,
+          long firstResultNumber, long lastResultNumber) {
     sequenceOfResults.add(new long[] { queryResultSentTime - queryStartTime, lastResultNumber });
     if (lastResultNumber > numberOfResults) {
       numberOfResults = lastResultNumber;

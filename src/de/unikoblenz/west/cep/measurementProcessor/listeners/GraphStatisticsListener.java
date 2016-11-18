@@ -23,6 +23,9 @@ import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.MeasurementListener;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
+import java.io.File;
+import java.util.Map;
+
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
  *
@@ -32,6 +35,15 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
   private CoverStrategyType graphCoverStrategy;
 
   private int nHopReplication;
+
+  private int numberOfChunks;
+
+  @Override
+  public void setUp(File outputDirectory, Map<String, String> query2fileName,
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions,
+          int numberOfChunks) {
+    this.numberOfChunks = numberOfChunks;
+  }
 
   @Override
   public void processMeasurement(String... measurements) {
@@ -44,7 +56,7 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
           break;
         case TOTAL_GRAPH_SIZE:
           processTotalGraphSizeBeforeReplication(graphCoverStrategy, nHopReplication,
-                  Long.parseLong(measurements[4]));
+                  numberOfChunks, Long.parseLong(measurements[4]));
           break;
         case INITIAL_CHUNK_SIZES:
           long[] graphChunkSizes = new long[measurements.length - 4];
@@ -52,7 +64,7 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
             graphChunkSizes[i] = Long.parseLong(measurements[4 + i]);
           }
           processGraphChunkSizesBeforeReplication(graphCoverStrategy, nHopReplication,
-                  graphChunkSizes);
+                  numberOfChunks, graphChunkSizes);
           break;
         case LOAD_GRAPH_REPLICATED_CHUNK_SIZES:
           long totalGraphSize = 0;
@@ -61,13 +73,13 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
             graphChunkSizes[i] = Long.parseLong(measurements[4 + i]);
             totalGraphSize += graphChunkSizes[i];
           }
-          processTotalGraphSizeAfterReplication(graphCoverStrategy, nHopReplication,
+          processTotalGraphSizeAfterReplication(graphCoverStrategy, nHopReplication, numberOfChunks,
                   totalGraphSize);
           processGraphChunkSizesAfterReplication(graphCoverStrategy, nHopReplication,
-                  graphChunkSizes);
+                  numberOfChunks, graphChunkSizes);
           break;
         case LOAD_GRAPH_FINISHED:
-          processLoadingFinished(graphCoverStrategy, nHopReplication);
+          processLoadingFinished(graphCoverStrategy, nHopReplication, numberOfChunks);
           break;
         default:
           // all other types are not required
@@ -77,19 +89,23 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
   }
 
   protected abstract void processTotalGraphSizeBeforeReplication(
-          CoverStrategyType graphCoverStrategy, int nHopReplication, long totalGraphSize);
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
+          long totalGraphSize);
 
   protected abstract void processGraphChunkSizesBeforeReplication(
-          CoverStrategyType graphCoverStrategy, int nHopReplication, long... graphChunkSizes);
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
+          long... graphChunkSizes);
 
   protected abstract void processTotalGraphSizeAfterReplication(
-          CoverStrategyType graphCoverStrategy, int nHopReplication, long totalGraphSize);
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
+          long totalGraphSize);
 
   protected abstract void processGraphChunkSizesAfterReplication(
-          CoverStrategyType graphCoverStrategy, int nHopReplication, long... graphChunkSizes);
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
+          long... graphChunkSizes);
 
   protected abstract void processLoadingFinished(CoverStrategyType graphCoverStrategy,
-          int nHopReplication);
+          int nHopReplication, int numberOfChunks);
 
   @Override
   public void clear() {

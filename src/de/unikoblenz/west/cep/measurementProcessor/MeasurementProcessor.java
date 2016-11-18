@@ -65,21 +65,21 @@ public class MeasurementProcessor implements Closeable {
     listeners.add(listener);
   }
 
-  public void processLoadMeasurement(File inputFile, File outputDir) {
+  public void processLoadMeasurement(File inputFile, int numberOfChunks, File outputDir) {
     ensureOutputDir(outputDir);
     for (MeasurementListener listener : listeners) {
-      listener.setUp(outputDir, null, null, 0, 1);
+      listener.setUp(outputDir, null, null, 0, 1, numberOfChunks);
     }
     processMeasurements(inputFile);
   }
 
   public void processQueryMeasurement(File queryDir, File inputFile, CoverStrategyType cover,
-          int nhop, int repetitions, File outputDir) {
+          int nhop, int repetitions, int numberOfChunks, File outputDir) {
     try {
       ensureOutputDir(outputDir);
       Map<String, String> query2fileName = generateQuery2fileNameMap(queryDir);
       for (MeasurementListener listener : listeners) {
-        listener.setUp(outputDir, query2fileName, cover, nhop, repetitions);
+        listener.setUp(outputDir, query2fileName, cover, nhop, repetitions, numberOfChunks);
       }
       processMeasurements(inputFile);
     } catch (Exception e) {
@@ -168,13 +168,15 @@ public class MeasurementProcessor implements Closeable {
 
     File outputDir = new File(line.getOptionValue('o'));
 
+    int numberOfChunks = Integer.parseInt(line.getOptionValue('C'));
+
     MeasurementProcessor measurementProcessor = new MeasurementProcessor();
     try {
       if (line.hasOption('l')) {
         MeasurementProcessor.registerListeners(measurementProcessor,
                 MeasurementProcessor.loadListeners);
         File inputFile = new File(line.getOptionValue('l'));
-        measurementProcessor.processLoadMeasurement(inputFile, outputDir);
+        measurementProcessor.processLoadMeasurement(inputFile, numberOfChunks, outputDir);
 
       } else if (line.hasOption('q')) {
         MeasurementProcessor.registerListeners(measurementProcessor,
@@ -207,7 +209,7 @@ public class MeasurementProcessor implements Closeable {
         }
 
         measurementProcessor.processQueryMeasurement(queryDir, inputFile, cover, nhop, repetitions,
-                outputDir);
+                numberOfChunks, outputDir);
 
       } else {
         throw new RuntimeException("Option -l or -q is required.");
@@ -254,6 +256,9 @@ public class MeasurementProcessor implements Closeable {
     Option repetitions = Option.builder("r").longOpt("repetitions").hasArg().argName("int")
             .desc("the number of performed repetitions").required(false).build();
 
+    Option numberOfChunks = Option.builder("C").longOpt("numberOfChunks").hasArg().argName("int")
+            .desc("the number of chunks").required(true).build();
+
     Option queryFiles = Option.builder("Q").longOpt("queryFiles").hasArg().argName("directory")
             .desc("the directory that contains the query").required(false).build();
 
@@ -265,6 +270,7 @@ public class MeasurementProcessor implements Closeable {
     options.addOption(cover);
     options.addOption(nhop);
     options.addOption(repetitions);
+    options.addOption(numberOfChunks);
     options.addOption(queryFiles);
     return options;
   }

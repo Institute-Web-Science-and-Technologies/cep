@@ -23,6 +23,9 @@ import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.MeasurementListener;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
+import java.io.File;
+import java.util.Map;
+
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
  *
@@ -33,6 +36,15 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
 
   private int nHopReplication;
 
+  private int numberOfChunks;
+
+  @Override
+  public void setUp(File outputDirectory, Map<String, String> query2fileName,
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions,
+          int numberOfChunks) {
+    this.numberOfChunks = numberOfChunks;
+  }
+
   @Override
   public void processMeasurement(String... measurements) {
     MeasurementType measurementType = Utilities.getMeasurementType(measurements);
@@ -42,73 +54,73 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
           initialize(measurements);
           break;
         case LOAD_GRAPH_INITIAL_ENCODING_START:
-          processInitialDictionaryEncodingStart(graphCoverStrategy, nHopReplication,
+          processInitialDictionaryEncodingStart(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_INITIAL_ENCODING_END:
-          processInitialDictionaryEncodingEnd(graphCoverStrategy, nHopReplication,
+          processInitialDictionaryEncodingEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_COVER_CREATION_START:
-          processGraphCoverCreationStart(graphCoverStrategy, nHopReplication,
+          processGraphCoverCreationStart(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_COVER_CREATION_END:
           if (nHopReplication == 0) {
-            processGraphCoverCreationEnd(graphCoverStrategy, nHopReplication,
+            processGraphCoverCreationEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
                     Long.parseLong(measurements[4]));
           }
           break;
         case LOAD_GRAPH_FINAL_ENCODING_START:
-          processFinalDictionaryEncodingStart(graphCoverStrategy, nHopReplication,
+          processFinalDictionaryEncodingStart(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_FINAL_ENCODING_END:
-          processFinalDictionaryEncodingEnd(graphCoverStrategy, nHopReplication,
+          processFinalDictionaryEncodingEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_NHOP_REPLICATION_START:
-          processNHopReplicationStart(graphCoverStrategy, nHopReplication,
+          processNHopReplicationStart(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_NHOP_REPLICATION_END:
-          processNHopReplicationEnd(graphCoverStrategy, nHopReplication,
+          processNHopReplicationEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_COLLECTING_STATISTICS_START:
-          processStatisticCollectionStart(graphCoverStrategy, nHopReplication,
+          processStatisticCollectionStart(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_COLLECTING_STATISTICS_END:
-          processStatisticCollectionEnd(graphCoverStrategy, nHopReplication,
+          processStatisticCollectionEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_ADJUSTING_OWNERSHIP_START:
-          processOwnershipAdjustmentStart(graphCoverStrategy, nHopReplication,
+          processOwnershipAdjustmentStart(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_ADJUSTING_OWNERSHIP_END:
-          processOwnershipAdjustmentEnd(graphCoverStrategy, nHopReplication,
+          processOwnershipAdjustmentEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_FILE_TRANSFER_TO_SLAVES_START:
-          processChunkTransferToSlavesStart(graphCoverStrategy, nHopReplication,
+          processChunkTransferToSlavesStart(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Utilities.getComputerId(measurements), Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_FILE_TRANSFER_TO_SLAVES_END:
-          processChunkTransferToSlavesEnd(graphCoverStrategy, nHopReplication,
+          processChunkTransferToSlavesEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Utilities.getComputerId(measurements), Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_STORING_TRIPLES_START:
-          processIndexingStart(graphCoverStrategy, nHopReplication,
+          processIndexingStart(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Utilities.getComputerId(measurements), Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_STORING_TRIPLES_END:
-          processIndexingEnd(graphCoverStrategy, nHopReplication,
+          processIndexingEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
                   Utilities.getComputerId(measurements), Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_FINISHED:
-          processLoadingFinished(graphCoverStrategy, nHopReplication);
+          processLoadingFinished(graphCoverStrategy, nHopReplication, numberOfChunks);
           break;
         default:
           // all other types are not required
@@ -123,55 +135,56 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
   }
 
   protected abstract void processInitialDictionaryEncodingStart(
-          CoverStrategyType graphCoverStrategy, int nHopReplication, long startTime);
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
+          long startTime);
 
   protected abstract void processInitialDictionaryEncodingEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, long endTime);
+          int nHopReplication, int numberOfChunks, long endTime);
 
   protected abstract void processGraphCoverCreationStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, long startTime);
+          int nHopReplication, int numberOfChunks, long startTime);
 
   protected abstract void processGraphCoverCreationEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, long endTime);
+          int nHopReplication, int numberOfChunks, long endTime);
 
   protected abstract void processFinalDictionaryEncodingStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, long startTime);
+          int nHopReplication, int numberOfChunks, long startTime);
 
   protected abstract void processFinalDictionaryEncodingEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, long endTime);
+          int nHopReplication, int numberOfChunks, long endTime);
 
   protected abstract void processNHopReplicationStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, long startTime);
+          int nHopReplication, int numberOfChunks, long startTime);
 
   protected abstract void processNHopReplicationEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, long endTime);
+          int nHopReplication, int numberOfChunks, long endTime);
 
   protected abstract void processStatisticCollectionStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, long startTime);
+          int nHopReplication, int numberOfChunks, long startTime);
 
   protected abstract void processStatisticCollectionEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, long endTime);
+          int nHopReplication, int numberOfChunks, long endTime);
 
   protected abstract void processOwnershipAdjustmentStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, long startTime);
+          int nHopReplication, int numberOfChunks, long startTime);
 
   protected abstract void processOwnershipAdjustmentEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, long endTime);
+          int nHopReplication, int numberOfChunks, long endTime);
 
   protected abstract void processChunkTransferToSlavesStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int slave, long startTime);
+          int nHopReplication, int numberOfChunks, int slave, long startTime);
 
   protected abstract void processChunkTransferToSlavesEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int slave, long endTime);
+          int nHopReplication, int numberOfChunks, int slave, long endTime);
 
   protected abstract void processIndexingStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int slave, long startTime);
+          int nHopReplication, int numberOfChunks, int slave, long startTime);
 
   protected abstract void processIndexingEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int slave, long endTime);
+          int nHopReplication, int numberOfChunks, int slave, long endTime);
 
   protected abstract void processLoadingFinished(CoverStrategyType graphCoverStrategy,
-          int nHopReplication);
+          int nHopReplication, int numberOfChunks);
 
   @Override
   public void clear() {

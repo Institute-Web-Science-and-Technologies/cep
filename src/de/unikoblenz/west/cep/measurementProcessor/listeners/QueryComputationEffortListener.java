@@ -36,7 +36,7 @@ public abstract class QueryComputationEffortListener extends QueryListener {
       switch (measurementType) {
         case QUERY_OPERATION_JOIN_NUMBER_OF_COMPARISONS:
           if (currentQueryRepetition == 1) {
-            processComputationEffort(graphCoverStrategy, nHopReplication,
+            processComputationEffort(graphCoverStrategy, nHopReplication, numberOfChunks,
                     new ExtendedQuerySignature(Integer.parseInt(measurements[4]),
                             currentQueryFileName, treeType, currentQueryRepetition),
                     Utilities.getComputerId(measurements), Integer.parseInt(measurements[5]),
@@ -51,7 +51,7 @@ public abstract class QueryComputationEffortListener extends QueryListener {
   }
 
   protected abstract void processComputationEffort(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, ExtendedQuerySignature query, int slaveId, int taskId,
-          long numberOfComparisons);
+          int nHopReplication, int numberOfChunks, ExtendedQuerySignature query, int slaveId,
+          int taskId, long numberOfComparisons);
 
 }

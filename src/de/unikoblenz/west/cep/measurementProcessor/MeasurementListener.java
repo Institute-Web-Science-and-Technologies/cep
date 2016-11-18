@@ -30,7 +30,8 @@ import java.util.Map;
 public interface MeasurementListener {
 
   public void setUp(File outputDirectory, Map<String, String> query2fileName,
-          CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions);
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions,
+          int numberOfChunks);
 
   public void processMeasurement(String... measurements);
 

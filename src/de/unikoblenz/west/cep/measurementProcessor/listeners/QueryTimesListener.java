@@ -47,9 +47,10 @@ public abstract class QueryTimesListener extends QueryListener {
                   Integer.parseInt(measurements[5]), currentQueryFileName, treeType,
                   currentQueryRepetition);
           if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy, nHopReplication, query, queryStartTime);
+            processQueryStart(graphCoverStrategy, nHopReplication, numberOfChunks, query,
+                    queryStartTime);
           }
-          processQueryResult(graphCoverStrategy, nHopReplication, query,
+          processQueryResult(graphCoverStrategy, nHopReplication, numberOfChunks, query,
                   Long.parseLong(measurements[4]), Long.parseLong(measurements[6]),
                   Long.parseLong(measurements[7]));
           hasProcessedQueryResults = true;
@@ -58,8 +59,9 @@ public abstract class QueryTimesListener extends QueryListener {
           query = new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
                   currentQueryFileName, treeType, currentQueryRepetition);
           if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy, nHopReplication, query, queryStartTime);
-            processQueryResult(graphCoverStrategy, nHopReplication, query,
+            processQueryStart(graphCoverStrategy, nHopReplication, numberOfChunks, query,
+                    queryStartTime);
+            processQueryResult(graphCoverStrategy, nHopReplication, numberOfChunks, query,
                     Long.parseLong(measurements[4]), 0, 0);
           }
           hasProcessedQueryResults = false;
@@ -72,10 +74,11 @@ public abstract class QueryTimesListener extends QueryListener {
   }
 
   protected abstract void processQueryStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, ExtendedQuerySignature query, long queryStartTime);
+          int nHopReplication, int numberOfChunks, ExtendedQuerySignature query,
+          long queryStartTime);
 
   protected abstract void processQueryResult(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, ExtendedQuerySignature query, long queryResultSentTime,
-          long firstResultNumber, long lastResultNumber);
+          int nHopReplication, int numberOfChunks, ExtendedQuerySignature query,
+          long queryResultSentTime, long firstResultNumber, long lastResultNumber);
 
 }

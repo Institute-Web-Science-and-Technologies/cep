@@ -46,7 +46,11 @@ public class ComputationalEffort extends QueryComputationEffortListener {
 
   @Override
   protected void processComputationEffort(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          ExtendedQuerySignature query, int slaveId, int taskId, long numberOfComparisons) {
+          int numberOfChunks, ExtendedQuerySignature query, int slaveId, int taskId,
+          long numberOfComparisons) {
+    while (slaveId > numberOfChunks) {
+      slaveId -= numberOfChunks;
+    }
     slaveId -= 1;
     if (numberOfComparisonsPerSlave == null) {
       numberOfComparisonsPerSlave = new long[slaveId + 1];

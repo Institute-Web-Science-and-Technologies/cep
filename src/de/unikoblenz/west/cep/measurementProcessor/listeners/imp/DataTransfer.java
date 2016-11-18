@@ -44,8 +44,8 @@ public class DataTransfer extends QueryMappingSentListener {
 
   @Override
   protected void processMappingSent(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          ExtendedQuerySignature query, int slaveId, int taskId, long[] sentMappings,
-          int numberOfVariablesPerMapping) {
+          int numberOfChunks, ExtendedQuerySignature query, int slaveId, int taskId,
+          long[] sentMappings, int numberOfVariablesPerMapping) {
     if (numberOfVariablesPerMapping == 0) {
       numberOfVariablesPerMapping = 1;
     }

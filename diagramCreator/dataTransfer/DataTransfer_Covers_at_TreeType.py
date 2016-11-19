@@ -51,45 +51,76 @@ with open(inputFile, 'rb') as f:
   reader = csv.reader(f, delimiter='\t')
   reader.next()
   for row in reader:
+    if row[5]=='SUBJECT_SUBJECT_JOIN':
+      continue;
     cover = ""
-    if int(row[1]) != 0:
-      cover += row[1] + "HOP_"
+    if int(row[2]) != 0:
+      cover += row[2] + "HOP_"
     cover += row[0]
-    treeType = row[2]
+    scale = row[1]
+    treeType = row[3]
     if not treeType in treeTypes:
       treeTypes[treeType] = {}
     if not cover in treeTypes[treeType]:
       treeTypes[treeType][cover] = {}
-    query = ("ss" if row[4]=='SUBJECT_SUBJECT_JOIN' else "so") + " #j=" + row[5] + " #ds=" + row[6] + " sel=" + row[7]
-    treeTypes[treeType][cover][query] = { "Data Transfer":long(row[8])}
+    if not scale in treeTypes[treeType][cover]:
+      treeTypes[treeType][cover][scale] = {}
+    query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " #tp=" + str(int(row[6])+1) + " #ds=" + row[7] + " sel=" + row[8]
+    treeTypes[treeType][cover][scale][query] = { "Data Transfer":long(row[9])}
 
 for measurementType in ["Data Transfer"]:
   for treeType in treeTypes.keys():
     coverSet = list(sorted(treeTypes[treeType].keys()))
-    dataRows = []
+    scaleSet = list(sorted(treeTypes[treeType][coverSet[0]].keys()))
+    dataRows = {}
     queryGroups = []
     for i, cover in enumerate(coverSet):
-      if i == 0:
-        queryGroups = list(sorted(treeTypes[treeType][cover].keys()))
-      dataRows.append([])
-      for query in queryGroups:
-        dataRows[i].append(treeTypes[treeType][cover][query][measurementType]);
-    # create diagramm
+      dataRows[cover] = {}
+      for j, scale in enumerate(scaleSet):
+        if i == 0:
+          queryGroups = list(sorted(treeTypes[treeType][cover][scale].keys()))
+        dataRows[cover][scale] = []
+        for query in queryGroups:
+          dataRows[cover][scale].append(treeTypes[treeType][cover][scale][query][measurementType]);
+
+    # create diagramm sorted by cover
     n_groups = len(queryGroups)
     fig, ax = plt.subplots()
     index = np.arange(n_groups)
-    bar_width = 1/float(len(coverSet)+1)
+    bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
     rects = []
-    colorBase = 1 / float(len(coverSet)+1)
+    colorBase = 1 / float(len(coverSet)*len(scaleSet)+1)
     for i, cover in enumerate(coverSet):
-      colorValue = "{:f}".format(colorBase*(i+0.5))
-      rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=cover))
+      for j, scale in enumerate(scaleSet):
+        colorValue = "{:f}".format(colorBase*(j*len(coverSet)+i))
+        rects.append(plt.bar(index + (i*len(coverSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover + ' ' + scale + ' chunks', log=True, bottom=1))
     plt.xlabel("Queries")
     plt.ylabel(measurementType)
     plt.title('Data transfer for query execution tree type ' + treeType, y=1.20)
     plt.xticks(index + 0.5, np.array(queryGroups))
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
-    plt.axis('tight')
-    plt.legend(bbox_to_anchor=(0., 1.04, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
-    plt.savefig(outputDir+'/dataTransfer_'+measurementType+'_treeType-'+treeType+'_forAll_covers.'+imageType, bbox_inches='tight')
+    #plt.axis('tight')
+    plt.title(measurementType + ' for ' + treeType + ' trees sorted by cover strategy',y=1.37)
+    plt.legend(bbox_to_anchor=(-0.2, 1.04, 1.2, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+    plt.savefig(outputDir+'/dataTransfer_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByCover.'+imageType, bbox_inches='tight')
 
+    # create diagramm sorted by scale
+    n_groups = len(queryGroups)
+    fig, ax = plt.subplots()
+    index = np.arange(n_groups)
+    bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)#1/float(len(coverSet)+1)
+    rects = []
+    colorBase = 1 / float(len(coverSet)*len(scaleSet)+1)#1 / float(len(coverSet)+1)
+    for i, scale in enumerate(scaleSet):
+      for j, cover in enumerate(coverSet):
+        colorValue = "{:f}".format(colorBase*(j*len(scaleSet)+i))#"{:f}".format(colorBase*(i+0.5))
+        rects.append(plt.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover  + ' ' + scale + ' chunks', log=True, bottom=1))
+    plt.xlabel("Queries")
+    plt.ylabel(measurementType)
+    plt.title('Data transfer for query execution tree type ' + treeType, y=1.20)
+    plt.xticks(index + 0.5, np.array(queryGroups))
+    plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
+    #plt.axis('tight')
+    plt.title(measurementType + ' for ' + treeType + ' trees sorted by number of chunks',y=1.37)
+    plt.legend(bbox_to_anchor=(-0.2, 1.04, 1.2, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+    plt.savefig(outputDir+'/dataTransfer_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByNumberOfChunks.'+imageType, bbox_inches='tight')

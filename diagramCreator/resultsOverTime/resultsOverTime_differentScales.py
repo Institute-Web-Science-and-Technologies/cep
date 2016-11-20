@@ -50,7 +50,8 @@ with open(inputFile, 'rb') as f:
       cover += row[2] + "HOP_"
     cover += row[0]
     scale = row[1]
-    query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " tree=" + ("ll" if row[3]=='LEFT_LINEAR' else ("rl" if row[3]=='RIGHT_LINEAR' else "b")) + " #tp=" + str(int(row[6])+1) + " #ds=" + row[7] + " sel=" + row[8]
+    treeType = row[3]
+    query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " #tp=" + str(int(row[6])+1) + " #ds=" + row[7] + " sel=" + row[8]
     row2 = reader.next();
     row = row[9:len(row)]
     row_time = []
@@ -68,27 +69,30 @@ with open(inputFile, 'rb') as f:
       row_percent.append(previous)
     if not query in queries.keys():
       queries[query] = {}
-    if not scale in queries[query].keys():
-      queries[query][scale] = {}
-    queries[query][scale][cover] = { 'time':row_time, 'percent':row_percent}
+    if not cover in queries[query].keys():
+      queries[query][cover] = {}
+    if not treeType in queries[query][cover].keys():
+      queries[query][cover][treeType] = {}
+    queries[query][cover][treeType][scale] = { 'time':row_time, 'percent':row_percent}
 
 lines = ["-","--"]#,"-.",":"]
 
-# create diagram per cover
 for query in sorted(queries.keys()):
-  for scale in sorted(queries[query].keys()):
-    fig, ax = plt.subplots()
-    coverSet = sorted(queries[query][scale].keys())
-    colorBase = 1 / float(len(coverSet)+1)
-    linecycler = cycle(lines)
-    for i, cover in enumerate(coverSet):
-      colorValue = "{:f}".format(colorBase*(i+0.5))
-      plt.plot(queries[query][scale][cover]['time'], queries[query][scale][cover]['percent'], label=cover, color=colorValue, linewidth=5, linestyle=next(linecycler))
-    plt.title(query + " for " + scale + " chunks")
-    plt.xlabel("Time (in sec)")
-    plt.ylabel("Percentage of returned results")
-    plt.axis('tight')
-    plt.legend(loc='upper left', ncol=len(sorted(queries[query].keys())), bbox_to_anchor=(0., -0.2, 1., .102))
-    plt.savefig(outputDir+'/resultsOverTime_'+query+'_'+scale+'chunks'+'.'+imageType, bbox_inches='tight')
-    plt.close(fig)
+  for cover in sorted(queries[query].keys()):
+    for treeType in sorted(queries[query][cover].keys()):
+      # create diagram
+      fig, ax = plt.subplots()
+      scaleSet = sorted(queries[query][cover][treeType].keys())
+      colorBase = 1 / float(len(scaleSet)+1)
+      linecycler = cycle(lines)
+      for i, scale in enumerate(scaleSet):
+        colorValue = "{:f}".format(colorBase*(i+0.5))
+        plt.plot(queries[query][cover][treeType][scale]['time'], queries[query][cover][treeType][scale]['percent'], label=scale+' chunks', color=colorValue, linewidth=5, linestyle=next(linecycler))
+      plt.title(query + ' for ' + treeType + ' trees and '+cover+' cover',y=1.02)
+      plt.xlabel("Time (in sec)")
+      plt.ylabel("Percentage of returned results")
+      plt.axis('tight')
+      plt.legend(loc='upper left', ncol=len(sorted(queries[query][cover][treeType].keys())), bbox_to_anchor=(0., -0.2, 1., .102))
+      plt.savefig(outputDir+'/resultsOverTime_'+query + '_cover-'+ cover + '_'+treeType +'.'+imageType, bbox_inches='tight')
+      plt.close(fig)
 

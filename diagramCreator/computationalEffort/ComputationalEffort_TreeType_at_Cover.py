@@ -52,44 +52,98 @@ with open(inputFile, 'rb') as f:
   reader.next()
   for row in reader:
     cover = ""
-    if int(row[1]) != 0:
-      cover += row[1] + "HOP_"
+    if int(row[2]) != 0:
+      cover += row[2] + "HOP_"
     cover += row[0]
-    treeType = row[2]
+    scale = row[1]
+    treeType = row[3]
     if not cover in coverTypes:
       coverTypes[cover] = {}
     if not treeType in coverTypes[cover]:
       coverTypes[cover][treeType] = {}
-    query = ("ss" if row[4]=='SUBJECT_SUBJECT_JOIN' else "so") + " #j=" + row[5] + " #ds=" + row[6] + " sel=" + row[7]
-    coverTypes[cover][treeType][query] = { "Total":long(row[8]), "Entropy":float(row[9]), "Standard Deviation":float(row[10])}
+    if not scale in coverTypes[cover][treeType]:
+      coverTypes[cover][treeType][scale] = {}
+    query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " #tp=" + str(int(row[6])+1) + " #ds=" + row[7] + " sel=" + row[8]
+    coverTypes[cover][treeType][scale][query] = { "Total":long(row[9]), "Entropy":float(row[10])}
 
-for measurementType in ["Total", "Entropy", "Standard Deviation"]:
+for measurementType in ["Total"]:
   for cover in coverTypes.keys():
     treeTypeSet = list(sorted(coverTypes[cover].keys()))
-    dataRows = []
+    scaleSet = list(sorted(coverTypes[cover][treeTypeSet[0]].keys()))
+    dataRows = {}
     queryGroups = []
     for i, treeType in enumerate(treeTypeSet):
-      if i == 0:
-        queryGroups = list(sorted(coverTypes[cover][treeType].keys()))
-      dataRows.append([])
-      for query in queryGroups:
-        dataRows[i].append(coverTypes[cover][treeType][query][measurementType]);
-    # create diagramm
+      dataRows[treeType] = {}
+      for j, scale in enumerate(scaleSet):
+        if i == 0:
+          queryGroups = list(sorted(coverTypes[cover][treeType][scale].keys()))
+        dataRows[treeType][scale] = []
+        for query in queryGroups:
+          dataRows[treeType][scale].append(coverTypes[cover][treeType][scale][query][measurementType]);
+    # create diagramm sorted by tree type
     n_groups = len(queryGroups)
     fig, ax = plt.subplots()
+    fig = plt.figure(figsize=(fig.get_figwidth()*2.5,fig.get_figheight()))
     index = np.arange(n_groups)
-    bar_width = 1/float(len(treeTypeSet)+1)
+    bar_width = 1/float(len(treeTypeSet)*len(scaleSet)+2+len(treeTypeSet)*1)
     rects = []
-    colorBase = 1 / float(len(treeTypeSet)+1)
+    colorBase = 1 / float(len(treeTypeSet)*len(scaleSet)+1)
     for i, treeType in enumerate(treeTypeSet):
-      colorValue = "{:f}".format(colorBase*(i+0.5))
-      rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[i]), bar_width, color=colorValue, label=treeType))
+      for j, scale in enumerate(scaleSet):
+        colorValue = "{:f}".format(colorBase*(j*len(treeTypeSet)+i))
+        if measurementType == "Entropy":
+          rects.append(plt.bar(index + (i*len(treeTypeSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[treeType][scale]), bar_width, color=colorValue, label=treeType + ' ' + scale + ' chunks'))
+        else:
+          rects.append(plt.bar(index + (i*len(treeTypeSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[treeType][scale]), bar_width, color=colorValue, label=treeType + ' ' + scale + ' chunks', log=True, bottom=1))
     plt.xlabel("Queries")
-    plt.ylabel(measurementType)
-    plt.title('Computational effort for graph cover ' + cover, y=1.12)
+    if measurementType == "Entropy":
+      plt.ylabel(measurementType)
+    else:
+      plt.ylabel(measurementType + " (log-scale)")
+    plt.title('Computational effort for graph cover ' + cover + ' sorted by tree type', y=1.25)
     plt.xticks(index + 0.5, np.array(queryGroups))
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.axis('tight')
     plt.legend(bbox_to_anchor=(0., 1.04, 1., .102), loc=3, ncol=3, mode="expand", borderaxespad=0.)
-    plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_cover-'+cover+'_forAll_treeTypes.'+imageType, bbox_inches='tight')
+    plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_cover-'+cover+'_sortedByTreeType.'+imageType, bbox_inches='tight')
 
+for measurementType in ["Total", "Entropy"]:
+  for cover in coverTypes.keys():
+    treeTypeSet = list(sorted(coverTypes[cover].keys()))
+    scaleSet = list(sorted(coverTypes[cover][treeTypeSet[0]].keys()))
+    dataRows = {}
+    queryGroups = []
+    for i, treeType in enumerate(treeTypeSet):
+      dataRows[treeType] = {}
+      for j, scale in enumerate(scaleSet):
+        if i == 0:
+          queryGroups = list(sorted(coverTypes[cover][treeType][scale].keys()))
+        dataRows[treeType][scale] = []
+        for query in queryGroups:
+          dataRows[treeType][scale].append(coverTypes[cover][treeType][scale][query][measurementType]);
+    # create diagramm sorted by scale
+    n_groups = len(queryGroups)
+    fig, ax = plt.subplots()
+    fig = plt.figure(figsize=(fig.get_figwidth()*2.5,fig.get_figheight()))
+    index = np.arange(n_groups)
+    bar_width = 1/float(len(treeTypeSet)*len(scaleSet)+2+len(treeTypeSet)*1)
+    rects = []
+    colorBase = 1 / float(len(treeTypeSet)*len(scaleSet)+1)
+    for i, scale in enumerate(scaleSet):
+      for j, treeType in enumerate(treeTypeSet):
+        colorValue = "{:f}".format(colorBase*(j*len(scaleSet)+i))
+        if measurementType == "Entropy":
+          rects.append(plt.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[treeType][scale]), bar_width, color=colorValue, label=treeType + ' ' + scale + ' chunks'))
+        else:
+          rects.append(plt.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[treeType][scale]), bar_width, color=colorValue, label=treeType + ' ' + scale + ' chunks', log=True, bottom=1))
+    plt.xlabel("Queries")
+    if measurementType == "Entropy":
+      plt.ylabel(measurementType)
+    else:
+      plt.ylabel(measurementType + " (log-scale)")
+    plt.title('Computational effort for graph cover ' + cover + ' sorted by number of chunks', y=1.25)
+    plt.xticks(index + 0.5, np.array(queryGroups))
+    plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
+    plt.axis('tight')
+    plt.legend(bbox_to_anchor=(0., 1.04, 1., .102), loc=3, ncol=3, mode="expand", borderaxespad=0.)
+    plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_cover-'+cover+'_sortedByNumberOfChunks.'+imageType, bbox_inches='tight')

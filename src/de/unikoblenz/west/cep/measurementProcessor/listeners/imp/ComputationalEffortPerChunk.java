@@ -21,6 +21,7 @@ package de.unikoblenz.west.cep.measurementProcessor.listeners.imp;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
 
 import java.io.File;
+import java.util.Arrays;
 
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
@@ -44,6 +45,13 @@ public class ComputationalEffortPerChunk extends ComputationalEffort {
     if (numberOfComparisonsPerSlave == null) {
       return;
     }
+    Arrays.sort(numberOfComparisonsPerSlave);
+    long[] newComps = new long[numberOfComparisonsPerSlave.length];
+    for (int i = numberOfComparisonsPerSlave.length - 1; i >= 0; i--) {
+      newComps[(newComps.length - 1) - i] = numberOfComparisonsPerSlave[i];
+    }
+    numberOfComparisonsPerSlave = newComps;
+
     StringBuilder sb = new StringBuilder();
     for (long value : numberOfComparisonsPerSlave) {
       sb.append("\t").append(value);

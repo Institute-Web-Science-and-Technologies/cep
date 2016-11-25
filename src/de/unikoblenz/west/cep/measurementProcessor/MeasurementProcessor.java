@@ -35,6 +35,7 @@ import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.ComputationalEf
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.DataTransfer;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.LoadTime;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.OverallQueryExecutionTime;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.QueryOperationTimesPerSlave;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.ResultsOverTime;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.imp.StorageBalance;
 import de.unikoblenz.west.cep.measurementProcessor.utils.CSVIterator;
@@ -152,7 +153,8 @@ public class MeasurementProcessor implements Closeable {
   @SuppressWarnings("unchecked")
   private static Class<? extends MeasurementListener>[] queryListeners = new Class[] {
           DataTransfer.class, ComputationalEffort.class, OverallQueryExecutionTime.class,
-          ResultsOverTime.class, ComputationalEffortPerChunk.class };
+          ResultsOverTime.class, ComputationalEffortPerChunk.class,
+          QueryOperationTimesPerSlave.class };
 
   public static void main(String[] args) throws ParseException {
     Options options = MeasurementProcessor.createCommandLineOptions();

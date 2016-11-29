@@ -85,7 +85,7 @@ for measurementType in ["Execution Time"]:
         dataRows[query][scale][treeType] = {}
         for l, cover in enumerate(coverSet):
           dataRows[query][scale][treeType][cover] = {}
-          for m, operation in enumerate(queries[query][scale][treeType][cover].keys()):
+          for m, operation in enumerate(list(sorted(queries[query][scale][treeType][cover].keys()))):
             dataRows[query][scale][treeType][cover][operation] = []
             for n, slave in enumerate(queries[query][scale][treeType][cover][operation]):
                 dataRows[query][scale][treeType][cover][operation].append(queries[query][scale][treeType][cover][operation][slave]);
@@ -95,23 +95,28 @@ for measurementType in ["Execution Time"]:
     for j, scale in enumerate(scaleSet):
       for k, treeType in enumerate(treeTypeSet):
         for l, cover in enumerate(coverSet):
-          operationSet = queries[query][scale][treeType][cover].keys()
-          slaveSet = list(sorted(queries[query][scale][treeType][cover][list(operationSet)[0]].keys()));
+          operationSet = list(sorted(queries[query][scale][treeType][cover].keys(),key=queries[query][scale][treeType][cover].__getitem__))
+          slaveSet = list(sorted(queries[query][scale][treeType][cover][operationSet[0]].keys()));
           n_groups = scale
           fig, ax = plt.subplots()
-          fig = plt.figure(figsize=(fig.get_figwidth()*(scale/20.),5))
+          fig2 = plt.figure(figsize=(fig.get_figwidth()*(scale/20.)*(len(operationSet)/4),5))
           index = np.arange(n_groups)
           bar_width = 1/float(len(operationSet)+1)
           rects = []
-          colorBase = 1 / float(len(operationSet)+1)
+          colormap = plt.cm.gist_ncar
+          colors = [colormap(i) for i in np.linspace(0, 0.9, len(operationSet))]
+          plt.gca().set_color_cycle(colors)
+          #colorBase = 1 / float(len(operationSet)+1)
           for n, operation in enumerate(operationSet):
-            colorValue = "{:f}".format(colorBase*(n+0.5))
-            rects.append(plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]), bar_width, color=colorValue, label=operation, log=False, bottom=0))
+            #colorValue = "{:f}".format(colorBase*(n+0.5))
+            #rects.append(plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]), bar_width, color=colorValue, label=operation, log=False, bottom=0))
+            rects.append(plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]), bar_width, color=colors[n], label=operation, log=False, bottom=0))
           plt.xlabel("Slaves")
           plt.ylabel(measurementType + ' (in sec)')
           plt.xticks(index + 0.5, np.array(slaveSet))
           plt.setp(plt.gca().get_xticklabels(), rotation=90, horizontalalignment='right')
-          plt.legend(bbox_to_anchor=(1.03,0,1/(scale/15.),1), loc='upper left', ncol=1, mode="expand", borderaxespad=0.)
+          plt.legend(bbox_to_anchor=(1.03,0,1/(scale/15.)/(len(operationSet)/4),1), loc='upper left', ncol=1, mode="expand", borderaxespad=0.)
           plt.title('Query operation execution time for query ' + query + '\n' + treeType + ' tree, ' + cover + ' cover and ' + str(scale) + ' chunks', y=1.05)
           plt.savefig(outputDir+'/queryOperationTime'+'_cover='+cover+'_scale='+str(scale)+'_query='+query+'_treeType='+treeType+'.'+imageType, bbox_inches='tight')
-    sys.exit()
+          plt.close(fig2)
+          plt.close(fig)

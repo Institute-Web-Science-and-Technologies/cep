@@ -61,7 +61,8 @@ public abstract class QueryOperationListener extends QueryListener {
             operationId2operation.put(querySignature, operationId2operation2);
           }
           for (int i = 5; i < measurements.length; i += 2) {
-            operationId2operation2.put(Long.parseLong(measurements[i]), measurements[i + 1]);
+            operationId2operation2.put(Long.parseLong(measurements[i]),
+                    measurements[i] + ":" + measurements[i + 1]);
           }
           break;
         case QUERY_COORDINATOR_SEND_QUERY_TO_SLAVE:

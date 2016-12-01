@@ -106,6 +106,12 @@ public abstract class QueryOperationListener extends QueryListener {
                           currentQueryFileName, treeType, currentQueryRepetition),
                   operation, computer, timestamp);
           break;
+        case QUERY_COORDINATOR_SEND_QUERY_RESULTS_TO_CLIENT:
+          processQueryResult(graphCoverStrategy, nHopReplication, numberOfChunks,
+                  new ExtendedQuerySignature(Integer.parseInt(measurements[6]),
+                          currentQueryFileName, treeType, currentQueryRepetition),
+                  timestamp, Long.parseLong(measurements[6]), Long.parseLong(measurements[7]));
+          break;
         case QUERY_COORDINATOR_END:
           processQueryCoordinatorEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
                   new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
@@ -154,6 +160,10 @@ public abstract class QueryOperationListener extends QueryListener {
   protected abstract void processQueryOperationEnd(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
           String operation, String computer, long timestamp);
+
+  protected abstract void processQueryResult(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, int numberOfChunks, ExtendedQuerySignature query,
+          long queryResultSentTime, long firstResultNumber, long lastResultNumber);
 
   protected abstract void processQueryCoordinatorEnd(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,

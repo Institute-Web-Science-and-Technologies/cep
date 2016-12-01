@@ -62,14 +62,19 @@ with open(inputFile, 'rb') as f:
       queries[query][scale][treeType] = {}
     if not cover in queries[query][scale][treeType]:
       queries[query][scale][treeType][cover] = {}
-    for i in range(len(row)):
-      if i >= 9 and (i-9)%3==0 :
+    for i in range(len(row)-1):
+      if i >= 9 and (i-9)%4==0:
         slave = row[i]
         operation = row[i+1]
-        time = long(row[i+2])/1000
+        start = long(row[i+2])/1000
+        time = long(row[i+3])/1000
         if not operation in queries[query][scale][treeType][cover]:
           queries[query][scale][treeType][cover][operation] = {}
-        queries[query][scale][treeType][cover][operation][slave] = time
+        if not slave in queries[query][scale][treeType][cover][operation]:
+          queries[query][scale][treeType][cover][operation][slave] = {}
+        queries[query][scale][treeType][cover][operation][slave]['start time'] = start
+        queries[query][scale][treeType][cover][operation][slave]['execution time'] = time
+        queries[query][scale][treeType][cover][operation][slave]['total time'] = long(row[len(row)-1])/1000
 
 for measurementType in ["Execution Time"]:
   querySet = list(sorted(queries.keys()))
@@ -86,9 +91,11 @@ for measurementType in ["Execution Time"]:
         for l, cover in enumerate(coverSet):
           dataRows[query][scale][treeType][cover] = {}
           for m, operation in enumerate(list(sorted(queries[query][scale][treeType][cover].keys()))):
-            dataRows[query][scale][treeType][cover][operation] = []
+            dataRows[query][scale][treeType][cover][operation] = {'start time' : [], 'execution time' : [], 'total time' : 0}
             for n, slave in enumerate(queries[query][scale][treeType][cover][operation]):
-                dataRows[query][scale][treeType][cover][operation].append(queries[query][scale][treeType][cover][operation][slave]);
+                dataRows[query][scale][treeType][cover][operation]['start time'].append(queries[query][scale][treeType][cover][operation][slave]['start time']);
+                dataRows[query][scale][treeType][cover][operation]['execution time'].append(queries[query][scale][treeType][cover][operation][slave]['execution time']);
+                dataRows[query][scale][treeType][cover][operation]['total time'] = queries[query][scale][treeType][cover][operation][slave]['total time'];
 
   # create diagramms per treeType
   for i, query in enumerate(querySet):
@@ -102,15 +109,23 @@ for measurementType in ["Execution Time"]:
           fig2 = plt.figure(figsize=(fig.get_figwidth()*(scale/20.)*(len(operationSet)/4),5))
           index = np.arange(n_groups)
           bar_width = 1/float(len(operationSet)+1)
-          rects = []
           colormap = plt.cm.gist_ncar
           colors = [colormap(i) for i in np.linspace(0, 0.9, len(operationSet))]
           plt.gca().set_color_cycle(colors)
           #colorBase = 1 / float(len(operationSet)+1)
+          totalTime = 0;
+          wasSet = False;
           for n, operation in enumerate(operationSet):
             #colorValue = "{:f}".format(colorBase*(n+0.5))
-            #rects.append(plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]), bar_width, color=colorValue, label=operation, log=False, bottom=0))
-            rects.append(plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]), bar_width, color=colors[n], label=operation, log=False, bottom=0))
+            #plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]), bar_width, color=colorValue, label=operation, log=False, bottom=0)
+            if not wasSet and sum(dataRows[query][scale][treeType][cover][operation]['start time']) > 0:
+              startTimeBar = plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]['start time']), bar_width, color='gray', label='start receiving time', log=False, bottom=0)
+              wasSet = True;
+            else:
+              startTimeBar = plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]['start time']), bar_width, color='gray', log=False, bottom=0)
+            exTimeBar = plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]['execution time']), bar_width, color=colors[n], label=operation, log=False, bottom=np.array(dataRows[query][scale][treeType][cover][operation]['start time']))
+            totalTime = dataRows[query][scale][treeType][cover][operation]['total time']
+          plt.axhline(y=totalTime, xmin=0, xmax=1, linewidth=2, color='red', label="last result sent to client")
           plt.xlabel("Slaves")
           plt.ylabel(measurementType + ' (in sec)')
           plt.xticks(index + 0.5, np.array(slaveSet))

@@ -82,9 +82,19 @@ public class QueryOperationOutput extends QueryOperationListener {
   }
 
   @Override
+  protected void processQueryOperationSentMappingsToOtherSlaves(
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
+          ExtendedQuerySignature extendedQuerySignature, String operation, String computer,
+          long[] emittedValuesToOtherSlaves) {
+  }
+
+  @Override
   protected void processQueryOperationEnd(CoverStrategyType graphCoverStrategy, int nHopReplication,
           int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, String operation,
           String computer, long timestamp, long[] emittedMappings) {
+    if (extendedQuerySignature.repetition > 1) {
+      return;
+    }
     QuerySignature basicQuery = extendedQuerySignature.getBasicSignature();
     Map<String, Map<String, Long>> slaves = emittedOperationMappings.get(basicQuery);
     if (slaves == null) {

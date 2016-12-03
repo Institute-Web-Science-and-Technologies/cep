@@ -159,6 +159,13 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
   }
 
   @Override
+  protected void processQueryOperationSentMappingsToOtherSlaves(
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
+          ExtendedQuerySignature extendedQuerySignature, String operation, String computer,
+          long[] emittedValuesToOtherSlaves) {
+  }
+
+  @Override
   protected void processQueryOperationEnd(CoverStrategyType graphCoverStrategy, int nHopReplication,
           int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, String operation,
           String computer, long timestamp, long[] emittedMappings) {

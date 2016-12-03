@@ -22,6 +22,10 @@ public abstract class QueryOperationListener extends QueryListener {
     operationId2operation = new HashMap<>();
   }
 
+  protected Map<Long, String> getOperations(QuerySignature query) {
+    return operationId2operation.get(query);
+  }
+
   @Override
   public void processMeasurement(String... measurements) {
     super.processMeasurement(measurements);
@@ -98,6 +102,20 @@ public abstract class QueryOperationListener extends QueryListener {
                           currentQueryFileName, treeType, currentQueryRepetition),
                   operation, computer, timestamp);
           break;
+        case QUERY_OPERATION_SENT_MAPPINGS_TO_SLAVE:
+          operation = operationId2operation.get(new QuerySignature(currentQueryFileName, treeType))
+                  .get(Long.parseLong(measurements[5]));
+          long[] emittedValuesToOtherSlaves = new long[numberOfChunks];
+          for (int i = 1; i < emittedValuesToOtherSlaves.length; i++) {
+            emittedValuesToOtherSlaves[i] = Long.parseLong(measurements[6 + ((i - 1) * 2) + 1]);
+          }
+          processQueryOperationSentMappingsToOtherSlaves(graphCoverStrategy, nHopReplication,
+                  numberOfChunks,
+                  new ExtendedQuerySignature(Integer.parseInt(measurements[4]),
+                          currentQueryFileName, treeType, currentQueryRepetition),
+                  operation, computer, emittedValuesToOtherSlaves);
+
+          break;
         case QUERY_OPERATION_CLOSED:
           operation = operationId2operation.get(new QuerySignature(currentQueryFileName, treeType))
                   .get(Long.parseLong(measurements[6]));
@@ -160,6 +178,11 @@ public abstract class QueryOperationListener extends QueryListener {
   protected abstract void processQueryOperationStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
           String operation, String computer, long timestamp);
+
+  protected abstract void processQueryOperationSentMappingsToOtherSlaves(
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
+          ExtendedQuerySignature extendedQuerySignature, String operation, String computer,
+          long[] emittedValuesToOtherSlaves);
 
   /**
    * @param graphCoverStrategy

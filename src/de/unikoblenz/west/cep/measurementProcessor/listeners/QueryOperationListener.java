@@ -101,9 +101,9 @@ public abstract class QueryOperationListener extends QueryListener {
         case QUERY_OPERATION_CLOSED:
           operation = operationId2operation.get(new QuerySignature(currentQueryFileName, treeType))
                   .get(Long.parseLong(measurements[6]));
-          long[] emittedValues = new long[measurements.length - 10];
-          for (int i = 10; i < measurements.length; i++) {
-            emittedValues[i - 10] = Long.parseLong(measurements[i]);
+          long[] emittedValues = new long[measurements.length - 9];
+          for (int i = 9; i < measurements.length; i++) {
+            emittedValues[i - 9] = Long.parseLong(measurements[i]);
           }
           processQueryOperationEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
                   new ExtendedQuerySignature(Integer.parseInt(measurements[6]),

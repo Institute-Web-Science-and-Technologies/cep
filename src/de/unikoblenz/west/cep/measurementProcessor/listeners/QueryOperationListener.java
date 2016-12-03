@@ -101,10 +101,14 @@ public abstract class QueryOperationListener extends QueryListener {
         case QUERY_OPERATION_CLOSED:
           operation = operationId2operation.get(new QuerySignature(currentQueryFileName, treeType))
                   .get(Long.parseLong(measurements[6]));
+          long[] emittedValues = new long[measurements.length - 10];
+          for (int i = 10; i < measurements.length; i++) {
+            emittedValues[i - 10] = Long.parseLong(measurements[i]);
+          }
           processQueryOperationEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
                   new ExtendedQuerySignature(Integer.parseInt(measurements[6]),
                           currentQueryFileName, treeType, currentQueryRepetition),
-                  operation, computer, timestamp);
+                  operation, computer, timestamp, emittedValues);
           break;
         case QUERY_COORDINATOR_SEND_QUERY_RESULTS_TO_CLIENT:
           processQueryResult(graphCoverStrategy, nHopReplication, numberOfChunks,
@@ -157,9 +161,21 @@ public abstract class QueryOperationListener extends QueryListener {
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
           String operation, String computer, long timestamp);
 
+  /**
+   * @param graphCoverStrategy
+   * @param nHopReplication
+   * @param numberOfChunks
+   * @param extendedQuerySignature
+   * @param operation
+   * @param computer
+   * @param timestamp
+   * @param emittedMappings
+   *          first index: number of mappings emitted to master; thereafter
+   *          mappings emitted to slaves
+   */
   protected abstract void processQueryOperationEnd(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
-          String operation, String computer, long timestamp);
+          String operation, String computer, long timestamp, long[] emittedMappings);
 
   protected abstract void processQueryResult(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature query,

@@ -4,56 +4,39 @@ import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryOperationListener;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QuerySignature;
-import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
  *
  */
-public class QueryExecutionTimeline extends QueryOperationListener {
+public class QueryOperationOutput extends QueryOperationListener {
 
-  private final Map<QuerySignature, long[]> parseStarts;
+  private final Map<QuerySignature, Map<String, Map<String, Long>>> emittedOperationMappings;
 
-  private final Map<QuerySignature, long[]> parseEnds;
-
-  private final Map<QuerySignature, long[]> sendQueryEnds;
-
-  private final Map<QuerySignature, long[]> executionEnds;
-
-  public QueryExecutionTimeline() {
+  public QueryOperationOutput() {
     super();
-    parseStarts = new HashMap<>();
-    parseEnds = new HashMap<>();
-    sendQueryEnds = new HashMap<>();
-    executionEnds = new HashMap<>();
+    emittedOperationMappings = new HashMap<>();
   }
 
   @Override
   protected File getOutputFile(File outputDirectory) {
-    return new File(outputDirectory.getAbsolutePath() + File.separator + "executionTimelines.csv");
+    return new File(outputDirectory.getAbsolutePath() + File.separator + "operationOutput.csv");
   }
 
   @Override
   protected String getHeadLine() {
-    return super.getHeadLine() + "\tparseTime\tquerySendTime\texecutionTime";
+    return super.getHeadLine() + "\t(slave\toperation\temittedMappints)+";
   }
 
   @Override
   protected void processQueryCoordinatorStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature query,
           long queryCoordinatorStartTime) {
-    QuerySignature basicSignature = query.getBasicSignature();
-    long[] starts = parseStarts.get(basicSignature);
-    if (starts == null) {
-      starts = new long[numberOfRepetitions];
-      parseStarts.put(basicSignature, starts);
-    }
-    starts[query.repetition - 1] = queryCoordinatorStartTime;
   }
 
   @Override
@@ -66,13 +49,6 @@ public class QueryExecutionTimeline extends QueryOperationListener {
   protected void processQueryCoordinatorParseEnd(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
           long timestamp) {
-    QuerySignature basicSignature = extendedQuerySignature.getBasicSignature();
-    long[] ends = parseEnds.get(basicSignature);
-    if (ends == null) {
-      ends = new long[numberOfRepetitions];
-      parseEnds.put(basicSignature, ends);
-    }
-    ends[extendedQuerySignature.repetition - 1] = timestamp;
   }
 
   @Override
@@ -97,13 +73,6 @@ public class QueryExecutionTimeline extends QueryOperationListener {
   protected void processQueryCoordinatorSendQueryStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
           long timestamp) {
-    QuerySignature basicSignature = extendedQuerySignature.getBasicSignature();
-    long[] ends = sendQueryEnds.get(basicSignature);
-    if (ends == null) {
-      ends = new long[numberOfRepetitions];
-      sendQueryEnds.put(basicSignature, ends);
-    }
-    ends[extendedQuerySignature.repetition - 1] = timestamp;
   }
 
   @Override
@@ -116,21 +85,28 @@ public class QueryExecutionTimeline extends QueryOperationListener {
   protected void processQueryOperationEnd(CoverStrategyType graphCoverStrategy, int nHopReplication,
           int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, String operation,
           String computer, long timestamp, long[] emittedMappings) {
+    QuerySignature basicQuery = extendedQuerySignature.getBasicSignature();
+    Map<String, Map<String, Long>> slaves = emittedOperationMappings.get(basicQuery);
+    if (slaves == null) {
+      slaves = new HashMap<>();
+      emittedOperationMappings.put(basicQuery, slaves);
+    }
+    Map<String, Long> operations = slaves.get(computer);
+    if (operations == null) {
+      operations = new HashMap<>();
+      slaves.put(computer, operations);
+    }
+    long emittedMappingsNumber = 0;
+    for (int i = 0; i < emittedMappings.length; i++) {
+      emittedMappingsNumber += emittedMappings[i];
+    }
+    operations.put(operation, emittedMappingsNumber);
   }
 
   @Override
   protected void processQueryResult(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, long timestamp,
+          int numberOfChunks, ExtendedQuerySignature query, long queryResultSentTime,
           long firstResultNumber, long lastResultNumber) {
-    QuerySignature basicSignature = extendedQuerySignature.getBasicSignature();
-    long[] ends = executionEnds.get(basicSignature);
-    if (ends == null) {
-      ends = new long[numberOfRepetitions];
-      executionEnds.put(basicSignature, ends);
-    }
-    if (ends[extendedQuerySignature.repetition - 1] < timestamp) {
-      ends[extendedQuerySignature.repetition - 1] = timestamp;
-    }
   }
 
   @Override
@@ -141,25 +117,16 @@ public class QueryExecutionTimeline extends QueryOperationListener {
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
-    QuerySignature basicSignature = query.getBasicSignature();
-    int numberOfSkippedValues = numberOfRepetitions / 10;
-    long[][] measuredTimes = { parseStarts.get(basicSignature), parseEnds.get(basicSignature),
-            sendQueryEnds.get(basicSignature), executionEnds.get(basicSignature) };
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < (measuredTimes.length - 1); i++) {
-      long[] executionTimes = new long[measuredTimes[0].length];
-      for (int j = 0; j < executionTimes.length; j++) {
-        executionTimes[j] = measuredTimes[i + 1][j] - measuredTimes[i][j];
+    for (Entry<String, Map<String, Long>> slaves : emittedOperationMappings
+            .get(query.getBasicSignature()).entrySet()) {
+      for (Entry<String, Long> operations : slaves.getValue().entrySet()) {
+        sb.append("\t").append(slaves.getKey()).append("\t").append(operations.getKey())
+                .append("\t").append(operations.getValue());
       }
-      if (numberOfSkippedValues > 0) {
-        Arrays.sort(executionTimes);
-        executionTimes = Arrays.copyOfRange(executionTimes, numberOfSkippedValues,
-                executionTimes.length - numberOfSkippedValues);
-      }
-      long averageTime = Utilities.computeArithmeticMean(executionTimes);
-      sb.append("\t").append(averageTime);
     }
     writeLine(sb.toString());
+    emittedOperationMappings.remove(query.getBasicSignature());
   }
 
 }

@@ -161,7 +161,7 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
   @Override
   protected void processQueryOperationEnd(CoverStrategyType graphCoverStrategy, int nHopReplication,
           int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, String operation,
-          String computer, long timestamp) {
+          String computer, long timestamp, long[] emittedMappings) {
     long[][] operationTimes = operationExecutionTimesPerSlaveAndQuery
             .get(extendedQuerySignature.getBasicSignature()).get(computer).get(operation);
     operationTimes[0][extendedQuerySignature.repetition - 1] = timestamp

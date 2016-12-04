@@ -116,7 +116,6 @@ public class QueryOperationInput extends QueryOperationListener {
         return;
       }
     }
-    slaveIds.put(i, computer);
   }
 
   @Override

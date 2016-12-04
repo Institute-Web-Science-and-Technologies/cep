@@ -28,7 +28,7 @@ import sys
 import csv
 
 if len(sys.argv) != 4:
-  print("You must have the following arguments: <operationTimesPerSlave.csv> <outputDir> <imageType>")
+  print("You must have the following arguments: <operationInput.csv> <outputDir> <imageType>")
   sys.exit()
 
 inputFile = sys.argv[1]
@@ -42,7 +42,10 @@ if not os.path.exists(outputDir):
 
 def split(opName):
   parts = opName.split(':')
-  return int(parts[0])
+  if len(parts) == 1:
+    return -1;
+  else:
+    return int(parts[0])
 
 queries = {}
 
@@ -67,20 +70,17 @@ with open(inputFile, 'rb') as f:
     if not cover in queries[query][scale][treeType]:
       queries[query][scale][treeType][cover] = {}
     for i in range(len(row)-1):
-      if i >= 9 and (i-9)%4==0:
+      if i >= 9 and (i-9)%3==0:
         slave = row[i]
         operation = row[i+1]
-        start = long(row[i+2])/1000
-        time = long(row[i+3])/1000
+        start = long(row[i+2])
         if not operation in queries[query][scale][treeType][cover]:
           queries[query][scale][treeType][cover][operation] = {}
         if not slave in queries[query][scale][treeType][cover][operation]:
           queries[query][scale][treeType][cover][operation][slave] = {}
-        queries[query][scale][treeType][cover][operation][slave]['start time'] = start
-        queries[query][scale][treeType][cover][operation][slave]['execution time'] = time
-        queries[query][scale][treeType][cover][operation][slave]['total time'] = long(row[len(row)-1])/1000
+        queries[query][scale][treeType][cover][operation][slave] = start
 
-for measurementType in ["Execution Time"]:
+for measurementType in ["Received Variable Bindings"]:
   querySet = list(sorted(queries.keys()))
   scaleSet = list(sorted(queries[querySet[0]].keys()))
   treeTypeSet = list(sorted(queries[querySet[0]][scaleSet[0]].keys()))
@@ -95,11 +95,9 @@ for measurementType in ["Execution Time"]:
         for l, cover in enumerate(coverSet):
           dataRows[query][scale][treeType][cover] = {}
           for m, operation in enumerate(list(sorted(queries[query][scale][treeType][cover].keys()))):
-            dataRows[query][scale][treeType][cover][operation] = {'start time' : [], 'execution time' : [], 'total time' : 0}
+            dataRows[query][scale][treeType][cover][operation] = []
             for n, slave in enumerate(queries[query][scale][treeType][cover][operation]):
-                dataRows[query][scale][treeType][cover][operation]['start time'].append(queries[query][scale][treeType][cover][operation][slave]['start time']);
-                dataRows[query][scale][treeType][cover][operation]['execution time'].append(queries[query][scale][treeType][cover][operation][slave]['execution time']);
-                dataRows[query][scale][treeType][cover][operation]['total time'] = queries[query][scale][treeType][cover][operation][slave]['total time'];
+                dataRows[query][scale][treeType][cover][operation].append(queries[query][scale][treeType][cover][operation][slave]);
 
   # create diagramms per treeType
   for i, query in enumerate(querySet):
@@ -107,35 +105,31 @@ for measurementType in ["Execution Time"]:
       for k, treeType in enumerate(treeTypeSet):
         for l, cover in enumerate(coverSet):
           operationSet = list(sorted(queries[query][scale][treeType][cover].keys(),key=split))
-          slaveSet = list(sorted(queries[query][scale][treeType][cover][operationSet[0]].keys()));
-          n_groups = scale
+          slaveSet = list(sorted(queries[query][scale][treeType][cover][operationSet[0]].keys()))
+          slaveSet.extend(list(sorted(queries[query][scale][treeType][cover][operationSet[1]].keys())));
+          n_groups = scale+1
           fig, ax = plt.subplots()
-          fig2 = plt.figure(figsize=(fig.get_figwidth()*(scale/20.)*(len(operationSet)/4),5))
+          fig2 = plt.figure(figsize=(fig.get_figwidth()*((scale+1)/20.)*(len(operationSet)/4.),5))
           index = np.arange(n_groups)
           bar_width = 1/float(len(operationSet)+1)
           colormap = plt.cm.gist_ncar
           colors = [colormap(i) for i in np.linspace(0, 0.9, len(operationSet))]
           plt.gca().set_color_cycle(colors)
-          #colorBase = 1 / float(len(operationSet)+1)
-          totalTime = 0;
-          wasSet = False;
           for n, operation in enumerate(operationSet):
-            #colorValue = "{:f}".format(colorBase*(n+0.5))
-            #plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]), bar_width, color=colorValue, label=operation, log=False, bottom=0)
-            if not wasSet and sum(dataRows[query][scale][treeType][cover][operation]['start time']) > 0:
-              startTimeBar = plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]['start time']), bar_width, color='gray', label='start receiving time', log=False, bottom=0)
-              wasSet = True;
+            if n == 0:
+              values = [0] * len(slaveSet)
+              values[0] = dataRows[query][scale][treeType][cover][operation][0]
             else:
-              startTimeBar = plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]['start time']), bar_width, color='gray', log=False, bottom=0)
-            exTimeBar = plt.bar(index + n * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover][operation]['execution time']), bar_width, color=colors[n], label=operation, log=False, bottom=np.array(dataRows[query][scale][treeType][cover][operation]['start time']))
-            totalTime = dataRows[query][scale][treeType][cover][operation]['total time']
-          plt.axhline(y=totalTime, xmin=0, xmax=1, linewidth=2, color='red', label="last result sent to client")
+              values = [0]
+              values.extend(dataRows[query][scale][treeType][cover][operation])
+            plt.bar(index + n * bar_width + 0.5*bar_width, np.array(values), bar_width, color=colors[n], label=operation, log=True, bottom=1)
+          plt.axis('tight')
           plt.xlabel("Slaves")
-          plt.ylabel(measurementType + ' (in sec)')
-          plt.xticks(index + 0.5, np.array(slaveSet))
+          plt.ylabel(measurementType)
+          plt.xticks(index+0.6, np.array(slaveSet))
           plt.setp(plt.gca().get_xticklabels(), rotation=90, horizontalalignment='right')
-          plt.legend(bbox_to_anchor=(1.03,0,1/(scale/15.)/(len(operationSet)/4),1), loc='upper left', ncol=1, mode="expand", borderaxespad=0.)
-          plt.title('Query operation execution time for query ' + query + '\n' + treeType + ' tree, ' + cover + ' cover and ' + str(scale) + ' chunks', y=1.05)
-          plt.savefig(outputDir+'/queryOperationTime'+'_cover='+cover+'_scale='+str(scale)+'_query='+query+'_treeType='+treeType+'.'+imageType, bbox_inches='tight')
+          plt.legend(bbox_to_anchor=(1.03,0,1/((scale+1)/10.)/(len(operationSet)/4.),1), loc='upper left', ncol=1, mode="expand", borderaxespad=0.)
+          plt.title('Query operation input for query ' + query + '\n' + treeType + ' tree, ' + cover + ' cover and ' + str(scale) + ' chunks', y=1.05)
+          plt.savefig(outputDir+'/queryOperationInput'+'_cover='+cover+'_scale='+str(scale)+'_query='+query+'_treeType='+treeType+'.'+imageType, bbox_inches='tight')
           plt.close(fig2)
           plt.close(fig)

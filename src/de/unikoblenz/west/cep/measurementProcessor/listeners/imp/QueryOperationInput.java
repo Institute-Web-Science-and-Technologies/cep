@@ -257,6 +257,9 @@ public class QueryOperationInput extends QueryOperationListener {
   }
 
   private boolean isParent(long operationId, String operation) {
+    if (operation.contains("match")) {
+      return false;
+    }
     String[] idAndString = operation.split(Pattern.quote(":"));
     String[] nameAndRest = idAndString[1].split(Pattern.quote("("));
     String paramString = nameAndRest[1].substring(0, nameAndRest[1].length() - 1);

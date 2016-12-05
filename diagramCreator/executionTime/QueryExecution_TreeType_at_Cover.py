@@ -87,10 +87,11 @@ for measurementType in ["Execution Time"]:
     index = np.arange(n_groups)
     bar_width =  1/float(len(treeTypeSet)*len(scaleSet)+2+len(treeTypeSet)*1)
     rects = []
-    colorBase =  1 / float(len(treeTypeSet)*len(scaleSet)+1)
+    colormap = plt.cm.gist_ncar
+    colors = [colormap(i) for i in np.linspace(0, 0.9, len(treeTypeSet)*len(scaleSet))]
     for i, treeType in enumerate(treeTypeSet):
       for j, scale in enumerate(scaleSet):
-        colorValue = "{:f}".format(colorBase*(j*len(treeTypeSet)+i))
+        colorValue = colors[(i*len(treeTypeSet)+j)]
         rects.append(plt.bar(index + (i*len(treeTypeSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[treeType][scale]), bar_width, color=colorValue, label=treeType + ' ' + scale + ' chunks', log=True, bottom=1))
     plt.xlabel("Queries")
     plt.ylabel(measurementType + " (in sec, log-scale)")
@@ -101,6 +102,7 @@ for measurementType in ["Execution Time"]:
     plt.title(measurementType + ' for ' + cover + ' cover sorted by tree type',y=1.37)
     plt.legend(bbox_to_anchor=(-0.2, 1.04, 1.2, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
     plt.savefig(outputDir+'/queryExecution_'+measurementType+'_cover-'+cover+'_forAll_sortedByTreeType.'+imageType, bbox_inches='tight')
+    plt.close('all')
 
     # create diagramm sorted by number of chunks
     n_groups = len(queryGroups)
@@ -108,10 +110,11 @@ for measurementType in ["Execution Time"]:
     index = np.arange(n_groups)
     bar_width =  1/float(len(treeTypeSet)*len(scaleSet)+2+len(treeTypeSet)*1)
     rects = []
-    colorBase =  1 / float(len(treeTypeSet)*len(scaleSet)+1)
+    colormap = plt.cm.gist_ncar
+    colors = [colormap(i) for i in np.linspace(0, 0.9, len(treeTypeSet)*len(scaleSet))]
     for i, scale in enumerate(scaleSet):
       for j, treeType in enumerate(treeTypeSet):
-        colorValue = "{:f}".format(colorBase*(j*len(scaleSet)+i))
+        colorValue = colors[(i*len(scaleSet)+j)]
         rects.append(plt.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[treeType][scale]), bar_width, color=colorValue, label=treeType + ' ' + scale + ' chunks', log=True, bottom=1))
     plt.xlabel("Queries")
     plt.ylabel(measurementType + " (in sec, log-scale)")
@@ -122,4 +125,5 @@ for measurementType in ["Execution Time"]:
     plt.title(measurementType + ' for ' + cover + ' cover sorted by number of chunks',y=1.37)
     plt.legend(bbox_to_anchor=(-0.2, 1.04, 1.2, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
     plt.savefig(outputDir+'/queryExecution_'+measurementType+'_cover-'+cover+'_forAll_sortedByNumberOfChunks.'+imageType, bbox_inches='tight')
+    plt.close('all')
 

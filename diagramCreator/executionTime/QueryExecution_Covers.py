@@ -79,14 +79,15 @@ for measurementType in ["Execution Time"]:
   # create diagramm sorted by cover
   n_groups = len(queryGroups)
   fig, ax = plt.subplots()
-  fig = plt.figure(figsize=(fig.get_figwidth()*2.5,fig.get_figheight()))
+  fig = plt.figure(figsize=(fig.get_figwidth()*3.5,fig.get_figheight()))
   index = np.arange(n_groups)
   bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
   rects = []
-  colorBase = 1 / float(len(coverSet)*len(scaleSet)+1)
+  colormap = plt.cm.gist_ncar
+  colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)*len(scaleSet))]
   for i, cover in enumerate(coverSet):
     for j, scale in enumerate(scaleSet):
-      colorValue = "{:f}".format(colorBase*(j*len(coverSet)+i))
+      colorValue = colors[(i*len(coverSet)+j)]
       rects.append(plt.bar(index + (i*len(coverSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover + ' ' + scale + ' chunks', log=True, bottom=1))
   plt.xlabel("Queries")
   plt.ylabel(measurementType + " (in sec, log-scale)")
@@ -99,14 +100,15 @@ for measurementType in ["Execution Time"]:
   # create diagramm sorted by number of chunks
   n_groups = len(queryGroups)
   fig, ax = plt.subplots()
-  fig = plt.figure(figsize=(fig.get_figwidth()*2.5,fig.get_figheight()))
+  fig = plt.figure(figsize=(fig.get_figwidth()*3.5,fig.get_figheight()))
   index = np.arange(n_groups)
   bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
   rects = []
-  colorBase = 1 / float(len(coverSet)*len(scaleSet)+1)
+  colormap = plt.cm.gist_ncar
+  colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)*len(scaleSet))]
   for i, scale in enumerate(scaleSet):
     for j, cover in enumerate(coverSet):
-      colorValue = "{:f}".format(colorBase*(j*len(scaleSet)+i))
+      colorValue = colors[(i*len(scaleSet)+j)]
       rects.append(plt.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover + ' ' + scale + ' chunks', log=True, bottom=1))
   plt.xlabel("Queries")
   plt.ylabel(measurementType + " (in sec, log-scale)")

@@ -72,18 +72,16 @@ with open(inputFile, 'rb') as f:
       queries[query][scale] = {}
     queries[query][scale][cover] = { 'time':row_time, 'percent':row_percent}
 
-lines = ["-","--"]#,"-.",":"]
-
 # create diagram per cover
 for query in sorted(queries.keys()):
   for scale in sorted(queries[query].keys()):
     fig, ax = plt.subplots()
     coverSet = sorted(queries[query][scale].keys())
-    colorBase = 1 / float(len(coverSet)+1)
-    linecycler = cycle(lines)
+    colormap = plt.cm.gist_ncar
+    colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet))]
     for i, cover in enumerate(coverSet):
-      colorValue = "{:f}".format(colorBase*(i+0.5))
-      plt.plot(queries[query][scale][cover]['time'], queries[query][scale][cover]['percent'], label=cover, color=colorValue, linewidth=5, linestyle=next(linecycler))
+      colorValue = colors[i]
+      plt.plot(queries[query][scale][cover]['time'], queries[query][scale][cover]['percent'], label=cover, color=colorValue, linewidth=5)
     plt.title(query + " for " + scale + " chunks")
     plt.xlabel("Time (in sec)")
     plt.ylabel("Percentage of returned results")

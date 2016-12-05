@@ -75,19 +75,17 @@ with open(inputFile, 'rb') as f:
       queries[query][scale][cover] = {}
     queries[query][scale][cover][treeType] = { 'time':row_time, 'percent':row_percent}
 
-lines = ["-","--"]#,"-.",":"]
-
 for query in sorted(queries.keys()):
   for scale in sorted(queries[query].keys()):
     for cover in sorted(queries[query][scale].keys()):
       # create diagram
       fig, ax = plt.subplots()
       treeTypeSet = sorted(queries[query][scale][cover].keys())
-      colorBase = 1 / float(len(treeTypeSet)+1)
-      linecycler = cycle(lines)
+      colormap = plt.cm.gist_ncar
+      colors = [colormap(i) for i in np.linspace(0, 0.9, len(treeTypeSet))]
       for i, treeType in enumerate(treeTypeSet):
-        colorValue = "{:f}".format(colorBase*(i+0.5))
-        plt.plot(queries[query][scale][cover][treeType]['time'], queries[query][scale][cover][treeType]['percent'], label=treeType, color=colorValue, linewidth=5, linestyle=next(linecycler))
+        colorValue = colors[i]
+        plt.plot(queries[query][scale][cover][treeType]['time'], queries[query][scale][cover][treeType]['percent'], label=treeType, color=colorValue, linewidth=5)
       plt.title(query + ' for ' + cover + ' cover and '+scale+' chunks')
       plt.xlabel("Time (in sec)")
       plt.ylabel("Percentage of returned results")

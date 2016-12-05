@@ -85,9 +85,10 @@ for measurementType in ["Execution Time"]:
       index = np.arange(n_groups)
       bar_width =  1/float(len(coverSet)+1)
       rects = []
-      colorBase =  1 / float(len(coverSet)+1)
+      colormap = plt.cm.gist_ncar
+      colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet))]
       for i, cover in enumerate(coverSet):
-        colorValue = "{:f}".format(colorBase*(i+0.5))
+        colorValue = colors[i]
         rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover]), bar_width, color=colorValue, label=cover, log=True, bottom=1))
       plt.xlabel("Queries")
       plt.ylabel(measurementType + " (in sec, log-scale)")

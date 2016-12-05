@@ -85,9 +85,10 @@ for measurementType in ["Execution Time"]:
       index = np.arange(n_groups)
       bar_width =  1/float(len(treeTypeSet)+1)
       rects = []
-      colorBase =  1 / float(len(treeTypeSet)+1)
+      colormap = plt.cm.gist_ncar
+      colors = [colormap(i) for i in np.linspace(0, 0.9, len(treeTypeSet))]
       for i, treeType in enumerate(treeTypeSet):
-        colorValue = "{:f}".format(colorBase*(i+0.5))
+        colorValue = colors[i]
         rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[treeType]), bar_width, color=colorValue, label=treeType, log=True, bottom=1))
       plt.xlabel("Queries")
       plt.ylabel(measurementType + " (in sec, log-scale)")
@@ -97,4 +98,5 @@ for measurementType in ["Execution Time"]:
       #plt.axis('tight')
       plt.legend(bbox_to_anchor=(0., 1.04, 1., .102), loc=3, ncol=3, mode="expand", borderaxespad=0.)
       plt.savefig(outputDir+'/queryExecution_'+measurementType+'_cover-'+cover+'_numberOfChunks-'+scale+'.'+imageType, bbox_inches='tight')
+      plt.close('all')
 

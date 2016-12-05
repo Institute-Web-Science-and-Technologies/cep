@@ -89,10 +89,11 @@ for measurementType in ["Data Transfer"]:
     index = np.arange(n_groups)
     bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
     rects = []
-    colorBase = 1 / float(len(coverSet)*len(scaleSet)+1)
+    colormap = plt.cm.gist_ncar
+    colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)*len(scaleSet))]
     for i, cover in enumerate(coverSet):
       for j, scale in enumerate(scaleSet):
-        colorValue = "{:f}".format(colorBase*(j*len(coverSet)+i))
+        colorValue = colors[(i*len(coverSet)+j)]
         rects.append(plt.bar(index + (i*len(coverSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover + ' ' + scale + ' chunks', log=True, bottom=1))
     plt.xlabel("Queries")
     plt.ylabel(measurementType)
@@ -103,17 +104,19 @@ for measurementType in ["Data Transfer"]:
     plt.title(measurementType + ' for ' + treeType + ' trees sorted by cover strategy',y=1.37)
     plt.legend(bbox_to_anchor=(-0.2, 1.04, 1.2, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
     plt.savefig(outputDir+'/dataTransfer_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByCover.'+imageType, bbox_inches='tight')
+    plt.close('all')
 
     # create diagramm sorted by scale
     n_groups = len(queryGroups)
     fig, ax = plt.subplots()
     index = np.arange(n_groups)
-    bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)#1/float(len(coverSet)+1)
+    bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
     rects = []
-    colorBase = 1 / float(len(coverSet)*len(scaleSet)+1)#1 / float(len(coverSet)+1)
+    colormap = plt.cm.gist_ncar
+    colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)*len(scaleSet))]
     for i, scale in enumerate(scaleSet):
       for j, cover in enumerate(coverSet):
-        colorValue = "{:f}".format(colorBase*(j*len(scaleSet)+i))#"{:f}".format(colorBase*(i+0.5))
+        colorValue = colors[(i*len(scaleSet)+j)]
         rects.append(plt.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover  + ' ' + scale + ' chunks', log=True, bottom=1))
     plt.xlabel("Queries")
     plt.ylabel(measurementType)
@@ -124,3 +127,4 @@ for measurementType in ["Data Transfer"]:
     plt.title(measurementType + ' for ' + treeType + ' trees sorted by number of chunks',y=1.37)
     plt.legend(bbox_to_anchor=(-0.2, 1.04, 1.2, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
     plt.savefig(outputDir+'/dataTransfer_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByNumberOfChunks.'+imageType, bbox_inches='tight')
+    plt.close('all')

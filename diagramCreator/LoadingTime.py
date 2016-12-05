@@ -82,14 +82,18 @@ fig = plt.figure(figsize=(fig.get_figwidth()*2,fig.get_figheight()*3))
 ind = np.arange(N)    # the x locations for the groups
 width = 0.5       # the width of the bars: can also be len(x) sequence
 
-p1 = plt.bar(ind, initialEncodingTimes, width, color='#cccccc')
-p2 = plt.bar(ind, coverCreationTimes, width, color='#222222', bottom=initialEncodingTimes)
-p3 = plt.bar(ind, finalEncodingTimes, width, color='#888888', bottom=coverCreationTimes+initialEncodingTimes)
-p4 = plt.bar(ind, nHopReplicationTimes, width, color='#666666', bottom=finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
-p5 = plt.bar(ind, statisticCollectionTimes, width, color='#444444', bottom=nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
-p6 = plt.bar(ind, containmentAdjustmentTimes, width, color='#aaaaaa', bottom=statisticCollectionTimes+nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
-p7 = plt.bar(ind, transferTimes, width, color='#000000', bottom=containmentAdjustmentTimes+statisticCollectionTimes+nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
-p8 = plt.bar(ind, indexingTimes, width, color='#ffffff', bottom=transferTimes+containmentAdjustmentTimes+statisticCollectionTimes+nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
+
+colormap = plt.cm.gist_ncar
+colors = [colormap(i) for i in np.linspace(0, 0.9, 8)]
+
+p1 = plt.bar(ind, initialEncodingTimes, width, color=colors[0])
+p2 = plt.bar(ind, coverCreationTimes, width, color=colors[1], bottom=initialEncodingTimes)
+p3 = plt.bar(ind, finalEncodingTimes, width, color=colors[2], bottom=coverCreationTimes+initialEncodingTimes)
+p4 = plt.bar(ind, nHopReplicationTimes, width, color=colors[3], bottom=finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
+p5 = plt.bar(ind, statisticCollectionTimes, width, color=colors[4], bottom=nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
+p6 = plt.bar(ind, containmentAdjustmentTimes, width, color=colors[5], bottom=statisticCollectionTimes+nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
+p7 = plt.bar(ind, transferTimes, width, color=colors[6], bottom=containmentAdjustmentTimes+statisticCollectionTimes+nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
+p8 = plt.bar(ind, indexingTimes, width, color=colors[7], bottom=transferTimes+containmentAdjustmentTimes+statisticCollectionTimes+nHopReplicationTimes+finalEncodingTimes+coverCreationTimes+initialEncodingTimes)
 
 plt.ylabel('Time (in h)')
 plt.xticks(ind + width/2., coverNames)

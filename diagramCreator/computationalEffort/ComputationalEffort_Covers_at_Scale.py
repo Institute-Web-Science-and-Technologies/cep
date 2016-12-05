@@ -64,9 +64,9 @@ with open(inputFile, 'rb') as f:
     if not cover in scales[scale][treeType]:
       scales[scale][treeType][cover] = {}
     query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " #tp=" + str(int(row[6])+1) + " #ds=" + row[7] + " sel=" + row[8]
-    scales[scale][treeType][cover][query] = { "Total":long(row[9]), "Entropy":float(row[10])}
+    scales[scale][treeType][cover][query] = { "Total":long(row[9]), "Entropy":float(row[10]), "Gini Coefficient":float(row[12])}
 
-for measurementType in ["Total", "Entropy"]:
+for measurementType in ["Total", "Entropy", "Gini Coefficient"]:
   for scale in scales.keys():
     for treeType in scales[scale].keys():
       coverSet = list(sorted(scales[scale][treeType].keys()))
@@ -85,21 +85,23 @@ for measurementType in ["Total", "Entropy"]:
       index = np.arange(n_groups)
       bar_width =  1/float(len(coverSet)+1)
       rects = []
-      colorBase =  1 / float(len(coverSet)+1)
+      colormap = plt.cm.gist_ncar
+      colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet))]
       for i, cover in enumerate(coverSet):
-        colorValue = "{:f}".format(colorBase*(i+0.5))
-        if measurementType == "Entropy":
-          rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover]), bar_width, color=colorValue, label=cover))
-        else:
+        colorValue = colors[i]
+        if measurementType == "Total":
           rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover]), bar_width, color=colorValue, label=cover, log=True, bottom=1))
+        else:
+          rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover]), bar_width, color=colorValue, label=cover))
       plt.xlabel("Queries")
-      if measurementType == "Entropy":
-        plt.ylabel(measurementType)
-      else:
+      if measurementType == "Total":
         plt.ylabel(measurementType + " (log-scale)")
+      else:
+        plt.ylabel(measurementType)
       plt.title('Computational effort for query execution tree type ' + treeType + ' and ' + scale + ' chunks', y=1.15, x=0.4)
       plt.xticks(index + 0.5, np.array(queryGroups))
       plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
       #plt.axis('tight')
       plt.legend(bbox_to_anchor=(0., 1.04, 1., .102), loc=3, ncol=3, mode="expand", borderaxespad=0.)
       plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_numberOfChunks-'+scale+'_treeType-'+treeType+'.'+imageType, bbox_inches='tight')
+      plt.close('all')

@@ -57,7 +57,8 @@ public class StorageBalance extends GraphStatisticsListener {
       output = new BufferedWriter(
               new OutputStreamWriter(new FileOutputStream(outputFile, true), "UTF-8"));
       if (!existsOutputFile) {
-        output.write("cover\tnumberOfChunks\tn-hop\tredundancy\tentropy\tstandardDeviation");
+        output.write(
+                "cover\tnumberOfChunks\tn-hop\tredundancy\tentropy\tstandardDeviation\tGiniCoefficient");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -96,7 +97,8 @@ public class StorageBalance extends GraphStatisticsListener {
       output.write("\n" + graphCoverStrategy + "\t" + numberOfChunks + "\t" + nHopReplication + "\t"
               + computeRedundancy(totalGraphCoverSize, originalGraphSize) + "\t"
               + Utilities.computeEntropy(chunkSizes, totalGraphCoverSize) + "\t"
-              + Utilities.computeStandardDeviation(chunkSizes, totalGraphCoverSize));
+              + Utilities.computeStandardDeviation(chunkSizes, totalGraphCoverSize) + "\t"
+              + Utilities.computeGiniCoefficient(chunkSizes));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

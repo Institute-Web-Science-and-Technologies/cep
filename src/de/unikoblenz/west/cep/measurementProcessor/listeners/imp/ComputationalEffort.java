@@ -41,7 +41,8 @@ public class ComputationalEffort extends QueryComputationEffortListener {
 
   @Override
   protected String getHeadLine() {
-    return super.getHeadLine() + "\ttotalComputationalEffort\tentropy\tstandardDeviation";
+    return super.getHeadLine()
+            + "\ttotalComputationalEffort\tentropy\tstandardDeviation\tGiniCoefficient";
   }
 
   @Override
@@ -71,8 +72,10 @@ public class ComputationalEffort extends QueryComputationEffortListener {
     }
     writeLine("\t" + totalNumberOfcomputations + "\t"
             + Utilities.computeEntropy(numberOfComparisonsPerSlave, totalNumberOfcomputations)
-            + "\t" + Utilities.computeStandardDeviation(numberOfComparisonsPerSlave,
-                    totalNumberOfcomputations));
+            + "\t"
+            + Utilities.computeStandardDeviation(numberOfComparisonsPerSlave,
+                    totalNumberOfcomputations)
+            + "\t" + Utilities.computeGiniCoefficient(numberOfComparisonsPerSlave));
     numberOfComparisonsPerSlave = null;
   }
 

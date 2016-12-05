@@ -20,6 +20,8 @@ package de.unikoblenz.west.cep.measurementProcessor.utils;
 
 import de.uni_koblenz.west.koral.common.measurement.MeasurementType;
 
+import java.util.Arrays;
+
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
  *
@@ -77,6 +79,33 @@ public class Utilities {
       sum += value;
     }
     return sum / values.length;
+  }
+
+  /**
+   * 
+   * Gini-coefficient=\frac{n}{n-1}*(\frac{2*\sum\limits_{i=1}^{n}i*y_i}{n*\sum\limits_{i=1}^{n}y_i}-\frac{n+1}{n})
+   * <br>
+   * the smaller the value the more equal is the distribution. Values [0,1] are
+   * possible
+   * 
+   * @param values
+   * @return
+   */
+  public static double computeGiniCoefficient(long[] values) {
+    long[] sortedValues = Arrays.copyOf(values, values.length);
+    Arrays.sort(sortedValues);
+    long numerator = 0;
+    long denominator = 0;
+    for (int i = 0; i < sortedValues.length; i++) {
+      numerator += (i + 1) * sortedValues[i];
+      denominator += sortedValues[i];
+    }
+    numerator *= 2;
+    denominator *= sortedValues.length;
+    double fraction = (numerator / (double) denominator)
+            - ((sortedValues.length + 1) / (double) sortedValues.length);
+    fraction *= sortedValues.length / (double) (sortedValues.length - 1);
+    return fraction;
   }
 
 }

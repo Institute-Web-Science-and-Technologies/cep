@@ -44,6 +44,7 @@ if not os.path.exists(outputDir):
 # the computational effort per cover in a separate bar
 
 # required map: treetype -> cover -> query -> measurmentType -> value
+matplotlib.rcParams.update({'font.size': 30})
 
 def plotSortedByCover(ax, scale, coverSet, dataRows, queryGroups, measurementType):
   for i, cover in enumerate(coverSet):
@@ -56,17 +57,16 @@ def plotSortedByCover(ax, scale, coverSet, dataRows, queryGroups, measurementTyp
   index = np.arange(n_groups)
   bar_width =  1/float(len(coverSet)+1)
   colormap = plt.cm.gist_ncar
-  colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet))]
+  colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)+1)]
   plt.gca().set_color_cycle(colors)
   bars = []
   for i, cover in enumerate(coverSet):
-    color=colors[i]
-    bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][0]), bar_width, color=color, edgecolor="{:f}".format(0.6), linewidth=2, hatch='//', label=cover + ' parsing', log=False, bottom=1))
-    bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][1]), bar_width, color=color, edgecolor="{:f}".format(0.4), linewidth=2, hatch='.', label=cover + ' submitting', log=False, bottom=1+np.array(dataRows[cover][0])))
+    color=colors[i+1]
+    bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][0]), bar_width, color=color, edgecolor="{:f}".format(0), linewidth=2, hatch='+', label=cover + ' parsing', log=False, bottom=1))
+    bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][1]), bar_width, color=color, edgecolor="{:f}".format(0), linewidth=2, hatch='/', label=cover + ' submitting', log=False, bottom=1+np.array(dataRows[cover][0])))
     bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][2]), bar_width, color=color, label=cover + ' executing', log=False, bottom=1+np.array(dataRows[cover][0])+np.array(dataRows[cover][1])))
   ax.set_xticks(index + 0.5)
   ax.set_xticklabels(sorted(list(queryGroups)), rotation=45, horizontalalignment='right')
-  #plt.axis('tight')
   return bars
 
 def getLabel(bar):
@@ -126,8 +126,8 @@ for measurementType in ["Execution Time"]:
       if len(longTimeQueries) > 0:
         ax3 = plt.subplot2grid((1,nColl), (0, len(queryGroups)+len(midTimeQueries)), colspan=len(longTimeQueries))
         bars = plotSortedByCover(ax3, scale, coverSet, dataRows, longTimeQueries, measurementType)
-      plt.suptitle('Query execution time for tree type ' + treeType + ' and ' + scale + ' chunks',y=1.05)
-      plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.05, 1, .8, 1), mode="expand", borderaxespad=0.)
-      plt.subplots_adjust(wspace=1)
+      plt.suptitle('Query execution time for tree type ' + treeType + ' and ' + scale + ' chunks',y=1.21)
+      plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.03, 1.25, 1.3, 1), mode="expand", borderaxespad=0.)
+      plt.subplots_adjust(left=0.1, right=1.3, wspace=4)
       plt.savefig(outputDir+'/queryExecutionTimeline_'+measurementType+'_numberOfChunks-'+scale+'_treeType-'+treeType+'.'+imageType, bbox_inches='tight')
       plt.close('all')

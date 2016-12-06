@@ -27,7 +27,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -81,12 +80,6 @@ public class ChunkSizes extends GraphStatisticsListener {
   protected void processGraphChunkSizesAfterReplication(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, long... graphChunkSizes) {
     chunkSizes = graphChunkSizes;
-    Arrays.sort(chunkSizes);
-    long[] revers = new long[chunkSizes.length];
-    for (int i = chunkSizes.length - 1, j = 0; i >= 0; i--, j++) {
-      revers[j] = chunkSizes[i];
-    }
-    chunkSizes = revers;
   }
 
   @Override

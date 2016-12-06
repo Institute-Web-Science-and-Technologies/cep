@@ -83,17 +83,17 @@ for measurementType in ["Chunk Sizes"]:
     colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet))]
     for i, cover in enumerate(coverSet):
       colorValue = colors[i]
-      rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(sorted(dataRows[cover][scale],reverse=True)), bar_width, color=colorValue, label=cover, log=False, bottom=0))
+      rects.append(plt.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover, log=False, bottom=0))
     plt.xlabel("Chunks")
     plt.ylabel(measurementType)
-    plt.xticks(index + 0.5, np.array(list(range(scale))))
-    plt.setp(plt.gca().get_xticklabels())#, rotation=0, horizontalalignment='right')
+    plt.xticks(index + 0.5, np.array(list(range(scale)))+1)
+    plt.setp(plt.gca().get_xticklabels())
     #plt.axis('tight')
-    #fig_size = plt.rcParams["figure.figsize"]
-    #fig_size[0] = fig_size[0]
-    #fig_size[1] = fig_size[1]
-    #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
-    plt.legend()
-    plt.title('Chunk sizes for ' + str(scale) + ' chunks', y=1.05)
-    plt.savefig(outputDir+'/chunkSizes_scale='+str(scale)+'.'+imageType, bbox_inches='tight')
+    if scale < 20:
+      plt.legend(bbox_to_anchor=(0., 1.06, 1., .106), loc=3, ncol=1, mode="expand", borderaxespad=0.)
+      plt.title('Chunk sizes for ' + str(scale) + ' chunks', y=1.3)
+    else:
+      plt.legend(bbox_to_anchor=(0., 1.06, 1., .106), loc=3, ncol=3, mode="expand", borderaxespad=0.)
+      plt.title('Chunk sizes for ' + str(scale) + ' chunks', y=1.15)
+    plt.savefig(outputDir+'/chunkSizes_unsorted_scale='+str(scale)+'.'+imageType, bbox_inches='tight')
 

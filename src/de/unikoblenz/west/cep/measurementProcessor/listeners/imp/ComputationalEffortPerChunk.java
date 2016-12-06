@@ -18,6 +18,7 @@
  */
 package de.unikoblenz.west.cep.measurementProcessor.listeners.imp;
 
+import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
 
 import java.io.File;
@@ -29,6 +30,8 @@ import java.util.Arrays;
  */
 public class ComputationalEffortPerChunk extends ComputationalEffort {
 
+  private String[] slaveIds;
+
   @Override
   protected File getOutputFile(File outputDirectory) {
     return new File(
@@ -37,7 +40,26 @@ public class ComputationalEffortPerChunk extends ComputationalEffort {
 
   @Override
   protected String getHeadLine() {
-    return super.getHeadLine() + "\tcomputationalEffortPerChunk*";
+    return "cover\tnumberOfChunks\tnhop\ttreeType\tqueryFile\tjoinPattern\tnumberOfJoins\tnumberOfDataSources\tselectivity"
+            + "\t(slaveId\tcomputationalEffortPerChunk)*";
+  }
+
+  @Override
+  protected void processComputationEffort(CoverStrategyType graphCoverStrategy, int nHopReplication,
+          int numberOfChunks, ExtendedQuerySignature query, int slaveId, String slaveName,
+          int taskId, long numberOfComparisons) {
+    super.processComputationEffort(graphCoverStrategy, nHopReplication, numberOfChunks, query,
+            slaveId, slaveName, taskId, numberOfComparisons);
+    while (slaveId > numberOfChunks) {
+      slaveId -= numberOfChunks;
+    }
+    slaveId -= 1;
+    if (slaveIds == null) {
+      slaveIds = new String[slaveId + 1];
+    } else if (slaveIds.length <= slaveId) {
+      slaveIds = Arrays.copyOf(slaveIds, slaveId + 1);
+    }
+    slaveIds[slaveId] = slaveName;
   }
 
   @Override
@@ -45,16 +67,10 @@ public class ComputationalEffortPerChunk extends ComputationalEffort {
     if (numberOfComparisonsPerSlave == null) {
       return;
     }
-    Arrays.sort(numberOfComparisonsPerSlave);
-    long[] newComps = new long[numberOfComparisonsPerSlave.length];
-    for (int i = numberOfComparisonsPerSlave.length - 1; i >= 0; i--) {
-      newComps[(newComps.length - 1) - i] = numberOfComparisonsPerSlave[i];
-    }
-    numberOfComparisonsPerSlave = newComps;
 
     StringBuilder sb = new StringBuilder();
-    for (long value : numberOfComparisonsPerSlave) {
-      sb.append("\t").append(value);
+    for (int i = 0; i < numberOfComparisonsPerSlave.length; i++) {
+      sb.append("\t").append(slaveIds[i]).append("\t").append(numberOfComparisonsPerSlave[i]);
     }
     writeLine(sb.toString());
     numberOfComparisonsPerSlave = null;

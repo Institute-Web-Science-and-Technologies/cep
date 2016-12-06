@@ -58,56 +58,56 @@ with open(inputFile, 'rb') as f:
       queries[query] = {}
     if not scale in queries[query]:
       queries[query][scale] = {}
-    if not cover in queries[query][scale]:
-      queries[query][scale][cover] = {}
-    if not treeType in queries[query][scale][cover]:
-      queries[query][scale][cover][treeType] = {}
+    if not treeType in queries[query][scale]:
+      queries[query][scale][treeType] = {}
+    if not cover in queries[query][scale][treeType]:
+      queries[query][scale][treeType][cover] = {}
     for i in range(len(row)):
       if i >= 9 and i % 2 == 0 :
-        chunk = i - 9
-        queries[query][scale][cover][treeType][chunk] = long(row[i])
+        chunk = row[i-1].split(':')[0]
+        queries[query][scale][treeType][cover][chunk] = long(row[i])
 
 for measurementType in ["Computational Effort"]:
   querySet = list(sorted(queries.keys()))
   scaleSet = list(sorted(queries[querySet[0]].keys()))
-  coverSet = list(sorted(queries[querySet[0]][scaleSet[0]].keys()))
-  treeTypeSet = list(sorted(queries[querySet[0]][scaleSet[0]][coverSet[0]].keys()))
+  treeTypeSet = list(sorted(queries[querySet[0]][scaleSet[0]].keys()))
+  coverSet = list(sorted(queries[querySet[0]][scaleSet[0]][treeTypeSet[0]].keys()))
   dataRows = {}
   for i, query in enumerate(querySet):
     dataRows[query] = {}
     for j, scale in enumerate(scaleSet):
       dataRows[query][scale] = {}
-      for k, cover in enumerate(coverSet):
-        dataRows[query][scale][cover] = {}
-        for l, treeType in enumerate(treeTypeSet):
-          dataRows[query][scale][cover][treeType] = []
-          for m, chunk in enumerate(queries[query][scale][cover][treeType]):
-            dataRows[query][scale][cover][treeType].append(queries[query][scale][cover][treeType][chunk]);
+      for k, treeType in enumerate(treeTypeSet):
+        dataRows[query][scale][treeType] = {}
+        for l, cover in enumerate(coverSet):
+          dataRows[query][scale][treeType][cover] = []
+          for m, chunk in enumerate(queries[query][scale][treeType][cover]):
+            dataRows[query][scale][treeType][cover].append(queries[query][scale][treeType][cover][chunk]);
 
   # create diagramms per treeType
   for i, query in enumerate(querySet):
     for j, scale in enumerate(scaleSet):
-      for k, cover in enumerate(coverSet):
+      for k, treeType in enumerate(treeTypeSet):
         n_groups = scale
         fig, ax = plt.subplots()
         fig = plt.figure(figsize=(fig.get_figwidth()*(scale/20.),5))
         index = np.arange(n_groups)
-        bar_width = 1/float(len(treeTypeSet)+1)
+        bar_width = 1/float(len(coverSet)+1)
         rects = []
         colormap = plt.cm.gist_ncar
         colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet))]
-        for l, treeType in enumerate(treeTypeSet):
+        for l, cover in enumerate(coverSet):
           colorValue = colors[l]
-          rects.append(plt.bar(index + l * bar_width + 0.5*bar_width, np.array(sorted(dataRows[query][scale][cover][treeType],reverse=True)), bar_width, color=colorValue, label=treeType, log=False, bottom=0))
+          rects.append(plt.bar(index + l * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover]), bar_width, color=colorValue, label=cover, log=False, bottom=0))
         plt.xlabel("Chunks")
         plt.ylabel(measurementType)
-        plt.xticks(index + 0.5, np.array(list(range(scale))))
-        plt.setp(plt.gca().get_xticklabels())
+        plt.xticks(index + 0.5, np.array(list(sorted(queries[query][scale][treeType][coverSet[0]]))))
+        plt.setp(plt.gca().get_xticklabels(), rotation=90, horizontalalignment='right')
         #plt.axis('tight')
         if scale < 20:
           plt.legend(bbox_to_anchor=(-0.5, 1.03, 2, .103), loc=3, ncol=3, mode="expand", borderaxespad=0.)
         else:
           plt.legend(bbox_to_anchor=(0., 1.03, 1., .103), loc=3, ncol=3, mode="expand", borderaxespad=0.)
-        plt.title('Computational Effort for query ' + query + '\n' + cover + ' cover and ' + str(scale) + ' chunks', y=1.15)
-        plt.savefig(outputDir+'/computationalEffort_query='+query+'_scale='+str(scale)+'_cover='+cover+'.'+imageType, bbox_inches='tight')
+        plt.title('Computational Effort for query ' + query + '\n' + treeType + ' tree and ' + str(scale) + ' chunks', y=1.15)
+        plt.savefig(outputDir+'/computationalEffortUnsorted_query='+query+'_scale='+str(scale)+'_treeType='+treeType+'.'+imageType, bbox_inches='tight')
         plt.close('all')

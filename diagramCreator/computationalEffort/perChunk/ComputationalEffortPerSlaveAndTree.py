@@ -63,7 +63,7 @@ with open(inputFile, 'rb') as f:
     if not cover in queries[query][scale][treeType]:
       queries[query][scale][treeType][cover] = {}
     for i in range(len(row)):
-      if i >= 9 :
+      if i >= 9 and i % 2 == 0 :
         chunk = i - 9
         queries[query][scale][treeType][cover][chunk] = long(row[i])
 
@@ -94,23 +94,20 @@ for measurementType in ["Computational Effort"]:
         index = np.arange(n_groups)
         bar_width = 1/float(len(coverSet)+1)
         rects = []
-        colorBase = 1 / float(len(coverSet)+1)
+        colormap = plt.cm.gist_ncar
+        colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet))]
         for l, cover in enumerate(coverSet):
-          colorValue = "{:f}".format(colorBase*(l+0.5))
-          rects.append(plt.bar(index + l * bar_width + 0.5*bar_width, np.array(dataRows[query][scale][treeType][cover]), bar_width, color=colorValue, label=cover, log=False, bottom=0))
+          colorValue = colors[l]
+          rects.append(plt.bar(index + l * bar_width + 0.5*bar_width, np.array(sorted(dataRows[query][scale][treeType][cover],reverse=True)), bar_width, color=colorValue, label=cover, log=False, bottom=0))
         plt.xlabel("Chunks")
         plt.ylabel(measurementType)
         plt.xticks(index + 0.5, np.array(list(range(scale))))
-        plt.setp(plt.gca().get_xticklabels())#, rotation=0, horizontalalignment='right')
+        plt.setp(plt.gca().get_xticklabels())
         #plt.axis('tight')
-        #fig_size = plt.rcParams["figure.figsize"]
-        #fig_size[0] = fig_size[0]
-        #fig_size[1] = fig_size[1]
-        #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
         if scale < 20:
           plt.legend(bbox_to_anchor=(-0.5, 1.03, 2, .103), loc=3, ncol=3, mode="expand", borderaxespad=0.)
         else:
           plt.legend(bbox_to_anchor=(0., 1.03, 1., .103), loc=3, ncol=3, mode="expand", borderaxespad=0.)
         plt.title('Computational Effort for query ' + query + '\n' + treeType + ' tree and ' + str(scale) + ' chunks', y=1.15)
         plt.savefig(outputDir+'/computationalEffort_query='+query+'_scale='+str(scale)+'_treeType='+treeType+'.'+imageType, bbox_inches='tight')
-
+        plt.close('all')

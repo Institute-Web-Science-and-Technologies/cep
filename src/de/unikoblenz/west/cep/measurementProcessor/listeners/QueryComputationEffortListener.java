@@ -39,8 +39,8 @@ public abstract class QueryComputationEffortListener extends QueryListener {
             processComputationEffort(graphCoverStrategy, nHopReplication, numberOfChunks,
                     new ExtendedQuerySignature(Integer.parseInt(measurements[4]),
                             currentQueryFileName, treeType, currentQueryRepetition),
-                    Utilities.getComputerId(measurements), Integer.parseInt(measurements[5]),
-                    Long.parseLong(measurements[6]));
+                    Utilities.getComputerId(measurements), measurements[0],
+                    Integer.parseInt(measurements[5]), Long.parseLong(measurements[6]));
           }
           break;
         default:
@@ -52,6 +52,6 @@ public abstract class QueryComputationEffortListener extends QueryListener {
 
   protected abstract void processComputationEffort(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature query, int slaveId,
-          int taskId, long numberOfComparisons);
+          String slaveName, int taskId, long numberOfComparisons);
 
 }

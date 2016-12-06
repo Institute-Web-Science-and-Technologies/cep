@@ -126,7 +126,7 @@ for measurementType in ["Execution Time"]:
       if len(longTimeQueries) > 0:
         ax3 = plt.subplot2grid((1,nColl), (0, len(queryGroups)+len(midTimeQueries)), colspan=len(longTimeQueries))
         bars = plotSortedByCover(ax3, scale, coverSet, dataRows, longTimeQueries, measurementType)
-      plt.suptitle('Query execution time for tree type ' + treeType + ' and ' + scale + ' chunks',y=1.18)
+      plt.suptitle('Query execution time for tree type ' + treeType + ' and ' + scale + ' chunks',y=1.05)
       plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.05, 1, .8, 1), mode="expand", borderaxespad=0.)
       plt.subplots_adjust(wspace=1)
       plt.savefig(outputDir+'/queryExecutionTimeline_'+measurementType+'_numberOfChunks-'+scale+'_treeType-'+treeType+'.'+imageType, bbox_inches='tight')

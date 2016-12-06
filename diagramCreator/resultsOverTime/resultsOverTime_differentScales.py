@@ -57,8 +57,8 @@ with open(inputFile, 'rb') as f:
     row_time = []
     row_time.append(0)
     for time in row:
-      row_time.append((long(time)-1)/1000)
-      row_time.append(long(time)/1000)
+      row_time.append((long(time)-1)/float(1000))
+      row_time.append(long(time)/float(1000))
     row2 = row2[9:len(row2)]
     row_percent = []
     row_percent.append(0)
@@ -82,9 +82,9 @@ for query in sorted(queries.keys()):
       fig, ax = plt.subplots()
       scaleSet = sorted(queries[query][cover][treeType].keys())
       colormap = plt.cm.gist_ncar
-      colors = [colormap(i) for i in np.linspace(0, 0.9, len(scaleSet))]
+      colors = [colormap(i) for i in np.linspace(0, 0.9, len(scaleSet)+1)]
       for i, scale in enumerate(scaleSet):
-        colorValue = colors[i]
+        colorValue = colors[i+1]
         plt.plot(queries[query][cover][treeType][scale]['time'], queries[query][cover][treeType][scale]['percent'], label=scale+' chunks', color=colorValue, linewidth=5)
       plt.title(query + ' for ' + treeType + ' trees and '+cover+' cover',y=1.02)
       plt.xlabel("Time (in sec)")

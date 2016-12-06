@@ -49,7 +49,7 @@ matplotlib.rcParams.update({'font.size': 30})
 def plotSortedByCover(ax, scale, coverSet, dataRows, queryGroups, measurementType):
   for i, cover in enumerate(coverSet):
     dataRows[cover] = [[],[],[]]
-    for query in queryGroups:
+    for query in sorted(list(queryGroups)):
       dataRows[cover][0].append(scales[scale][treeType][cover][query][measurementType][0]);
       dataRows[cover][1].append(scales[scale][treeType][cover][query][measurementType][1]);
       dataRows[cover][2].append(scales[scale][treeType][cover][query][measurementType][2]);

@@ -96,7 +96,7 @@ for measurementType in ["Received Variable Bindings"]:
           dataRows[query][scale][treeType][cover] = {}
           for m, operation in enumerate(list(sorted(queries[query][scale][treeType][cover].keys()))):
             dataRows[query][scale][treeType][cover][operation] = []
-            for n, slave in enumerate(queries[query][scale][treeType][cover][operation]):
+            for n, slave in enumerate(sorted(queries[query][scale][treeType][cover][operation])):
                 dataRows[query][scale][treeType][cover][operation].append(queries[query][scale][treeType][cover][operation][slave]);
 
   # create diagramms per treeType

@@ -96,7 +96,7 @@ for measurementType in ["Execution Time"]:
           dataRows[query][scale][treeType][cover] = {}
           for m, operation in enumerate(list(sorted(queries[query][scale][treeType][cover].keys()))):
             dataRows[query][scale][treeType][cover][operation] = {'start time' : [], 'execution time' : [], 'total time' : 0}
-            for n, slave in enumerate(queries[query][scale][treeType][cover][operation]):
+            for n, slave in enumerate(sorted(queries[query][scale][treeType][cover][operation])):
                 dataRows[query][scale][treeType][cover][operation]['start time'].append(queries[query][scale][treeType][cover][operation][slave]['start time']);
                 dataRows[query][scale][treeType][cover][operation]['execution time'].append(queries[query][scale][treeType][cover][operation][slave]['execution time']);
                 dataRows[query][scale][treeType][cover][operation]['total time'] = queries[query][scale][treeType][cover][operation][slave]['total time'];

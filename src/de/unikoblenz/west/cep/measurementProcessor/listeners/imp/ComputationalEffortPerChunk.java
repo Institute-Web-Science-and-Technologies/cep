@@ -74,6 +74,7 @@ public class ComputationalEffortPerChunk extends ComputationalEffort {
     }
     writeLine(sb.toString());
     numberOfComparisonsPerSlave = null;
+    slaveIds = null;
   }
 
 }

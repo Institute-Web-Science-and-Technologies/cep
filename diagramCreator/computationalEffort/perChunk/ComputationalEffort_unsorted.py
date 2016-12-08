@@ -101,6 +101,6 @@ for measurementType in ["Computational Effort"]:
           plt.xticks(index + 0.5, np.array(list(sorted(queries[query][scale][cover][treeTypeSet[0]]))))
           plt.setp(plt.gca().get_xticklabels(), rotation=90, horizontalalignment='right')
           #plt.axis('tight')
-          plt.title('Computational Effort for query ' + query + '\n' + cover + ' cover and ' + str(scale) + ' chunks', y=1.15)
+          plt.title('Computational Effort for query ' + query + '\n' + cover + ' cover and ' + str(scale) + ' chunks')
           plt.savefig(outputDir+'/computationalEffortUnsorted'+'_cover='+cover+'_scale='+str(scale)+'_query='+query+'_treeType='+treeType+'.'+imageType, bbox_inches='tight')
           plt.close('all')

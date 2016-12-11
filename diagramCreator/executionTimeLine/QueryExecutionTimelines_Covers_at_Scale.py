@@ -44,7 +44,7 @@ if not os.path.exists(outputDir):
 # the computational effort per cover in a separate bar
 
 # required map: treetype -> cover -> query -> measurmentType -> value
-matplotlib.rcParams.update({'font.size': 30})
+matplotlib.rcParams.update({'font.size': 28})
 
 def plotSortedByCover(ax, scale, coverSet, dataRows, queryGroups, measurementType):
   for i, cover in enumerate(coverSet):
@@ -116,18 +116,18 @@ for measurementType in ["Execution Time"]:
       fig2 = plt.figure(figsize=(fig.get_figwidth()*(len(longTimeQueries)+len(midTimeQueries)+len(queryGroups))/5,fig.get_figheight()*2))
       bars = []
       if len(queryGroups) > 0:
-        ax1 = plt.subplot2grid((1,nColl), (0, 0), colspan=len(queryGroups))
+        ax1 = plt.subplot2grid((1,nColl+2), (0, 0), colspan=len(queryGroups))
         bars = plotSortedByCover(ax1, scale, coverSet, dataRows, queryGroups, measurementType)
       plt.ylabel(measurementType + " (in sec)")
       if len(midTimeQueries) > 0:
-        ax2 = plt.subplot2grid((1,nColl), (0, len(queryGroups)), colspan=len(midTimeQueries))
+        ax2 = plt.subplot2grid((1,nColl+2), (0, len(queryGroups)+1), colspan=len(midTimeQueries))
         bars = plotSortedByCover(ax2, scale, coverSet, dataRows, midTimeQueries, measurementType)
       plt.xlabel("Queries")
       if len(longTimeQueries) > 0:
-        ax3 = plt.subplot2grid((1,nColl), (0, len(queryGroups)+len(midTimeQueries)), colspan=len(longTimeQueries))
+        ax3 = plt.subplot2grid((1,nColl+2), (0, len(queryGroups)+len(midTimeQueries)+2), colspan=len(longTimeQueries))
         bars = plotSortedByCover(ax3, scale, coverSet, dataRows, longTimeQueries, measurementType)
-      plt.suptitle('Query execution time for tree type ' + treeType + ' and ' + scale + ' chunks',y=1.21)
-      plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.03, 1.25, 1.3, 1), mode="expand", borderaxespad=0.)
-      plt.subplots_adjust(left=0.1, right=1.3, wspace=4)
+      plt.suptitle('Query execution time for tree type ' + treeType + ' and ' + scale + ' chunks',y=1.11)
+      plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.1, 1.22, 0.8, 1), mode="expand", fontsize=24, borderaxespad=0.)
+      #plt.subplots_adjust(left=0.1, right=1.3, wspace=4)
       plt.savefig(outputDir+'/queryExecutionTimeline_'+measurementType+'_numberOfChunks-'+scale+'_treeType-'+treeType+'.'+imageType, bbox_inches='tight')
       plt.close('all')

@@ -39,9 +39,9 @@ public class ResultsOverTime extends QueryTimesListener {
 
   private final Map<QuerySignature, Queue<long[]>[]> query2repetitiontimes;
 
-  private long queryStartTime;
+  protected long queryStartTime;
 
-  private Queue<long[]> sequenceOfResults;
+  protected Queue<long[]> sequenceOfResults;
 
   private long numberOfResults;
 
@@ -65,6 +65,12 @@ public class ResultsOverTime extends QueryTimesListener {
           int numberOfChunks, ExtendedQuerySignature query, long queryStartTime) {
     this.queryStartTime = queryStartTime;
     sequenceOfResults = new LinkedList<>();
+  }
+
+  @Override
+  protected void processQueryCoordinatorSendQueryStart(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
+          long timestamp) {
   }
 
   @Override

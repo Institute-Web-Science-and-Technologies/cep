@@ -63,6 +63,12 @@ public class OverallQueryExecutionTime extends QueryTimesListener {
   }
 
   @Override
+  protected void processQueryCoordinatorSendQueryStart(CoverStrategyType graphCoverStrategy,
+          int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
+          long timestamp) {
+  }
+
+  @Override
   protected void processQueryResult(CoverStrategyType graphCoverStrategy, int nHopReplication,
           int numberOfChunks, ExtendedQuerySignature query, long queryResultSentTime,
           long firstResultNumber, long lastResultNumber) {

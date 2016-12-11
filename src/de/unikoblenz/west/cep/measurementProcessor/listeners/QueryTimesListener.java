@@ -55,6 +55,12 @@ public abstract class QueryTimesListener extends QueryListener {
                   Long.parseLong(measurements[7]));
           hasProcessedQueryResults = true;
           break;
+        case QUERY_COORDINATOR_SEND_QUERY_START:
+          processQueryCoordinatorSendQueryStart(graphCoverStrategy, nHopReplication, numberOfChunks,
+                  new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
+                          currentQueryFileName, treeType, currentQueryRepetition),
+                  Long.parseLong(measurements[4]));
+          break;
         case QUERY_COORDINATOR_END:
           query = new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
                   currentQueryFileName, treeType, currentQueryRepetition);
@@ -76,6 +82,10 @@ public abstract class QueryTimesListener extends QueryListener {
   protected abstract void processQueryStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature query,
           long queryStartTime);
+
+  protected abstract void processQueryCoordinatorSendQueryStart(
+          CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
+          ExtendedQuerySignature extendedQuerySignature, long timestamp);
 
   protected abstract void processQueryResult(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature query,

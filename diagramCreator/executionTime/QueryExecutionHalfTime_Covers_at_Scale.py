@@ -28,7 +28,7 @@ import sys
 import csv
 
 if len(sys.argv) != 4:
-  print("You must have the following arguments: <executionTimelines.csv> <outputDir> <imageType>")
+  print("You must have the following arguments: <plainResultsOverTime.csv> <outputDir> <imageType>")
   sys.exit()
 
 inputFile = sys.argv[1]
@@ -48,11 +48,9 @@ matplotlib.rcParams.update({'font.size': 28})
 
 def plotSortedByCover(ax, scale, coverSet, dataRows, queryGroups, measurementType):
   for i, cover in enumerate(coverSet):
-    dataRows[cover] = [[],[],[]]
+    dataRows[cover] = []
     for query in sorted(list(queryGroups)):
-      dataRows[cover][0].append(scales[scale][treeType][cover][query][measurementType][0]);
-      dataRows[cover][1].append(scales[scale][treeType][cover][query][measurementType][1]);
-      dataRows[cover][2].append(scales[scale][treeType][cover][query][measurementType][2]);
+      dataRows[cover].append(scales[scale][treeType][cover][query][measurementType]);
   n_groups = len(queryGroups)
   index = np.arange(n_groups)
   bar_width =  1/float(len(coverSet)+1)
@@ -62,9 +60,7 @@ def plotSortedByCover(ax, scale, coverSet, dataRows, queryGroups, measurementTyp
   bars = []
   for i, cover in enumerate(coverSet):
     color=colors[i+1]
-    #bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][0]), bar_width, color=color, edgecolor="{:f}".format(0), linewidth=2, hatch='+', label=cover + ' parsing', log=False, bottom=1))
-    #bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][1]), bar_width, color=color, edgecolor="{:f}".format(0), linewidth=2, hatch='/', label=cover + ' submitting', log=False, bottom=1+np.array(dataRows[cover][0])))
-    bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][2]), bar_width, color=color, label=cover))# + ' executing', log=False, bottom=1+np.array(dataRows[cover][0])+np.array(dataRows[cover][1])))
+    bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover]), bar_width, color=color, label=cover, log=False, bottom=1))
   ax.set_xticks(index + 0.5)
   ax.set_xticklabels(sorted(list(queryGroups)), rotation=45, horizontalalignment='right')
   return bars
@@ -91,7 +87,11 @@ with open(inputFile, 'rb') as f:
     if not cover in scales[scale][treeType]:
       scales[scale][treeType][cover] = {}
     query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " #tp=" + str(int(row[6])+1) + " #ds=" + row[7] + " sel=" + row[8]
-    scales[scale][treeType][cover][query] = { "Execution Time":[(long(row[9])/1000),(long(row[10])/1000),(long(row[11])/1000)]}
+    row2 = reader.next();
+    for i, value in enumerate(row2):
+      if i>=9 and float(row2[i])>=0.5 and (i==9 or float(row2[i-1])<0.5):
+        scales[scale][treeType][cover][query] = { "Execution Time":(long(row[i])/1000)}
+        break;
 
 for measurementType in ["Execution Time"]:
   for scale in scales.keys():
@@ -103,10 +103,10 @@ for measurementType in ["Execution Time"]:
       queryGroups = set(scales[scale][treeType][cover].keys())
       for i, cover in enumerate(coverSet):
         for query in queryGroups:
-          if scales[scale][treeType][cover][query][measurementType][2] > 4000:
+          if scales[scale][treeType][cover][query][measurementType] > 4000:
             longTimeQueries.add(query)
             midTimeQueries.discard(query)
-          elif (query not in longTimeQueries) and scales[scale][treeType][cover][query][measurementType][2] > 500:
+          elif (query not in longTimeQueries) and scales[scale][treeType][cover][query][measurementType] > 500:
             midTimeQueries.add(query)
       queryGroups = queryGroups.difference(longTimeQueries).difference(midTimeQueries)
 
@@ -126,8 +126,8 @@ for measurementType in ["Execution Time"]:
       if len(longTimeQueries) > 0:
         ax3 = plt.subplot2grid((1,nColl+2), (0, len(queryGroups)+len(midTimeQueries)+2), colspan=len(longTimeQueries))
         bars = plotSortedByCover(ax3, scale, coverSet, dataRows, longTimeQueries, measurementType)
-      plt.suptitle('Plain query execution time for tree type ' + treeType + ' and ' + scale + ' chunks',y=1.05)
-      plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.1, 1.22, 0.8, 1), mode="expand", borderaxespad=0.)
+      plt.suptitle('Query execution half time for tree type ' + treeType + ' and ' + scale + ' chunks',y=1.05)
+      plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.1, 1.22, 0.8, 1), mode="expand", fontsize=24, borderaxespad=0.)
       #plt.subplots_adjust(left=0.1, right=1.3, wspace=4)
-      plt.savefig(outputDir+'/plainQueryExecutionTime_'+measurementType+'_numberOfChunks-'+scale+'_treeType-'+treeType+'.'+imageType, bbox_inches='tight')
+      plt.savefig(outputDir+'/queryExecutionHalfTime_'+measurementType+'_numberOfChunks-'+scale+'_treeType-'+treeType+'.'+imageType, bbox_inches='tight')
       plt.close('all')

@@ -207,6 +207,9 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
+    if (query.repetition != numberOfRepetitions) {
+      return;
+    }
     class Element implements Comparable<Element> {
       private final long executionTime;
       private final long startTime;

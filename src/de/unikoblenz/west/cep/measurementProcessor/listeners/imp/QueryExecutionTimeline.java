@@ -148,6 +148,9 @@ public class QueryExecutionTimeline extends QueryOperationListener {
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
+    if (query.repetition != numberOfRepetitions) {
+      return;
+    }
     QuerySignature basicSignature = query.getBasicSignature();
     int numberOfSkippedValues = numberOfRepetitions / 10;
     long[][] measuredTimes = { parseStarts.get(basicSignature), parseEnds.get(basicSignature),

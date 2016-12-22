@@ -127,6 +127,9 @@ public class QueryOperationOutput extends QueryOperationListener {
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
+    if (query.repetition != numberOfRepetitions) {
+      return;
+    }
     StringBuilder sb = new StringBuilder();
     for (Entry<String, Map<String, Long>> slaves : emittedOperationMappings
             .get(query.getBasicSignature()).entrySet()) {

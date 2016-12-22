@@ -4,7 +4,6 @@ import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryOperationListener;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QuerySignature;
-import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
 import java.io.File;
 import java.util.Arrays;
@@ -13,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
@@ -207,7 +207,11 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
+    if (query.repetition != numberOfRepetitions) {
+      return;
+    }
     class Element implements Comparable<Element> {
+      private final int operatorId;
       private final long executionTime;
       private final long startTime;
       private final String operation;
@@ -216,35 +220,39 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
         this.executionTime = executionTime;
         this.startTime = startTime;
         this.operation = operation;
+        operatorId = Integer.parseInt(operation.split(Pattern.quote(":"))[0]);
       }
 
       @Override
       public int compareTo(Element o) {
-        long value = executionTime - o.executionTime;
-        return value == 0 ? 0 : value < 0 ? -1 : 1;
+        return operatorId - o.operatorId;
+        // long value = executionTime - o.executionTime;
+        // return value == 0 ? 0 : value < 0 ? -1 : 1;
       }
 
     }
     StringBuilder sb = new StringBuilder();
     Map<String, Map<String, long[][]>> perQuery = operationExecutionTimesPerSlaveAndQuery
             .get(query.getBasicSignature());
+    int minIndex = 0;
+    long minExecutionTime = Long.MAX_VALUE;
+    long[] startTimes = query2starttimes.get(query.getBasicSignature());
+    long[] endTimes = query2endtimes.get(query.getBasicSignature());
+    for (int i = 0; i < startTimes.length; i++) {
+      long executionTime = endTimes[i] - startTimes[i];
+      if (executionTime < minExecutionTime) {
+        minIndex = i;
+        minExecutionTime = executionTime;
+      }
+    }
     for (Entry<String, Map<String, long[][]>> slaveEntry : perQuery.entrySet()) {
       Set<Entry<String, long[][]>> entrySet = slaveEntry.getValue().entrySet();
       Element[] elements = new Element[entrySet.size()];
       int next = 0;
       for (Entry<String, long[][]> operationEntry : entrySet) {
         long[][] repetitions = operationEntry.getValue();
-        int numberOfSkippedValues = numberOfRepetitions / 10;
-        if (numberOfSkippedValues > 0) {
-          Arrays.sort(repetitions[0]);
-          repetitions[0] = Arrays.copyOfRange(repetitions[0], numberOfSkippedValues,
-                  repetitions[0].length - numberOfSkippedValues);
-          Arrays.sort(repetitions[1]);
-          repetitions[1] = Arrays.copyOfRange(repetitions[1], numberOfSkippedValues,
-                  repetitions[1].length - numberOfSkippedValues);
-        }
-        long averageExecutionTime = Utilities.computeArithmeticMean(repetitions[0]);
-        long averageStartTime = Utilities.computeArithmeticMean(repetitions[1]);
+        long averageExecutionTime = repetitions[0][minIndex];
+        long averageStartTime = repetitions[1][minIndex];
         if (averageStartTime >= 1420070400000L/* 1.1.2015 */) {
           // this match operation had nothing to process
           averageStartTime = 0;
@@ -261,20 +269,7 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
                 .append("\t").append(element.startTime).append("\t").append(element.executionTime);
       }
     }
-    long[] executionTimes = new long[numberOfRepetitions];
-    long[] startTimes = query2starttimes.get(query.getBasicSignature());
-    long[] endTimes = query2endtimes.get(query.getBasicSignature());
-    for (int i = 0; i < executionTimes.length; i++) {
-      executionTimes[i] = endTimes[i] - startTimes[i];
-    }
-    int numberOfSkippedValues = numberOfRepetitions / 10;
-    if (numberOfSkippedValues > 0) {
-      Arrays.sort(executionTimes);
-      executionTimes = Arrays.copyOfRange(executionTimes, numberOfSkippedValues,
-              executionTimes.length - numberOfSkippedValues);
-    }
-    long averageExecutionTime = Utilities.computeArithmeticMean(executionTimes);
-    sb.append("\t").append(averageExecutionTime);
+    sb.append("\t").append(minExecutionTime);
     writeLine(sb.toString());
     operationExecutionTimesPerSlaveAndQuery.remove(query.getBasicSignature());
   }

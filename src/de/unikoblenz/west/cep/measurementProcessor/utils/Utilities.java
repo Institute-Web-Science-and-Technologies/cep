@@ -108,4 +108,14 @@ public class Utilities {
     return fraction;
   }
 
+  public static long min(long... values) {
+    long min = Long.MAX_VALUE;
+    for (long value : values) {
+      if (value < min) {
+        min = value;
+      }
+    }
+    return min;
+  }
+
 }

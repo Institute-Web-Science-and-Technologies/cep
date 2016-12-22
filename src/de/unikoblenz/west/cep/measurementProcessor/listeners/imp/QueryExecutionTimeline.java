@@ -4,10 +4,8 @@ import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryOperationListener;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QuerySignature;
-import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -148,24 +146,25 @@ public class QueryExecutionTimeline extends QueryOperationListener {
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
+    if (query.repetition != numberOfRepetitions) {
+      return;
+    }
     QuerySignature basicSignature = query.getBasicSignature();
-    int numberOfSkippedValues = numberOfRepetitions / 10;
     long[][] measuredTimes = { parseStarts.get(basicSignature), parseEnds.get(basicSignature),
             sendQueryEnds.get(basicSignature), executionEnds.get(basicSignature) };
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < (measuredTimes.length - 1); i++) {
-      long[] executionTimes = new long[measuredTimes[0].length];
-      for (int j = 0; j < executionTimes.length; j++) {
-        executionTimes[j] = measuredTimes[i + 1][j] - measuredTimes[i][j];
+    int minIndex = 0;
+    long minTime = Long.MAX_VALUE;
+    for (int i = 0; i < measuredTimes[0].length; i++) {
+      long exTime = measuredTimes[3][i] - measuredTimes[0][i];
+      if (exTime < minTime) {
+        minIndex = i;
+        minTime = exTime;
       }
-      if (numberOfSkippedValues > 0) {
-        Arrays.sort(executionTimes);
-        executionTimes = Arrays.copyOfRange(executionTimes, numberOfSkippedValues,
-                executionTimes.length - numberOfSkippedValues);
-      }
-      long averageTime = Utilities.computeArithmeticMean(executionTimes);
-      sb.append("\t").append(averageTime);
     }
+    StringBuilder sb = new StringBuilder();
+    sb.append("\t").append(measuredTimes[1][minIndex] - measuredTimes[0][minIndex]);
+    sb.append("\t").append(measuredTimes[2][minIndex] - measuredTimes[1][minIndex]);
+    sb.append("\t").append(measuredTimes[3][minIndex] - measuredTimes[2][minIndex]);
     writeLine(sb.toString());
   }
 

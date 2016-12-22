@@ -153,6 +153,9 @@ public class QueryOperationInput extends QueryOperationListener {
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
+    if (query.repetition != numberOfRepetitions) {
+      return;
+    }
     QuerySignature basicSignature = query.getBasicSignature();
     Map<Integer, String> slaveIds = this.slaveIds.get(basicSignature);
     Map<String, Map<String, long[]>> emittedMappings = emittedOperationMappings.get(basicSignature);

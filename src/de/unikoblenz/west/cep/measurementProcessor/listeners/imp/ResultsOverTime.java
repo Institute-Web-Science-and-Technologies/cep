@@ -95,7 +95,20 @@ public class ResultsOverTime extends QueryTimesListener {
     timeLines[query.repetition - 1] = sequenceOfResults;
     if (query.repetition == numberOfRepetitions) {
       query2repetitiontimes.remove(signature);
-      computeAverageTimeLines(timeLines);
+      LinkedList<long[]> minTimeLine = null;
+      for (Queue<long[]> queue : timeLines) {
+        if (minTimeLine == null) {
+          minTimeLine = (LinkedList<long[]>) queue;
+        } else {
+          LinkedList<long[]> current = (LinkedList<long[]>) queue;
+          long[] min = minTimeLine.peekLast();
+          long[] c = current.peekLast();
+          if (c[c.length - 1] < min[min.length - 1]) {
+            minTimeLine = current;
+          }
+        }
+      }
+      computeAverageTimeLines(new Queue[] { minTimeLine });
     }
     queryStartTime = 0;
     sequenceOfResults = new LinkedList<>();

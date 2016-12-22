@@ -75,7 +75,7 @@ public class MeasurementProcessor implements Closeable {
     for (MeasurementListener listener : listeners) {
       listener.setUp(outputDir, null, null, 0, 1, numberOfChunks);
     }
-    processMeasurements(inputFile);
+    processNextMeasurements(inputFile);
   }
 
   public void processQueryMeasurement(File queryDir, File inputFile, CoverStrategyType cover,
@@ -86,7 +86,7 @@ public class MeasurementProcessor implements Closeable {
       for (MeasurementListener listener : listeners) {
         listener.setUp(outputDir, query2fileName, cover, nhop, repetitions, numberOfChunks);
       }
-      processMeasurements(inputFile);
+      processNextMeasurements(inputFile);
     } catch (Exception e) {
       clear();
       throw e;
@@ -127,7 +127,7 @@ public class MeasurementProcessor implements Closeable {
     }
   }
 
-  private void processMeasurements(File inputFile) {
+  public void processNextMeasurements(File inputFile) {
     try (CSVIterator iterator = new CSVIterator(inputFile, 1000);) {
       for (String[] measurement : iterator) {
         for (MeasurementListener listener : listeners) {
@@ -151,11 +151,11 @@ public class MeasurementProcessor implements Closeable {
   }
 
   @SuppressWarnings("unchecked")
-  private static Class<? extends MeasurementListener>[] loadListeners = new Class[] {
+  public static Class<? extends MeasurementListener>[] loadListeners = new Class[] {
           StorageBalance.class, LoadTime.class, ChunkSizes.class };
 
   @SuppressWarnings("unchecked")
-  private static Class<? extends MeasurementListener>[] queryListeners = new Class[] {
+  public static Class<? extends MeasurementListener>[] queryListeners = new Class[] {
           DataTransfer.class, ComputationalEffort.class, OverallQueryExecutionTime.class,
           ResultsOverTime.class, ComputationalEffortPerChunk.class,
           QueryOperationTimesPerSlave.class, QueryExecutionTimeline.class,
@@ -226,7 +226,7 @@ public class MeasurementProcessor implements Closeable {
     }
   }
 
-  private static void registerListeners(MeasurementProcessor measurementProcessor,
+  public static void registerListeners(MeasurementProcessor measurementProcessor,
           Class<? extends MeasurementListener>[] listeners) {
     for (Class<? extends MeasurementListener> listenerClas : listeners) {
       try {

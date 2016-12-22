@@ -129,8 +129,11 @@ public class ResultsOverTime extends QueryTimesListener {
       previousTimeSegment = timeSegment;
     }
     timePoints.append("\t").append(previousTimeSegment[0]);
-    resultPercents.append("\t").append(
-            numberOfResults > 0 ? previousTimeSegment[1] / (double) numberOfResults : "1.0");
+    resultPercents.append("\t")
+            .append(/*
+                     * numberOfResults > 0 ? previousTimeSegment[1] / (double)
+                     * numberOfResults :
+                     */ "1.0");
     writeLine(timePoints.toString());
     writeLine(resultPercents.toString());
   }

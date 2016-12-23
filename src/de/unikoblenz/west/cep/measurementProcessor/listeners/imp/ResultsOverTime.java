@@ -39,15 +39,21 @@ public class ResultsOverTime extends QueryTimesListener {
 
   private final Map<QuerySignature, Queue<long[]>[]> query2repetitiontimes;
 
-  protected long queryStartTime;
+  protected final Map<QuerySignature, long[]> queryStartTime;
 
-  protected Queue<long[]> sequenceOfResults;
+  protected final Map<QuerySignature, long[]> queryEndTime;
 
-  private long numberOfResults;
+  protected final Map<QuerySignature, long[]> queryExecutionStartTime;
+
+  private final Map<QuerySignature, long[]> numberOfResults;
 
   public ResultsOverTime() {
     super();
     query2repetitiontimes = new HashMap<>();
+    queryExecutionStartTime = new HashMap<>();
+    queryStartTime = new HashMap<>();
+    queryEndTime = new HashMap<>();
+    numberOfResults = new HashMap<>();
   }
 
   @Override
@@ -63,8 +69,20 @@ public class ResultsOverTime extends QueryTimesListener {
   @Override
   protected void processQueryStart(CoverStrategyType graphCoverStrategy, int nHopReplication,
           int numberOfChunks, ExtendedQuerySignature query, long queryStartTime) {
-    this.queryStartTime = queryStartTime;
-    sequenceOfResults = new LinkedList<>();
+    QuerySignature signature = query.getBasicSignature();
+    long[] startTimes = queryExecutionStartTime.get(signature);
+    if (startTimes == null) {
+      startTimes = new long[numberOfRepetitions];
+      queryExecutionStartTime.put(signature, startTimes);
+    }
+    startTimes[query.repetition - 1] = queryStartTime;
+
+    long[] startTime = this.queryStartTime.get(signature);
+    if (startTime == null) {
+      startTime = new long[numberOfRepetitions];
+      this.queryStartTime.put(signature, startTime);
+    }
+    startTime[query.repetition - 1] = queryStartTime;
   }
 
   @Override
@@ -73,49 +91,68 @@ public class ResultsOverTime extends QueryTimesListener {
           long timestamp) {
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   protected void processQueryResult(CoverStrategyType graphCoverStrategy, int nHopReplication,
           int numberOfChunks, ExtendedQuerySignature query, long queryResultSentTime,
           long firstResultNumber, long lastResultNumber) {
-    sequenceOfResults.add(new long[] { queryResultSentTime - queryStartTime, lastResultNumber });
-    if (lastResultNumber > numberOfResults) {
-      numberOfResults = lastResultNumber;
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  protected void processQueryFinish(ExtendedQuerySignature query) {
     QuerySignature signature = query.getBasicSignature();
     Queue<long[]>[] timeLines = query2repetitiontimes.get(signature);
     if (timeLines == null) {
       timeLines = new Queue[numberOfRepetitions];
       query2repetitiontimes.put(signature, timeLines);
     }
-    timeLines[query.repetition - 1] = sequenceOfResults;
-    if (query.repetition == numberOfRepetitions) {
-      query2repetitiontimes.remove(signature);
-      LinkedList<long[]> minTimeLine = null;
-      for (Queue<long[]> queue : timeLines) {
-        if (minTimeLine == null) {
-          minTimeLine = (LinkedList<long[]>) queue;
-        } else {
-          LinkedList<long[]> current = (LinkedList<long[]>) queue;
-          long[] min = minTimeLine.peekLast();
-          long[] c = current.peekLast();
-          if (c[c.length - 1] < min[min.length - 1]) {
-            minTimeLine = current;
-          }
-        }
-      }
-      computeAverageTimeLines(new Queue[] { minTimeLine });
+    if (timeLines[query.repetition - 1] == null) {
+      timeLines[query.repetition - 1] = new LinkedList<>();
     }
-    queryStartTime = 0;
-    sequenceOfResults = new LinkedList<>();
-    numberOfResults = 0;
+    timeLines[query.repetition - 1].add(new long[] {
+            queryResultSentTime - queryExecutionStartTime.get(signature)[query.repetition - 1],
+            lastResultNumber });
+
+    long[] ends = queryEndTime.get(signature);
+    if (ends == null) {
+      ends = new long[numberOfRepetitions];
+      queryEndTime.put(signature, ends);
+    }
+    if (ends[query.repetition - 1] < queryResultSentTime) {
+      ends[query.repetition - 1] = queryResultSentTime;
+    }
+
+    long[] numberOfResult = numberOfResults.get(signature);
+    if (numberOfResult == null) {
+      numberOfResult = new long[numberOfRepetitions];
+      numberOfResults.put(signature, numberOfResult);
+    }
+    if (lastResultNumber > numberOfResult[query.repetition - 1]) {
+      numberOfResult[query.repetition - 1] = lastResultNumber;
+    }
   }
 
-  private void computeAverageTimeLines(Queue<long[]>[] timeLines) {
+  @SuppressWarnings("unchecked")
+  @Override
+  protected void processQueryFinish(ExtendedQuerySignature query) {
+    if (query.repetition == numberOfRepetitions) {
+      QuerySignature signature = query.getBasicSignature();
+      Queue<long[]>[] timeLines = query2repetitiontimes.get(signature);
+      query2repetitiontimes.remove(signature);
+      Queue<long[]> minTimeLine = null;
+      int minIndex = 0;
+      long minExecutionTime = Long.MAX_VALUE;
+      for (int i = 0; i < timeLines.length; i++) {
+        Queue<long[]> queue = timeLines[i];
+        long exTime = queryEndTime.get(signature)[i] - queryStartTime.get(signature)[i];
+        if (exTime < minExecutionTime) {
+          minIndex = i;
+          minTimeLine = queue;
+          minExecutionTime = exTime;
+        }
+      }
+      computeAverageTimeLines(new Queue[] { minTimeLine },
+              numberOfResults.get(signature)[minIndex]);
+    }
+  }
+
+  private void computeAverageTimeLines(Queue<long[]>[] timeLines, long numberOfResults) {
     StringBuilder timePoints = new StringBuilder();
     StringBuilder resultPercents = new StringBuilder();
     long[] previousTimeSegment = null;

@@ -20,9 +20,9 @@ package de.unikoblenz.west.cep.measurementProcessor.listeners.imp;
 
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.QuerySignature;
 
 import java.io.File;
-import java.util.LinkedList;
 
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
@@ -43,14 +43,26 @@ public class PlainResultsOverTime extends ResultsOverTime {
   @Override
   protected void processQueryStart(CoverStrategyType graphCoverStrategy, int nHopReplication,
           int numberOfChunks, ExtendedQuerySignature query, long queryStartTime) {
+    QuerySignature signature = query.getBasicSignature();
+    long[] startTime = this.queryStartTime.get(signature);
+    if (startTime == null) {
+      startTime = new long[numberOfRepetitions];
+      this.queryStartTime.put(signature, startTime);
+    }
+    startTime[query.repetition - 1] = queryStartTime;
   }
 
   @Override
   protected void processQueryCoordinatorSendQueryStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
           long timestamp) {
-    queryStartTime = timestamp;
-    sequenceOfResults = new LinkedList<>();
+    QuerySignature signature = extendedQuerySignature.getBasicSignature();
+    long[] startTimes = queryExecutionStartTime.get(signature);
+    if (startTimes == null) {
+      startTimes = new long[numberOfRepetitions];
+      queryExecutionStartTime.put(signature, startTimes);
+    }
+    startTimes[extendedQuerySignature.repetition - 1] = timestamp;
   }
 
 }

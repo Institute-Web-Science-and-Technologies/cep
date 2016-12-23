@@ -28,7 +28,7 @@ import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
  */
 public abstract class QueryTimesListener extends QueryListener {
 
-  private long queryStartTime;
+  private long queryCoordinatorStartTime;
 
   private boolean hasProcessedQueryResults;
 
@@ -38,18 +38,22 @@ public abstract class QueryTimesListener extends QueryListener {
     MeasurementType measurementType = Utilities.getMeasurementType(measurements);
     if (measurementType != null) {
       switch (measurementType) {
+        case QUERY_COORDINATOR_START:
+          queryCoordinatorStartTime = Long.parseLong(measurements[4]);
+          break;
+        case QUERY_COORDINATOR_PARSE_START:
+          processQueryStart(graphCoverStrategy, nHopReplication, numberOfChunks,
+                  new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
+                          currentQueryFileName, treeType, currentQueryRepetition),
+                  queryCoordinatorStartTime);
+          break;
         case QUERY_MESSAGE_RECEIPTION:
           hasProcessedQueryResults = false;
-          queryStartTime = Long.parseLong(measurements[4]);
           break;
         case QUERY_COORDINATOR_SEND_QUERY_RESULTS_TO_CLIENT:
           ExtendedQuerySignature query = new ExtendedQuerySignature(
                   Integer.parseInt(measurements[5]), currentQueryFileName, treeType,
                   currentQueryRepetition);
-          if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy, nHopReplication, numberOfChunks, query,
-                    queryStartTime);
-          }
           processQueryResult(graphCoverStrategy, nHopReplication, numberOfChunks, query,
                   Long.parseLong(measurements[4]), Long.parseLong(measurements[6]),
                   Long.parseLong(measurements[7]));
@@ -65,8 +69,6 @@ public abstract class QueryTimesListener extends QueryListener {
           query = new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
                   currentQueryFileName, treeType, currentQueryRepetition);
           if (!hasProcessedQueryResults) {
-            processQueryStart(graphCoverStrategy, nHopReplication, numberOfChunks, query,
-                    queryStartTime);
             processQueryResult(graphCoverStrategy, nHopReplication, numberOfChunks, query,
                     Long.parseLong(measurements[4]), 0, 0);
           }

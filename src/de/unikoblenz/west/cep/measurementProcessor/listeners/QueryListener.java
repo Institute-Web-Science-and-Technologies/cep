@@ -30,7 +30,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -67,8 +69,11 @@ public abstract class QueryListener implements MeasurementListener {
 
   protected int numberOfRepetitions;
 
+  protected final List<String[]> writtenLines;
+
   public QueryListener() {
     queryRepetition = new HashMap<>();
+    writtenLines = new ArrayList<>();
   }
 
   @Override
@@ -146,18 +151,30 @@ public abstract class QueryListener implements MeasurementListener {
 
   protected abstract void processQueryFinish(ExtendedQuerySignature query);
 
-  protected void writeLine(String line) {
-    if (!line.startsWith("\t")) {
-      line = "\t" + line;
+  protected void writeLine(String... lines) {
+    for (int i = 0; i < lines.length; i++) {
+      String line = lines[i];
+      if (!line.startsWith("\t")) {
+        line = "\t" + line;
+      }
     }
     String[] parts = currentQueryFileName.split(Pattern.quote("-"));
-    try {
-      output.write("\n" + graphCoverStrategy + "\t" + numberOfChunks + "\t" + nHopReplication + "\t"
-              + treeType + "\t" + currentQueryFileName + "\t" + parts[1] + "\t" + parts[2] + "\t"
-              + parts[3] + "\t" + parts[4] + line);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    String prefix = "\n" + graphCoverStrategy + "\t" + numberOfChunks + "\t" + nHopReplication
+            + "\t" + treeType + "\t" + currentQueryFileName + "\t" + parts[1] + "\t" + parts[2]
+            + "\t" + parts[3] + "\t" + parts[4];
+    for (int i = 0; i < writtenLines.size(); i++) {
+      String[] line2 = writtenLines.get(i);
+      if (line2[0].equals(prefix)) {
+        for (int j = 0; j < lines.length; j++) {
+          line2[j + 1] = lines[j];
+        }
+        return;
+      }
     }
+    String[] entry = new String[lines.length + 1];
+    System.arraycopy(lines, 0, entry, 1, lines.length);
+    entry[0] = prefix;
+    writtenLines.add(entry);
   }
 
   @Override
@@ -165,6 +182,11 @@ public abstract class QueryListener implements MeasurementListener {
     performFinishTasks();
     try {
       if (output != null) {
+        for (String[] lines : writtenLines) {
+          for (int i = 1; i < lines.length; i++) {
+            output.write(lines[0] + lines[i]);
+          }
+        }
         output.close();
       }
     } catch (IOException e) {

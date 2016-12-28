@@ -6,6 +6,7 @@ import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryOperationListe
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QuerySignature;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,6 +51,9 @@ public class QueryExecutionTimeline extends QueryOperationListener {
     if (starts == null) {
       starts = new long[numberOfRepetitions];
       parseStarts.put(basicSignature, starts);
+    } else if (starts.length < query.repetition) {
+      starts = Arrays.copyOf(starts, query.repetition);
+      parseStarts.put(basicSignature, starts);
     }
     starts[query.repetition - 1] = queryCoordinatorStartTime;
   }
@@ -68,6 +72,9 @@ public class QueryExecutionTimeline extends QueryOperationListener {
     long[] ends = parseEnds.get(basicSignature);
     if (ends == null) {
       ends = new long[numberOfRepetitions];
+      parseEnds.put(basicSignature, ends);
+    } else if (ends.length < extendedQuerySignature.repetition) {
+      ends = Arrays.copyOf(ends, extendedQuerySignature.repetition);
       parseEnds.put(basicSignature, ends);
     }
     ends[extendedQuerySignature.repetition - 1] = timestamp;
@@ -99,6 +106,9 @@ public class QueryExecutionTimeline extends QueryOperationListener {
     long[] ends = sendQueryEnds.get(basicSignature);
     if (ends == null) {
       ends = new long[numberOfRepetitions];
+      sendQueryEnds.put(basicSignature, ends);
+    } else if (ends.length < extendedQuerySignature.repetition) {
+      ends = Arrays.copyOf(ends, extendedQuerySignature.repetition);
       sendQueryEnds.put(basicSignature, ends);
     }
     ends[extendedQuerySignature.repetition - 1] = timestamp;
@@ -132,6 +142,9 @@ public class QueryExecutionTimeline extends QueryOperationListener {
     if (ends == null) {
       ends = new long[numberOfRepetitions];
       executionEnds.put(basicSignature, ends);
+    } else if (ends.length < extendedQuerySignature.repetition) {
+      ends = Arrays.copyOf(ends, extendedQuerySignature.repetition);
+      executionEnds.put(basicSignature, ends);
     }
     if (ends[extendedQuerySignature.repetition - 1] < timestamp) {
       ends[extendedQuerySignature.repetition - 1] = timestamp;
@@ -146,7 +159,7 @@ public class QueryExecutionTimeline extends QueryOperationListener {
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
-    if (query.repetition != numberOfRepetitions) {
+    if (query.repetition < numberOfRepetitions) {
       return;
     }
     QuerySignature basicSignature = query.getBasicSignature();

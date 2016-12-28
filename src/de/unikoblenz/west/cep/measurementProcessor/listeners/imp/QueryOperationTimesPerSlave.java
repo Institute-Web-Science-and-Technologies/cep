@@ -51,8 +51,13 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
   protected void processQueryCoordinatorStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature query,
           long queryCoordinatorStartTime) {
-    long[] startTime = startTimeOfExecution.get(query.getBasicSignature());
+    QuerySignature basicSignature = query.getBasicSignature();
+    long[] startTime = startTimeOfExecution.get(basicSignature);
     if (startTime != null) {
+      if (startTime.length < query.repetition) {
+        startTime = Arrays.copyOf(startTime, query.repetition);
+        startTimeOfExecution.put(basicSignature, startTime);
+      }
       startTime[query.repetition - 1] = 0;
     }
   }
@@ -96,6 +101,9 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
     if (executionTimes == null) {
       executionTimes = new long[numberOfRepetitions];
       startTimeOfExecution.put(basicSignature, executionTimes);
+    } else if (executionTimes.length < extendedQuerySignature.repetition) {
+      executionTimes = Arrays.copyOf(executionTimes, extendedQuerySignature.repetition);
+      startTimeOfExecution.put(basicSignature, executionTimes);
     }
     if (executionTimes[extendedQuerySignature.repetition - 1] == 0) {
       executionTimes[extendedQuerySignature.repetition - 1] = timestamp;
@@ -111,6 +119,9 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
             for (Entry<String, long[][]> op : ops.entrySet()) {
               long[][] opTimes = op.getValue();
               if ((opTimes != null) && (opTimes[1] != null)) {
+                if (opTimes[1].length < extendedQuerySignature.repetition) {
+                  opTimes[1] = Arrays.copyOf(opTimes[1], extendedQuerySignature.repetition);
+                }
                 opTimes[1][extendedQuerySignature.repetition
                         - 1] = executionTimes[extendedQuerySignature.repetition - 1];
               }
@@ -122,6 +133,9 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
     long[] startTimes = query2starttimes.get(basicSignature);
     if (startTimes == null) {
       startTimes = new long[numberOfRepetitions];
+      query2starttimes.put(basicSignature, startTimes);
+    } else if (startTimes.length < extendedQuerySignature.repetition) {
+      startTimes = Arrays.copyOf(startTimes, extendedQuerySignature.repetition);
       query2starttimes.put(basicSignature, startTimes);
     }
     startTimes[extendedQuerySignature.repetition - 1] = timestamp;
@@ -148,11 +162,20 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
       operationTimes = new long[2][numberOfRepetitions];
       operationsOfSlave.put(operation, operationTimes);
     }
+    if (operationTimes[0].length < extendedQuerySignature.repetition) {
+      operationTimes[0] = Arrays.copyOf(operationTimes[0], extendedQuerySignature.repetition);
+    }
     operationTimes[0][extendedQuerySignature.repetition - 1] = timestamp;
     long[] startTimes = startTimeOfExecution.get(basicSignature);
     if (startTimes == null) {
       startTimes = new long[numberOfRepetitions];
       startTimeOfExecution.put(basicSignature, startTimes);
+    } else if (startTimes.length < extendedQuerySignature.repetition) {
+      startTimes = Arrays.copyOf(startTimes, extendedQuerySignature.repetition);
+      startTimeOfExecution.put(basicSignature, startTimes);
+    }
+    if (operationTimes[1].length < extendedQuerySignature.repetition) {
+      operationTimes[1] = Arrays.copyOf(operationTimes[1], extendedQuerySignature.repetition);
     }
     operationTimes[1][extendedQuerySignature.repetition - 1] = timestamp
             - startTimes[extendedQuerySignature.repetition - 1];
@@ -171,6 +194,9 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
           String computer, long timestamp, long[] emittedMappings) {
     long[][] operationTimes = operationExecutionTimesPerSlaveAndQuery
             .get(extendedQuerySignature.getBasicSignature()).get(computer).get(operation);
+    if (operationTimes[0].length < extendedQuerySignature.repetition) {
+      operationTimes[0] = Arrays.copyOf(operationTimes[0], extendedQuerySignature.repetition);
+    }
     operationTimes[0][extendedQuerySignature.repetition - 1] = timestamp
             - operationTimes[0][extendedQuerySignature.repetition - 1];
   }
@@ -183,6 +209,9 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
     long[] endTimes = query2endtimes.get(basicSignature);
     if (endTimes == null) {
       endTimes = new long[numberOfRepetitions];
+      query2endtimes.put(basicSignature, endTimes);
+    } else if (endTimes.length < extendedQuerySignature.repetition) {
+      endTimes = Arrays.copyOf(endTimes, extendedQuerySignature.repetition);
       query2endtimes.put(basicSignature, endTimes);
     }
     if (timestamp > endTimes[extendedQuerySignature.repetition - 1]) {
@@ -199,6 +228,9 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
     if (endTimes == null) {
       endTimes = new long[numberOfRepetitions];
       query2endtimes.put(basicSignature, endTimes);
+    } else if (endTimes.length < extendedQuerySignature.repetition) {
+      endTimes = Arrays.copyOf(endTimes, extendedQuerySignature.repetition);
+      query2endtimes.put(basicSignature, endTimes);
     }
     if (endTimes[extendedQuerySignature.repetition - 1] > 0) {
       endTimes[extendedQuerySignature.repetition - 1] = timestamp;
@@ -207,7 +239,7 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
-    if (query.repetition != numberOfRepetitions) {
+    if (query.repetition < numberOfRepetitions) {
       return;
     }
     class Element implements Comparable<Element> {

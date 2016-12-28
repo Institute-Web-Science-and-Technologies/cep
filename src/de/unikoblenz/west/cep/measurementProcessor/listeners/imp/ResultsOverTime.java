@@ -74,6 +74,12 @@ public class ResultsOverTime extends QueryTimesListener {
     if (startTimes == null) {
       startTimes = new long[numberOfRepetitions];
       queryExecutionStartTime.put(signature, startTimes);
+    } else if (startTimes.length < query.repetition) {
+      long[] newStartTimes = new long[query.repetition];
+      System.arraycopy(startTimes, 0, newStartTimes, 0, startTimes.length);
+      startTimes = newStartTimes;
+      queryExecutionStartTime.put(signature, startTimes);
+
     }
     startTimes[query.repetition - 1] = queryStartTime;
 
@@ -81,6 +87,12 @@ public class ResultsOverTime extends QueryTimesListener {
     if (startTime == null) {
       startTime = new long[numberOfRepetitions];
       this.queryStartTime.put(signature, startTime);
+    } else if (startTime.length < query.repetition) {
+      long[] newStartTime = new long[query.repetition];
+      System.arraycopy(startTime, 0, newStartTime, 0, startTime.length);
+      startTime = newStartTime;
+      this.queryStartTime.put(signature, startTime);
+
     }
     startTime[query.repetition - 1] = queryStartTime;
   }
@@ -102,6 +114,10 @@ public class ResultsOverTime extends QueryTimesListener {
       timeLines = new Queue[numberOfRepetitions];
       query2repetitiontimes.put(signature, timeLines);
     }
+    if (timeLines.length < query.repetition) {
+      timeLines = Arrays.copyOf(timeLines, query.repetition);
+      query2repetitiontimes.put(signature, timeLines);
+    }
     if (timeLines[query.repetition - 1] == null) {
       timeLines[query.repetition - 1] = new LinkedList<>();
     }
@@ -114,6 +130,10 @@ public class ResultsOverTime extends QueryTimesListener {
       ends = new long[numberOfRepetitions];
       queryEndTime.put(signature, ends);
     }
+    if (ends.length < query.repetition) {
+      ends = Arrays.copyOf(ends, query.repetition);
+      queryEndTime.put(signature, ends);
+    }
     if (ends[query.repetition - 1] < queryResultSentTime) {
       ends[query.repetition - 1] = queryResultSentTime;
     }
@@ -121,6 +141,10 @@ public class ResultsOverTime extends QueryTimesListener {
     long[] numberOfResult = numberOfResults.get(signature);
     if (numberOfResult == null) {
       numberOfResult = new long[numberOfRepetitions];
+      numberOfResults.put(signature, numberOfResult);
+    }
+    if (numberOfResult.length < query.repetition) {
+      numberOfResult = Arrays.copyOf(numberOfResult, query.repetition);
       numberOfResults.put(signature, numberOfResult);
     }
     if (lastResultNumber > numberOfResult[query.repetition - 1]) {
@@ -131,10 +155,9 @@ public class ResultsOverTime extends QueryTimesListener {
   @SuppressWarnings("unchecked")
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
-    if (query.repetition == numberOfRepetitions) {
+    if (query.repetition >= numberOfRepetitions) {
       QuerySignature signature = query.getBasicSignature();
       Queue<long[]>[] timeLines = query2repetitiontimes.get(signature);
-      query2repetitiontimes.remove(signature);
       Queue<long[]> minTimeLine = null;
       int minIndex = 0;
       long minExecutionTime = Long.MAX_VALUE;
@@ -147,8 +170,11 @@ public class ResultsOverTime extends QueryTimesListener {
           minExecutionTime = exTime;
         }
       }
-      computeAverageTimeLines(new Queue[] { minTimeLine },
-              numberOfResults.get(signature)[minIndex]);
+      Queue<long[]> copy = new LinkedList<>();
+      for (long[] elem : minTimeLine) {
+        copy.offer(elem);
+      }
+      computeAverageTimeLines(new Queue[] { copy }, numberOfResults.get(signature)[minIndex]);
     }
   }
 
@@ -171,8 +197,7 @@ public class ResultsOverTime extends QueryTimesListener {
                      * numberOfResults > 0 ? previousTimeSegment[1] / (double)
                      * numberOfResults :
                      */ "1.0");
-    writeLine(timePoints.toString());
-    writeLine(resultPercents.toString());
+    writeLine(timePoints.toString(), resultPercents.toString());
   }
 
   private long[] getNextTimeSegment(Queue<long[]>[] timeLines) {

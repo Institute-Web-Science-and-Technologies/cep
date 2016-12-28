@@ -25,6 +25,7 @@ import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryTimesListener;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -85,8 +86,12 @@ public class OverallQueryExecutionTime extends QueryTimesListener {
       repetitions = new long[numberOfRepetitions];
       query2repetitiontimes.put(basicSignature, repetitions);
     }
+    if (repetitions.length < query.repetition) {
+      repetitions = Arrays.copyOf(repetitions, query.repetition);
+      query2repetitiontimes.put(basicSignature, repetitions);
+    }
     repetitions[query.repetition - 1] = totalQueryExecutionTime;
-    if (query.repetition == numberOfRepetitions) {
+    if (query.repetition >= numberOfRepetitions) {
       query2repetitiontimes.remove(basicSignature);
       writeLine("\t" + Utilities.min(repetitions));
     }

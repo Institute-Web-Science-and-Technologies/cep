@@ -23,6 +23,7 @@ import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignat
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QuerySignature;
 
 import java.io.File;
+import java.util.Arrays;
 
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
@@ -48,6 +49,9 @@ public class PlainResultsOverTime extends ResultsOverTime {
     if (startTime == null) {
       startTime = new long[numberOfRepetitions];
       this.queryStartTime.put(signature, startTime);
+    } else if (startTime.length < query.repetition) {
+      startTime = Arrays.copyOf(startTime, query.repetition);
+      this.queryStartTime.put(signature, startTime);
     }
     startTime[query.repetition - 1] = queryStartTime;
   }
@@ -60,6 +64,9 @@ public class PlainResultsOverTime extends ResultsOverTime {
     long[] startTimes = queryExecutionStartTime.get(signature);
     if (startTimes == null) {
       startTimes = new long[numberOfRepetitions];
+      queryExecutionStartTime.put(signature, startTimes);
+    } else if (startTimes.length < extendedQuerySignature.repetition) {
+      startTimes = Arrays.copyOf(startTimes, extendedQuerySignature.repetition);
       queryExecutionStartTime.put(signature, startTimes);
     }
     startTimes[extendedQuerySignature.repetition - 1] = timestamp;

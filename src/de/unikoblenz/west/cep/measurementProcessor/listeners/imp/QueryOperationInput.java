@@ -198,7 +198,6 @@ public class QueryOperationInput extends QueryOperationListener {
       }
     }
     writeLine(sb.toString());
-    emittedOperationMappings.remove(basicSignature);
   }
 
   private String guessSlave(Map<Integer, String> slaveIds, int id) {

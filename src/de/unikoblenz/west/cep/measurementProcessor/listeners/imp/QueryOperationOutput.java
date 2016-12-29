@@ -139,7 +139,6 @@ public class QueryOperationOutput extends QueryOperationListener {
       }
     }
     writeLine(sb.toString());
-    emittedOperationMappings.remove(query.getBasicSignature());
   }
 
 }

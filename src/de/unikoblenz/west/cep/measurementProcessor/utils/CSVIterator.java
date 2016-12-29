@@ -167,6 +167,7 @@ class MeasurmentWrapper implements Comparable<MeasurmentWrapper> {
       case QUERY_OPERATION_JOIN_NUMBER_OF_COMPARISONS:
       case QUERY_OPERATION_SENT_FINISH_NOTIFICATIONS_TO_OTHER_SLAVES:
       case QUERY_OPERATION_SENT_MAPPINGS_TO_SLAVE:
+      case SLAVE_SENT_MAPPING_BATCHES_TO_SLAVE:
         queryId = Integer.parseInt(measurement[4]);
         break;
       case QUERY_MESSAGE_RECEIPTION:

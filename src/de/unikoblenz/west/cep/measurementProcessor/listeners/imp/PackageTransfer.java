@@ -21,8 +21,11 @@ package de.unikoblenz.west.cep.measurementProcessor.listeners.imp;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryPackageSentListener;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.QuerySignature;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
@@ -30,7 +33,11 @@ import java.io.File;
  */
 public class PackageTransfer extends QueryPackageSentListener {
 
-  private long totalDataTransfer;
+  private final Map<QuerySignature, Long> totalPackageTransfer;
+
+  public PackageTransfer() {
+    totalPackageTransfer = new HashMap<>();
+  }
 
   @Override
   protected File getOutputFile(File outputDirectory) {
@@ -45,17 +52,20 @@ public class PackageTransfer extends QueryPackageSentListener {
   @Override
   protected void processPackageSent(CoverStrategyType graphCoverStrategy, int nHopReplication,
           int numberOfChunks, ExtendedQuerySignature query, int slaveId, long[] sentPackages) {
+    QuerySignature basicSignature = query.getBasicSignature();
+    Long packageTransfer = totalPackageTransfer.get(basicSignature);
+    long value = packageTransfer == null ? 0 : packageTransfer.longValue();
     for (int i = 0; i < sentPackages.length; i++) {
-      totalDataTransfer += sentPackages[i];
+      value += sentPackages[i];
     }
+    totalPackageTransfer.put(basicSignature, value);
   }
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query) {
     if (currentQueryRepetition == numberOfRepetitions) {
-      writeLine("\t" + totalDataTransfer);
+      writeLine("\t" + totalPackageTransfer.get(query.getBasicSignature()));
     }
-    totalDataTransfer = 0;
   }
 
 }

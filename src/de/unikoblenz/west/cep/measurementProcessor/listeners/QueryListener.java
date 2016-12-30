@@ -113,7 +113,8 @@ public abstract class QueryListener implements MeasurementListener {
           performFinishTasks();
           String queryString = measurements[6];
           String nextFile = query2fileName.get(queryString);
-          wasPreviousExecutionAbborted = nextFile.equals(currentQueryFileName);
+          // wasPreviousExecutionAbborted =
+          // nextFile.equals(currentQueryFileName);
           currentQueryFileName = nextFile;
           if (currentQueryFileName == null) {
             throw new RuntimeException("unknown query " + queryString);

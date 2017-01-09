@@ -24,6 +24,7 @@ import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryPackageSentLis
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QuerySignature;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ import java.util.Map;
  */
 public class PackageTransfer extends QueryPackageSentListener {
 
-  private final Map<QuerySignature, Long> totalPackageTransfer;
+  private final Map<QuerySignature, long[]> totalPackageTransfer;
 
   public PackageTransfer() {
     totalPackageTransfer = new HashMap<>();
@@ -53,19 +54,23 @@ public class PackageTransfer extends QueryPackageSentListener {
   protected void processPackageSent(CoverStrategyType graphCoverStrategy, int nHopReplication,
           int numberOfChunks, ExtendedQuerySignature query, int slaveId, long[] sentPackages) {
     QuerySignature basicSignature = query.getBasicSignature();
-    Long packageTransfer = totalPackageTransfer.get(basicSignature);
-    long value = packageTransfer == null ? 0 : packageTransfer.longValue();
-    for (int i = 0; i < sentPackages.length; i++) {
-      value += sentPackages[i];
+    long[] packageTransfer = totalPackageTransfer.get(basicSignature);
+    if (packageTransfer == null) {
+      packageTransfer = new long[numberOfRepetitions];
+      totalPackageTransfer.put(basicSignature, packageTransfer);
     }
-    totalPackageTransfer.put(basicSignature, value);
+    if (packageTransfer.length < query.repetition) {
+      packageTransfer = Arrays.copyOf(packageTransfer, query.repetition);
+      totalPackageTransfer.put(basicSignature, packageTransfer);
+    }
+    for (int i = 0; i < sentPackages.length; i++) {
+      packageTransfer[query.repetition - 1] += sentPackages[i];
+    }
   }
 
   @Override
-  protected void processQueryFinish(ExtendedQuerySignature query) {
-    if (currentQueryRepetition == numberOfRepetitions) {
-      writeLine("\t" + totalPackageTransfer.get(query.getBasicSignature()));
-    }
+  protected void processQueryFinish(ExtendedQuerySignature query, int minRepetition) {
+    writeLine("\t" + totalPackageTransfer.get(query.getBasicSignature())[minRepetition]);
   }
 
 }

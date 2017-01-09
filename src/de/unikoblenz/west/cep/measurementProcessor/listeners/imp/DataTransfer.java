@@ -21,8 +21,12 @@ package de.unikoblenz.west.cep.measurementProcessor.listeners.imp;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryMappingSentListener;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.QuerySignature;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
@@ -30,7 +34,11 @@ import java.io.File;
  */
 public class DataTransfer extends QueryMappingSentListener {
 
-  private long totalDataTransfer;
+  private final Map<QuerySignature, long[]> totalDataTransfers;
+
+  public DataTransfer() {
+    totalDataTransfers = new HashMap<>();
+  }
 
   @Override
   protected File getOutputFile(File outputDirectory) {
@@ -46,6 +54,16 @@ public class DataTransfer extends QueryMappingSentListener {
   protected void processMappingSent(CoverStrategyType graphCoverStrategy, int nHopReplication,
           int numberOfChunks, ExtendedQuerySignature query, int slaveId, int taskId,
           long[] sentMappings, int numberOfVariablesPerMapping) {
+    QuerySignature basicSignature = query.getBasicSignature();
+    long[] totalDataTransfer = totalDataTransfers.get(basicSignature);
+    if (totalDataTransfer == null) {
+      totalDataTransfer = new long[numberOfRepetitions];
+      totalDataTransfers.put(basicSignature, totalDataTransfer);
+    }
+    if (totalDataTransfer.length < query.repetition) {
+      totalDataTransfer = Arrays.copyOf(totalDataTransfer, query.repetition);
+      totalDataTransfers.put(basicSignature, totalDataTransfer);
+    }
     if (numberOfVariablesPerMapping == 0) {
       numberOfVariablesPerMapping = 1;
     }
@@ -54,16 +72,13 @@ public class DataTransfer extends QueryMappingSentListener {
       if (i == slaveId) {
         continue;
       }
-      totalDataTransfer += sentMappings[i] * numberOfVariablesPerMapping;
+      totalDataTransfer[query.repetition - 1] += sentMappings[i] * numberOfVariablesPerMapping;
     }
   }
 
   @Override
-  protected void processQueryFinish(ExtendedQuerySignature query) {
-    if (currentQueryRepetition == 1) {
-      writeLine("\t" + totalDataTransfer);
-      totalDataTransfer = 0;
-    }
+  protected void processQueryFinish(ExtendedQuerySignature query, int minRepetition) {
+    writeLine("\t" + totalDataTransfers.get(query.getBasicSignature())[minRepetition]);
   }
 
 }

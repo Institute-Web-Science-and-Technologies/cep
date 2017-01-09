@@ -28,7 +28,7 @@ import java.util.Arrays;
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
  *
  */
-public abstract class QueryPackageSentListener extends QueryListener {
+public abstract class QueryPackageSentListener extends QueryMinListener {
 
   @Override
   public void processMeasurement(String... measurements) {
@@ -38,17 +38,15 @@ public abstract class QueryPackageSentListener extends QueryListener {
       switch (measurementType) {
         case SLAVE_SENT_MAPPING_BATCHES_TO_SLAVE:
           assert treeType != null : Arrays.toString(measurements);
-          if (currentQueryRepetition == numberOfRepetitions) {
-            int firstIndex = 5;
-            long[] sentMappings = new long[numberOfChunks];
-            for (int i = firstIndex; (i - firstIndex) < sentMappings.length; i++) {
-              sentMappings[i - firstIndex] = Long.parseLong(measurements[i]);
-            }
-            processPackageSent(graphCoverStrategy, nHopReplication, numberOfChunks,
-                    new ExtendedQuerySignature(Integer.parseInt(measurements[4]),
-                            currentQueryFileName, treeType, currentQueryRepetition),
-                    Utilities.getComputerId(measurements), sentMappings);
+          int firstIndex = 5;
+          long[] sentMappings = new long[numberOfChunks];
+          for (int i = firstIndex; (i - firstIndex) < sentMappings.length; i++) {
+            sentMappings[i - firstIndex] = Long.parseLong(measurements[i]);
           }
+          processPackageSent(graphCoverStrategy, nHopReplication, numberOfChunks,
+                  new ExtendedQuerySignature(Integer.parseInt(measurements[4]),
+                          currentQueryFileName, treeType, currentQueryRepetition),
+                  Utilities.getComputerId(measurements), sentMappings);
           break;
         default:
           // all other types are not required

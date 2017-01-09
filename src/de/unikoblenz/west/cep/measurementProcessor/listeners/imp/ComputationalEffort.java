@@ -21,10 +21,13 @@ package de.unikoblenz.west.cep.measurementProcessor.listeners.imp;
 import de.uni_koblenz.west.koral.master.graph_cover_creator.CoverStrategyType;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.ExtendedQuerySignature;
 import de.unikoblenz.west.cep.measurementProcessor.listeners.QueryComputationEffortListener;
+import de.unikoblenz.west.cep.measurementProcessor.listeners.QuerySignature;
 import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
@@ -32,7 +35,11 @@ import java.util.Arrays;
  */
 public class ComputationalEffort extends QueryComputationEffortListener {
 
-  protected long[] numberOfComparisonsPerSlave;
+  protected Map<QuerySignature, long[][]> numberOfComparisonsPerSlaves;
+
+  public ComputationalEffort() {
+    numberOfComparisonsPerSlaves = new HashMap<>();
+  }
 
   @Override
   protected File getOutputFile(File outputDirectory) {
@@ -53,30 +60,41 @@ public class ComputationalEffort extends QueryComputationEffortListener {
       slaveId -= numberOfChunks;
     }
     slaveId -= 1;
+    QuerySignature basicSignature = query.getBasicSignature();
+    long[][] numberOfComparisonsPerSlave = numberOfComparisonsPerSlaves.get(basicSignature);
     if (numberOfComparisonsPerSlave == null) {
-      numberOfComparisonsPerSlave = new long[slaveId + 1];
-    } else if (numberOfComparisonsPerSlave.length <= slaveId) {
-      numberOfComparisonsPerSlave = Arrays.copyOf(numberOfComparisonsPerSlave, slaveId + 1);
+      numberOfComparisonsPerSlave = new long[numberOfRepetitions][];
+      numberOfComparisonsPerSlaves.put(basicSignature, numberOfComparisonsPerSlave);
     }
-    numberOfComparisonsPerSlave[slaveId] += numberOfComparisons;
+    if (numberOfComparisonsPerSlave.length < query.repetition) {
+      numberOfComparisonsPerSlave = Arrays.copyOf(numberOfComparisonsPerSlave, query.repetition);
+      numberOfComparisonsPerSlaves.put(basicSignature, numberOfComparisonsPerSlave);
+    }
+
+    if (numberOfComparisonsPerSlave[query.repetition - 1] == null) {
+      numberOfComparisonsPerSlave[query.repetition - 1] = new long[slaveId + 1];
+    } else if (numberOfComparisonsPerSlave[query.repetition - 1].length <= slaveId) {
+      numberOfComparisonsPerSlave[query.repetition - 1] = Arrays
+              .copyOf(numberOfComparisonsPerSlave[query.repetition - 1], slaveId + 1);
+    }
+    numberOfComparisonsPerSlave[query.repetition - 1][slaveId] += numberOfComparisons;
   }
 
   @Override
-  protected void processQueryFinish(ExtendedQuerySignature query) {
-    if (numberOfComparisonsPerSlave == null) {
-      return;
-    }
+  protected void processQueryFinish(ExtendedQuerySignature query, int minRepitition) {
+    QuerySignature basicSignature = query.getBasicSignature();
+    long[][] numberOfComparisonsPerSlave = numberOfComparisonsPerSlaves.get(basicSignature);
     long totalNumberOfcomputations = 0;
-    for (long value : numberOfComparisonsPerSlave) {
+    for (long value : numberOfComparisonsPerSlave[minRepitition]) {
       totalNumberOfcomputations += value;
     }
     writeLine("\t" + totalNumberOfcomputations + "\t"
-            + Utilities.computeEntropy(numberOfComparisonsPerSlave, totalNumberOfcomputations)
-            + "\t"
-            + Utilities.computeStandardDeviation(numberOfComparisonsPerSlave,
+            + Utilities.computeEntropy(numberOfComparisonsPerSlave[minRepitition],
                     totalNumberOfcomputations)
-            + "\t" + Utilities.computeGiniCoefficient(numberOfComparisonsPerSlave));
-    numberOfComparisonsPerSlave = null;
+            + "\t"
+            + Utilities.computeStandardDeviation(numberOfComparisonsPerSlave[minRepitition],
+                    totalNumberOfcomputations)
+            + "\t" + Utilities.computeGiniCoefficient(numberOfComparisonsPerSlave[minRepitition]));
   }
 
 }

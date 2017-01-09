@@ -26,7 +26,7 @@ import de.unikoblenz.west.cep.measurementProcessor.utils.Utilities;
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
  *
  */
-public abstract class QueryComputationEffortListener extends QueryListener {
+public abstract class QueryComputationEffortListener extends QueryMinListener {
 
   @Override
   public void processMeasurement(String... measurements) {
@@ -35,13 +35,11 @@ public abstract class QueryComputationEffortListener extends QueryListener {
     if (measurementType != null) {
       switch (measurementType) {
         case QUERY_OPERATION_JOIN_NUMBER_OF_COMPARISONS:
-          if (currentQueryRepetition == 1) {
-            processComputationEffort(graphCoverStrategy, nHopReplication, numberOfChunks,
-                    new ExtendedQuerySignature(Integer.parseInt(measurements[4]),
-                            currentQueryFileName, treeType, currentQueryRepetition),
-                    Utilities.getComputerId(measurements), measurements[0],
-                    Integer.parseInt(measurements[5]), Long.parseLong(measurements[6]));
-          }
+          processComputationEffort(graphCoverStrategy, nHopReplication, numberOfChunks,
+                  new ExtendedQuerySignature(Integer.parseInt(measurements[4]),
+                          currentQueryFileName, treeType, currentQueryRepetition),
+                  Utilities.getComputerId(measurements), measurements[0],
+                  Integer.parseInt(measurements[5]), Long.parseLong(measurements[6]));
           break;
         default:
           // all other types are not required

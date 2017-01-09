@@ -28,7 +28,7 @@ import java.util.Arrays;
  * @author Daniel Janke &lt;danijankATuni-koblenz.de&gt;
  *
  */
-public abstract class QueryMappingSentListener extends QueryListener {
+public abstract class QueryMappingSentListener extends QueryMinListener {
 
   @Override
   public void processMeasurement(String... measurements) {
@@ -38,19 +38,17 @@ public abstract class QueryMappingSentListener extends QueryListener {
       switch (measurementType) {
         case QUERY_OPERATION_SENT_MAPPINGS_TO_SLAVE:
           assert treeType != null : Arrays.toString(measurements);
-          if (currentQueryRepetition == 1) {
-            int firstIndex = 6;
-            int lastIndex = measurements.length - 2;
-            long[] sentMappings = new long[(((lastIndex - firstIndex) + 1) / 2) + 2];
-            for (int i = firstIndex; i <= (lastIndex - 1); i += 2) {
-              sentMappings[Integer.parseInt(measurements[i])] = Long.parseLong(measurements[i + 1]);
-            }
-            processMappingSent(graphCoverStrategy, nHopReplication, numberOfChunks,
-                    new ExtendedQuerySignature(Integer.parseInt(measurements[4]),
-                            currentQueryFileName, treeType, currentQueryRepetition),
-                    Utilities.getComputerId(measurements), Integer.parseInt(measurements[5]),
-                    sentMappings, Integer.parseInt(measurements[measurements.length - 1]));
+          int firstIndex = 6;
+          int lastIndex = measurements.length - 2;
+          long[] sentMappings = new long[(((lastIndex - firstIndex) + 1) / 2) + 2];
+          for (int i = firstIndex; i <= (lastIndex - 1); i += 2) {
+            sentMappings[Integer.parseInt(measurements[i])] = Long.parseLong(measurements[i + 1]);
           }
+          processMappingSent(graphCoverStrategy, nHopReplication, numberOfChunks,
+                  new ExtendedQuerySignature(Integer.parseInt(measurements[4]),
+                          currentQueryFileName, treeType, currentQueryRepetition),
+                  Utilities.getComputerId(measurements), Integer.parseInt(measurements[5]),
+                  sentMappings, Integer.parseInt(measurements[measurements.length - 1]));
           break;
         default:
           // all other types are not required

@@ -38,11 +38,14 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
 
   private int numberOfChunks;
 
+  private int numberOfTriples;
+
   @Override
   public void setUp(File outputDirectory, Map<String, String> query2fileName,
           CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions,
-          int numberOfChunks) {
+          int numberOfChunks, int numberOfTriples) {
     this.numberOfChunks = numberOfChunks;
+    this.numberOfTriples = numberOfTriples;
   }
 
   @Override
@@ -56,7 +59,7 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
           break;
         case TOTAL_GRAPH_SIZE:
           processTotalGraphSizeBeforeReplication(graphCoverStrategy, nHopReplication,
-                  numberOfChunks, Long.parseLong(measurements[4]));
+                  numberOfChunks, numberOfTriples, Long.parseLong(measurements[4]));
           break;
         case INITIAL_CHUNK_SIZES:
           long[] graphChunkSizes = new long[measurements.length - 4];
@@ -64,7 +67,7 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
             graphChunkSizes[i] = Long.parseLong(measurements[4 + i]);
           }
           processGraphChunkSizesBeforeReplication(graphCoverStrategy, nHopReplication,
-                  numberOfChunks, graphChunkSizes);
+                  numberOfChunks, numberOfTriples, graphChunkSizes);
           break;
         case LOAD_GRAPH_REPLICATED_CHUNK_SIZES:
           long totalGraphSize = 0;
@@ -74,12 +77,13 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
             totalGraphSize += graphChunkSizes[i];
           }
           processTotalGraphSizeAfterReplication(graphCoverStrategy, nHopReplication, numberOfChunks,
-                  totalGraphSize);
+                  numberOfTriples, totalGraphSize);
           processGraphChunkSizesAfterReplication(graphCoverStrategy, nHopReplication,
-                  numberOfChunks, graphChunkSizes);
+                  numberOfChunks, numberOfTriples, graphChunkSizes);
           break;
         case LOAD_GRAPH_FINISHED:
-          processLoadingFinished(graphCoverStrategy, nHopReplication, numberOfChunks);
+          processLoadingFinished(graphCoverStrategy, nHopReplication, numberOfChunks,
+                  numberOfTriples);
           break;
         default:
           // all other types are not required
@@ -90,22 +94,22 @@ public abstract class GraphStatisticsListener implements MeasurementListener {
 
   protected abstract void processTotalGraphSizeBeforeReplication(
           CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
-          long totalGraphSize);
+          int numberOfTriples, long totalGraphSize);
 
   protected abstract void processGraphChunkSizesBeforeReplication(
           CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
-          long... graphChunkSizes);
+          int numberOfTriples, long... graphChunkSizes);
 
   protected abstract void processTotalGraphSizeAfterReplication(
           CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
-          long totalGraphSize);
+          int numberOfTriples, long totalGraphSize);
 
   protected abstract void processGraphChunkSizesAfterReplication(
           CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
-          long... graphChunkSizes);
+          int numberOfTriples, long... graphChunkSizes);
 
   protected abstract void processLoadingFinished(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks);
+          int nHopReplication, int numberOfChunks, int numberOfTriples);
 
   @Override
   public void clear() {

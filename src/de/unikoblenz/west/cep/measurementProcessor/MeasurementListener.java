@@ -31,7 +31,7 @@ public interface MeasurementListener {
 
   public void setUp(File outputDirectory, Map<String, String> query2fileName,
           CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions,
-          int numberOfChunks);
+          int numberOfChunks, int numberOfTriples);
 
   public void processMeasurement(String... measurements);
 

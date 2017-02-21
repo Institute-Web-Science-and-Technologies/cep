@@ -55,6 +55,8 @@ public abstract class QueryListener implements MeasurementListener {
 
   protected int numberOfChunks;
 
+  protected int numberOfTriples;
+
   protected QueryExecutionTreeType treeType;
 
   protected String currentQueryFileName;
@@ -79,10 +81,11 @@ public abstract class QueryListener implements MeasurementListener {
   @Override
   public void setUp(File outputDirectory, Map<String, String> query2fileName,
           CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions,
-          int numberOfChunks) {
+          int numberOfChunks, int numberOfTriples) {
     this.graphCoverStrategy = graphCoverStrategy;
     this.nHopReplication = nHopReplication;
     this.numberOfChunks = numberOfChunks;
+    this.numberOfTriples = numberOfTriples;
     numberOfRepetitions = repetitions;
     this.query2fileName = query2fileName;
     File outputFile = getOutputFile(outputDirectory);
@@ -99,7 +102,7 @@ public abstract class QueryListener implements MeasurementListener {
   }
 
   protected String getHeadLine() {
-    return "cover\tnumberOfChunks\tnhop\ttreeType\tqueryFile\tjoinPattern\tnumberOfJoins\tnumberOfDataSources\tselectivity";
+    return "cover\tnumberOfChunks\tnumberOfTriples\tnhop\ttreeType\tqueryFile\tjoinPattern\tnumberOfJoins\tnumberOfDataSources\tselectivity";
   }
 
   protected abstract File getOutputFile(File outputDirectory);
@@ -160,9 +163,9 @@ public abstract class QueryListener implements MeasurementListener {
       }
     }
     String[] parts = currentQueryFileName.split(Pattern.quote("-"));
-    String prefix = "\n" + graphCoverStrategy + "\t" + numberOfChunks + "\t" + nHopReplication
-            + "\t" + treeType + "\t" + currentQueryFileName + "\t" + parts[1] + "\t" + parts[2]
-            + "\t" + parts[3] + "\t" + parts[4];
+    String prefix = "\n" + graphCoverStrategy + "\t" + numberOfChunks + "\t" + numberOfTriples
+            + "\t" + nHopReplication + "\t" + treeType + "\t" + currentQueryFileName + "\t"
+            + parts[1] + "\t" + parts[2] + "\t" + parts[3] + "\t" + parts[4];
     for (int i = 0; i < writtenLines.size(); i++) {
       String[] line2 = writtenLines.get(i);
       if (line2[0].equals(prefix)) {

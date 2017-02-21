@@ -42,9 +42,9 @@ public class ChunkSizes extends GraphStatisticsListener {
   @Override
   public void setUp(File outputDirectory, Map<String, String> query2fileName,
           CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions,
-          int numberOfChunks) {
+          int numberOfChunks, int numberOfTriples) {
     super.setUp(outputDirectory, query2fileName, graphCoverStrategy, nHopReplication, repetitions,
-            numberOfChunks);
+            numberOfChunks, numberOfTriples);
     File outputFile = new File(
             outputDirectory.getAbsolutePath() + File.separator + "chunkSizes.csv");
     boolean existsOutputFile = outputFile.exists();
@@ -52,7 +52,7 @@ public class ChunkSizes extends GraphStatisticsListener {
       output = new BufferedWriter(
               new OutputStreamWriter(new FileOutputStream(outputFile, true), "UTF-8"));
       if (!existsOutputFile) {
-        output.write("cover\tnumberOfChunks\tn-hop\tchunkSizes*");
+        output.write("cover\tnumberOfChunks\tnumberOfTriples\tn-hop\tchunkSizes*");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -61,37 +61,37 @@ public class ChunkSizes extends GraphStatisticsListener {
 
   @Override
   protected void processTotalGraphSizeBeforeReplication(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long totalGraphSize) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long totalGraphSize) {
   }
 
   @Override
   protected void processGraphChunkSizesBeforeReplication(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long... graphChunkSizes) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long... graphChunkSizes) {
     processGraphChunkSizesAfterReplication(graphCoverStrategy, nHopReplication, numberOfChunks,
-            graphChunkSizes);
+            numberOfTriples, graphChunkSizes);
   }
 
   @Override
   protected void processTotalGraphSizeAfterReplication(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long totalGraphSize) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long totalGraphSize) {
   }
 
   @Override
   protected void processGraphChunkSizesAfterReplication(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long... graphChunkSizes) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long... graphChunkSizes) {
     chunkSizes = graphChunkSizes;
   }
 
   @Override
   protected void processLoadingFinished(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          int numberOfChunks) {
+          int numberOfChunks, int numberOfTriples) {
     try {
       StringBuilder sb = new StringBuilder();
       for (long value : chunkSizes) {
         sb.append("\t").append(value);
       }
-      output.write("\n" + graphCoverStrategy + "\t" + numberOfChunks + "\t" + nHopReplication
-              + sb.toString());
+      output.write("\n" + graphCoverStrategy + "\t" + numberOfChunks + "\t" + numberOfTriples + "\t"
+              + nHopReplication + sb.toString());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

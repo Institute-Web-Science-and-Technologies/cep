@@ -60,9 +60,9 @@ public class LoadTime extends LoadGraphTimeListener {
   @Override
   public void setUp(File outputDirectory, Map<String, String> query2fileName,
           CoverStrategyType graphCoverStrategy, int nHopReplication, int repetitions,
-          int numberOfChunks) {
+          int numberOfChunks, int numberOfTriples) {
     super.setUp(outputDirectory, query2fileName, graphCoverStrategy, nHopReplication, repetitions,
-            numberOfChunks);
+            numberOfChunks, numberOfTriples);
     File outputFile = new File(
             outputDirectory.getAbsolutePath() + File.separator + "loadingTime.csv");
     boolean existsOutputFile = outputFile.exists();
@@ -71,7 +71,7 @@ public class LoadTime extends LoadGraphTimeListener {
               new OutputStreamWriter(new FileOutputStream(outputFile, true), "UTF-8"));
       if (!existsOutputFile) {
         output.write(
-                "cover\tnumberOfChunks\tnhop\tinitialEncodingTime\tcoverCreationTime\tfinalEncodingTime\tnHopReplicationTime\tstatisticCollectionTime\townershipAdjustmentTime\ttransferTime\tindexingTime");
+                "cover\tnumberOfChunks\tnumberOfTriples\tnhop\tinitialEncodingTime\tcoverCreationTime\tfinalEncodingTime\tnHopReplicationTime\tstatisticCollectionTime\townershipAdjustmentTime\ttransferTime\tindexingTime");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -89,79 +89,79 @@ public class LoadTime extends LoadGraphTimeListener {
 
   @Override
   protected void processInitialDictionaryEncodingStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long startTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long startTime) {
     initialEncodingTime = startTime;
   }
 
   @Override
   protected void processInitialDictionaryEncodingEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long endTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long endTime) {
     initialEncodingTime = endTime - initialEncodingTime;
   }
 
   @Override
   protected void processGraphCoverCreationStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long startTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long startTime) {
     coverCreationTime = startTime;
   }
 
   @Override
   protected void processGraphCoverCreationEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long endTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long endTime) {
     coverCreationTime = endTime - coverCreationTime;
   }
 
   @Override
   protected void processFinalDictionaryEncodingStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long startTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long startTime) {
     finalEncodingTime = startTime;
   }
 
   @Override
   protected void processFinalDictionaryEncodingEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long endTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long endTime) {
     finalEncodingTime = endTime - finalEncodingTime;
   }
 
   @Override
   protected void processNHopReplicationStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long startTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long startTime) {
     nHopReplicationTime = startTime;
   }
 
   @Override
   protected void processNHopReplicationEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long endTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long endTime) {
     nHopReplicationTime = endTime - nHopReplicationTime;
   }
 
   @Override
   protected void processStatisticCollectionStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long startTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long startTime) {
     statisticCollectionTime = startTime;
   }
 
   @Override
   protected void processStatisticCollectionEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long endTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long endTime) {
     statisticCollectionTime = endTime - statisticCollectionTime;
   }
 
   @Override
   protected void processOwnershipAdjustmentStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long startTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long startTime) {
     ownershipAdjustmentTime = startTime;
   }
 
   @Override
   protected void processOwnershipAdjustmentEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, long endTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, long endTime) {
     ownershipAdjustmentTime = endTime - ownershipAdjustmentTime;
   }
 
   @Override
   protected void processChunkTransferToSlavesStart(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, int slave, long startTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, int slave, long startTime) {
     if (startTime < transferStartTime) {
       transferStartTime = startTime;
     }
@@ -169,7 +169,7 @@ public class LoadTime extends LoadGraphTimeListener {
 
   @Override
   protected void processChunkTransferToSlavesEnd(CoverStrategyType graphCoverStrategy,
-          int nHopReplication, int numberOfChunks, int slave, long endTime) {
+          int nHopReplication, int numberOfChunks, int numberOfTriples, int slave, long endTime) {
     if (transferEndTime < endTime) {
       transferEndTime = endTime;
     }
@@ -177,7 +177,7 @@ public class LoadTime extends LoadGraphTimeListener {
 
   @Override
   protected void processIndexingStart(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          int numberOfChunks, int slave, long startTime) {
+          int numberOfChunks, int numberOfTriples, int slave, long startTime) {
     if (startTime < indexingStartTime) {
       indexingStartTime = startTime;
     }
@@ -185,7 +185,7 @@ public class LoadTime extends LoadGraphTimeListener {
 
   @Override
   protected void processIndexingEnd(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          int numberOfChunks, int slave, long endTime) {
+          int numberOfChunks, int numberOfTriples, int slave, long endTime) {
     if (indexingEndTime < endTime) {
       indexingEndTime = endTime;
     }
@@ -193,12 +193,12 @@ public class LoadTime extends LoadGraphTimeListener {
 
   @Override
   protected void processLoadingFinished(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          int numberOfChunks) {
+          int numberOfChunks, int numberOfTriples) {
     try {
-      output.write("\n" + graphCoverStrategy + "\t" + numberOfChunks + "\t" + nHopReplication + "\t"
-              + initialEncodingTime + "\t" + coverCreationTime + "\t" + finalEncodingTime + "\t"
-              + nHopReplicationTime + "\t" + statisticCollectionTime + "\t"
-              + ownershipAdjustmentTime + "\t" + (transferEndTime - transferStartTime) + "\t"
+      output.write("\n" + graphCoverStrategy + "\t" + numberOfChunks + "\t" + numberOfTriples + "\t"
+              + nHopReplication + "\t" + initialEncodingTime + "\t" + coverCreationTime + "\t"
+              + finalEncodingTime + "\t" + nHopReplicationTime + "\t" + statisticCollectionTime
+              + "\t" + ownershipAdjustmentTime + "\t" + (transferEndTime - transferStartTime) + "\t"
               + (indexingEndTime - indexingStartTime));
     } catch (IOException e) {
       throw new RuntimeException(e);

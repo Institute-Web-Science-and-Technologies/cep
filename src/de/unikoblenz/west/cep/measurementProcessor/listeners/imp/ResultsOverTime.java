@@ -218,12 +218,6 @@ public class ResultsOverTime extends QueryTimesListener {
         queue.poll();
       }
     }
-    int numberOfSkippedValues = numberOfRepetitions / 10;
-    if (numberOfSkippedValues > 0) {
-      Arrays.sort(times);
-      times = Arrays.copyOfRange(times, numberOfSkippedValues,
-              times.length - numberOfSkippedValues);
-    }
     return new long[] { Utilities.computeArithmeticMean(times), maxNumberOfResults };
   }
 

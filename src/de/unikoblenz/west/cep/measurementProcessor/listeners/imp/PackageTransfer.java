@@ -70,7 +70,7 @@ public class PackageTransfer extends QueryPackageSentListener {
 
   @Override
   protected void processQueryFinish(ExtendedQuerySignature query, int minRepetition) {
-    if (minRepetition == 0) {
+    if ((minRepetition == 0) && (numberOfTriples == 1_000_000_000)) {
       // TODO manual adjust since first measurement does not contain this type
       // of measurement
       minRepetition = totalPackageTransfer.get(query.getBasicSignature()).length - 1;

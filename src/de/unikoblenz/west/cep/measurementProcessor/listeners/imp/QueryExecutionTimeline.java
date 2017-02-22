@@ -169,6 +169,10 @@ public class QueryExecutionTimeline extends QueryOperationListener {
     long minTime = Long.MAX_VALUE;
     for (int i = 0; i < measuredTimes[0].length; i++) {
       long exTime = measuredTimes[3][i] - measuredTimes[0][i];
+      if (exTime < 0) {
+        // this is an incomplete measurement
+        continue;
+      }
       if (exTime < minTime) {
         minIndex = i;
         minTime = exTime;

@@ -92,7 +92,12 @@ public class OverallQueryExecutionTime extends QueryTimesListener {
     }
     repetitions[query.repetition - 1] = totalQueryExecutionTime;
     if (query.repetition >= numberOfRepetitions) {
-      query2repetitiontimes.remove(basicSignature);
+      for (int i = 0; i < repetitions.length; i++) {
+        if (repetitions[i] < 0) {
+          // remove incomplete measurement
+          repetitions[i] = Long.MAX_VALUE;
+        }
+      }
       writeLine("\t" + Utilities.min(repetitions));
     }
     queryStartTime = 0;

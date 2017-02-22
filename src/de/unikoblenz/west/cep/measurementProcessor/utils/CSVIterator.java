@@ -18,6 +18,8 @@
  */
 package de.unikoblenz.west.cep.measurementProcessor.utils;
 
+import de.uni_koblenz.west.koral.common.measurement.MeasurementType;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
@@ -139,6 +141,8 @@ class MeasurmentWrapper implements Comparable<MeasurmentWrapper> {
 
   private final int computerId;
 
+  private final MeasurementType type;
+
   public final String[] measurement;
 
   public MeasurmentWrapper(String[] measurement, int previousQueryId) {
@@ -146,7 +150,8 @@ class MeasurmentWrapper implements Comparable<MeasurmentWrapper> {
     timestamp = Long.parseLong(measurement[2]);
     id = Long.parseLong(measurement[1]);
     computerId = Utilities.getComputerId(measurement);
-    switch (Utilities.getMeasurementType(measurement)) {
+    type = Utilities.getMeasurementType(measurement);
+    switch (type) {
       case QUERY_COORDINATOR_END:
       case QUERY_COORDINATOR_PARSE_END:
       case QUERY_COORDINATOR_PARSE_START:
@@ -185,23 +190,29 @@ class MeasurmentWrapper implements Comparable<MeasurmentWrapper> {
   @Override
   public int compareTo(MeasurmentWrapper o) {
     if (queryId == o.queryId) {
-      if (timestamp == o.timestamp) {
-        if ((computerId == 0) && (o.computerId != 0)) {
-          return 1;
-        } else if ((o.computerId == 0) && (computerId != 0)) {
-          return -1;
-        } else if (computerId == o.computerId) {
-          if (id == o.id) {
-            return 0;
-          } else if (id < o.id) {
-            return -1;
-          } else {
+      if (getTypeLevel(type) == getTypeLevel(o.type)) {
+        if (timestamp == o.timestamp) {
+          if ((computerId == 0) && (o.computerId != 0)) {
             return 1;
+          } else if ((o.computerId == 0) && (computerId != 0)) {
+            return -1;
+          } else if (computerId == o.computerId) {
+            if (id == o.id) {
+              return 0;
+            } else if (id < o.id) {
+              return -1;
+            } else {
+              return 1;
+            }
+          } else {
+            return computerId - o.computerId;
           }
+        } else if (timestamp < o.timestamp) {
+          return -1;
         } else {
-          return computerId - o.computerId;
+          return 1;
         }
-      } else if (timestamp < o.timestamp) {
+      } else if (getTypeLevel(type) < getTypeLevel(o.type)) {
         return -1;
       } else {
         return 1;
@@ -210,6 +221,39 @@ class MeasurmentWrapper implements Comparable<MeasurmentWrapper> {
       return -1;
     } else {
       return 1;
+    }
+  }
+
+  private int getTypeLevel(MeasurementType type) {
+    switch (type) {
+      case QUERY_MESSAGE_RECEIPTION:
+      case QUERY_COORDINATOR_START:
+      case QUERY_COORDINATOR_PARSE_START:
+      case QUERY_COORDINATOR_PARSE_END:
+      case QUERY_COORDINATOR_QET_NODES:
+        return 1;
+      case QUERY_COORDINATOR_SEND_QUERY_TO_SLAVE:
+      case QUERY_SLAVE_QUERY_CREATION_START:
+      case QUERY_SLAVE_QUERY_CREATION_END:
+        return 2;
+      case QUERY_COORDINATOR_SEND_QUERY_START:
+        return 3;
+      case QUERY_SLAVE_QUERY_EXECUTION_START:
+      case QUERY_OPERATION_START:
+        return 4;
+      case QUERY_OPERATION_FINISH:
+      case QUERY_OPERATION_SENT_FINISH_NOTIFICATIONS_TO_OTHER_SLAVES:
+      case QUERY_COORDINATOR_SEND_QUERY_RESULTS_TO_CLIENT:
+      case QUERY_OPERATION_SENT_MAPPINGS_TO_SLAVE:
+      case SLAVE_SENT_MAPPING_BATCHES_TO_SLAVE:
+      case QUERY_OPERATION_CLOSED:
+      case QUERY_SLAVE_QUERY_EXECUTION_ABORT:
+      case QUERY_OPERATION_JOIN_NUMBER_OF_COMPARISONS:
+        return 5;
+      case QUERY_COORDINATOR_END:
+        return 6;
+      default:
+        return 0;
     }
   }
 

@@ -272,6 +272,10 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
     long[] endTimes = query2endtimes.get(query.getBasicSignature());
     for (int i = 0; i < startTimes.length; i++) {
       long executionTime = endTimes[i] - startTimes[i];
+      if (executionTime <= 0) {
+        // this is an incomplete measurement
+        continue;
+      }
       if (executionTime < minExecutionTime) {
         minIndex = i;
         minExecutionTime = executionTime;
@@ -303,7 +307,6 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
     }
     sb.append("\t").append(minExecutionTime);
     writeLine(sb.toString());
-    operationExecutionTimesPerSlaveAndQuery.remove(query.getBasicSignature());
   }
 
 }

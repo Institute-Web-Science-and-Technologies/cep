@@ -22,6 +22,8 @@ public abstract class QueryMinListener extends QueryListener {
 
   private final Map<QuerySignature, long[]> queryEndTime;
 
+  private boolean isQueryOpen;
+
   public QueryMinListener() {
     queryStartTime = new HashMap<>();
     queryEndTime = new HashMap<>();
@@ -29,12 +31,20 @@ public abstract class QueryMinListener extends QueryListener {
 
   @Override
   public void processMeasurement(String... measurements) {
-    super.processMeasurement(measurements);
     MeasurementType measurementType = Utilities.getMeasurementType(measurements);
+    if ((measurementType == MeasurementType.QUERY_COORDINATOR_START) && isQueryOpen) {
+      ExtendedQuerySignature query = new ExtendedQuerySignature(
+              Integer.parseInt(measurements[5]) - 1, currentQueryFileName, treeType,
+              currentQueryRepetition);
+      processQueryResult(graphCoverStrategy, nHopReplication, numberOfChunks, query,
+              Long.parseLong(measurements[4]), 0, 0);
+    }
+    super.processMeasurement(measurements);
     if (measurementType != null) {
       switch (measurementType) {
         case QUERY_COORDINATOR_START:
           queryCoordinatorStartTime = Long.parseLong(measurements[4]);
+          isQueryOpen = true;
           break;
         case QUERY_COORDINATOR_PARSE_START:
           processQueryStart(graphCoverStrategy, nHopReplication, numberOfChunks,
@@ -52,13 +62,14 @@ public abstract class QueryMinListener extends QueryListener {
           hasProcessedQueryResults = true;
           break;
         case QUERY_COORDINATOR_END:
-          query = new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
-                  currentQueryFileName, treeType, currentQueryRepetition);
           if (!hasProcessedQueryResults) {
+            query = new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
+                    currentQueryFileName, treeType, currentQueryRepetition);
             processQueryResult(graphCoverStrategy, nHopReplication, numberOfChunks, query,
                     Long.parseLong(measurements[4]), 0, 0);
           }
           hasProcessedQueryResults = false;
+          isQueryOpen = false;
           break;
         default:
           // all other types are not required

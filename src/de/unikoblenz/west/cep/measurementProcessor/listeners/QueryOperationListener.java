@@ -17,6 +17,8 @@ public abstract class QueryOperationListener extends QueryListener {
 
   private final Map<QuerySignature, Map<Long, String>> operationId2operation;
 
+  private boolean isQueryOpen;
+
   public QueryOperationListener() {
     super();
     operationId2operation = new HashMap<>();
@@ -28,8 +30,15 @@ public abstract class QueryOperationListener extends QueryListener {
 
   @Override
   public void processMeasurement(String... measurements) {
-    super.processMeasurement(measurements);
     MeasurementType measurementType = Utilities.getMeasurementType(measurements);
+    if ((measurementType == MeasurementType.QUERY_COORDINATOR_START) && isQueryOpen) {
+      ExtendedQuerySignature query = new ExtendedQuerySignature(
+              Integer.parseInt(measurements[5]) - 1, currentQueryFileName, treeType,
+              currentQueryRepetition);
+      processQueryCoordinatorEnd(graphCoverStrategy, nHopReplication, numberOfChunks, query,
+              Long.parseLong(measurements[4]));
+    }
+    super.processMeasurement(measurements);
     long timestamp = Long.parseLong(measurements[4]);
     String computer = measurements[0];
     int index = computer.lastIndexOf(':');
@@ -40,6 +49,7 @@ public abstract class QueryOperationListener extends QueryListener {
       switch (measurementType) {
         case QUERY_COORDINATOR_START:
           queryCoordinatorStartTime = timestamp;
+          isQueryOpen = true;
           break;
         case QUERY_COORDINATOR_PARSE_START:
           processQueryCoordinatorStart(graphCoverStrategy, nHopReplication, numberOfChunks,
@@ -139,6 +149,7 @@ public abstract class QueryOperationListener extends QueryListener {
                   new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
                           currentQueryFileName, treeType, currentQueryRepetition),
                   timestamp);
+          isQueryOpen = false;
           break;
         default:
           // all other types are not required

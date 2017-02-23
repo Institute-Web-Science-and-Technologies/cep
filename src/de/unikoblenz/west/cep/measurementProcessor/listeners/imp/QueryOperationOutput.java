@@ -16,7 +16,7 @@ import java.util.Map.Entry;
  */
 public class QueryOperationOutput extends QueryOperationListener {
 
-  private final Map<QuerySignature, Map<String, Map<String, Long>>> emittedOperationMappings;
+  private final Map<QuerySignature, Map<String, Map<Long, Long>>> emittedOperationMappings;
 
   public QueryOperationOutput() {
     super();
@@ -78,30 +78,30 @@ public class QueryOperationOutput extends QueryOperationListener {
   @Override
   protected void processQueryOperationStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
-          String operation, String computer, long timestamp) {
+          long operationId, String operation, String computer, long timestamp) {
   }
 
   @Override
   protected void processQueryOperationSentMappingsToOtherSlaves(
           CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
-          ExtendedQuerySignature extendedQuerySignature, String operation, String computer,
-          long[] emittedValuesToOtherSlaves) {
+          ExtendedQuerySignature extendedQuerySignature, long operationId, String operation,
+          String computer, long[] emittedValuesToOtherSlaves) {
   }
 
   @Override
   protected void processQueryOperationEnd(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, String operation,
-          String computer, long timestamp, long[] emittedMappings) {
+          int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, long operationId,
+          String operation, String computer, long timestamp, long[] emittedMappings) {
     if (extendedQuerySignature.repetition > 1) {
       return;
     }
     QuerySignature basicQuery = extendedQuerySignature.getBasicSignature();
-    Map<String, Map<String, Long>> slaves = emittedOperationMappings.get(basicQuery);
+    Map<String, Map<Long, Long>> slaves = emittedOperationMappings.get(basicQuery);
     if (slaves == null) {
       slaves = new HashMap<>();
       emittedOperationMappings.put(basicQuery, slaves);
     }
-    Map<String, Long> operations = slaves.get(computer);
+    Map<Long, Long> operations = slaves.get(computer);
     if (operations == null) {
       operations = new HashMap<>();
       slaves.put(computer, operations);
@@ -110,7 +110,7 @@ public class QueryOperationOutput extends QueryOperationListener {
     for (int i = 0; i < emittedMappings.length; i++) {
       emittedMappingsNumber += emittedMappings[i];
     }
-    operations.put(operation, emittedMappingsNumber);
+    operations.put(operationId, emittedMappingsNumber);
   }
 
   @Override
@@ -131,10 +131,11 @@ public class QueryOperationOutput extends QueryOperationListener {
       return;
     }
     StringBuilder sb = new StringBuilder();
-    for (Entry<String, Map<String, Long>> slaves : emittedOperationMappings
+    for (Entry<String, Map<Long, Long>> slaves : emittedOperationMappings
             .get(query.getBasicSignature()).entrySet()) {
-      for (Entry<String, Long> operations : slaves.getValue().entrySet()) {
-        sb.append("\t").append(slaves.getKey()).append("\t").append(operations.getKey())
+      for (Entry<Long, Long> operations : slaves.getValue().entrySet()) {
+        sb.append("\t").append(slaves.getKey()).append("\t")
+                .append(getOperationName(query.getBasicSignature(), operations.getKey()))
                 .append("\t").append(operations.getValue());
       }
     }

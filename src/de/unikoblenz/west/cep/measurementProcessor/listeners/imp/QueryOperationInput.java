@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  */
 public class QueryOperationInput extends QueryOperationListener {
 
-  private final Map<QuerySignature, Map<String, Map<String, long[]>>> emittedOperationMappings;
+  private final Map<QuerySignature, Map<String, Map<Long, long[]>>> emittedOperationMappings;
 
   private final Map<QuerySignature, Map<String, String>> parentOperations;
 
@@ -86,14 +86,14 @@ public class QueryOperationInput extends QueryOperationListener {
   @Override
   protected void processQueryOperationStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
-          String operation, String computer, long timestamp) {
+          long operationId, String operation, String computer, long timestamp) {
   }
 
   @Override
   protected void processQueryOperationSentMappingsToOtherSlaves(
           CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
-          ExtendedQuerySignature extendedQuerySignature, String operation, String computer,
-          long[] emittedValuesToOtherSlaves) {
+          ExtendedQuerySignature extendedQuerySignature, long operationId, String operation,
+          String computer, long[] emittedValuesToOtherSlaves) {
     if (extendedQuerySignature.repetition > 1) {
       return;
     }
@@ -108,7 +108,7 @@ public class QueryOperationInput extends QueryOperationListener {
       return;
     }
     long[] emittedValues = emittedOperationMappings.get(basicSignature).get(computer)
-            .get(operation);
+            .get(operationId);
     int i = 1;
     for (i = 1; i < emittedValuesToOtherSlaves.length; i++) {
       if (emittedValues[i] != emittedValuesToOtherSlaves[i]) {
@@ -120,23 +120,23 @@ public class QueryOperationInput extends QueryOperationListener {
 
   @Override
   protected void processQueryOperationEnd(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, String operation,
-          String computer, long timestamp, long[] emittedMappings) {
+          int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, long operationId,
+          String operation, String computer, long timestamp, long[] emittedMappings) {
     if (extendedQuerySignature.repetition > 1) {
       return;
     }
     QuerySignature basicQuery = extendedQuerySignature.getBasicSignature();
-    Map<String, Map<String, long[]>> slaves = emittedOperationMappings.get(basicQuery);
+    Map<String, Map<Long, long[]>> slaves = emittedOperationMappings.get(basicQuery);
     if (slaves == null) {
       slaves = new HashMap<>();
       emittedOperationMappings.put(basicQuery, slaves);
     }
-    Map<String, long[]> operations = slaves.get(computer);
+    Map<Long, long[]> operations = slaves.get(computer);
     if (operations == null) {
       operations = new HashMap<>();
       slaves.put(computer, operations);
     }
-    operations.put(operation, emittedMappings);
+    operations.put(operationId, emittedMappings);
   }
 
   @Override
@@ -158,11 +158,12 @@ public class QueryOperationInput extends QueryOperationListener {
     }
     QuerySignature basicSignature = query.getBasicSignature();
     Map<Integer, String> slaveIds = this.slaveIds.get(basicSignature);
-    Map<String, Map<String, long[]>> emittedMappings = emittedOperationMappings.get(basicSignature);
+    Map<String, Map<Long, long[]>> emittedMappings = emittedOperationMappings.get(basicSignature);
     Map<String, Map<String, Long>> receivedMappings = new HashMap<>();
-    for (Entry<String, Map<String, long[]>> slaves : emittedMappings.entrySet()) {
-      for (Entry<String, long[]> operations : slaves.getValue().entrySet()) {
-        String parentOperation = getParentOperation(basicSignature, operations.getKey());
+    for (Entry<String, Map<Long, long[]>> slaves : emittedMappings.entrySet()) {
+      for (Entry<Long, long[]> operations : slaves.getValue().entrySet()) {
+        String parentOperation = getParentOperation(basicSignature,
+                getOperationName(basicSignature, operations.getKey()));
         if ((parentOperation == null) || parentOperation.contains("slice")) {
           parentOperation = "query coordinator";
         }

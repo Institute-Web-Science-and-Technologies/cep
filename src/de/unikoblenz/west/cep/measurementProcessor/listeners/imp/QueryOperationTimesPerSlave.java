@@ -22,7 +22,7 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
 
   private final Map<QuerySignature, long[]> startTimeOfExecution;
 
-  private final Map<QuerySignature, Map<String, Map<String, long[][]>>> operationExecutionTimesPerSlaveAndQuery;
+  private final Map<QuerySignature, Map<String, Map<Long, long[][]>>> operationExecutionTimesPerSlaveAndQuery;
 
   private final Map<QuerySignature, long[]> query2starttimes;
 
@@ -110,13 +110,13 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
     } else {
       executionTimes[extendedQuerySignature.repetition
               - 1] = executionTimes[extendedQuerySignature.repetition - 1] - timestamp;
-      Map<String, Map<String, long[][]>> opsPerSlave = operationExecutionTimesPerSlaveAndQuery
+      Map<String, Map<Long, long[][]>> opsPerSlave = operationExecutionTimesPerSlaveAndQuery
               .get(basicSignature);
       if (opsPerSlave != null) {
-        for (Entry<String, Map<String, long[][]>> slaves : opsPerSlave.entrySet()) {
-          Map<String, long[][]> ops = slaves.getValue();
+        for (Entry<String, Map<Long, long[][]>> slaves : opsPerSlave.entrySet()) {
+          Map<Long, long[][]> ops = slaves.getValue();
           if (ops != null) {
-            for (Entry<String, long[][]> op : ops.entrySet()) {
+            for (Entry<Long, long[][]> op : ops.entrySet()) {
               long[][] opTimes = op.getValue();
               if ((opTimes != null) && (opTimes[1] != null)) {
                 if (opTimes[1].length < extendedQuerySignature.repetition) {
@@ -144,23 +144,23 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
   @Override
   protected void processQueryOperationStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
-          String operation, String computer, long timestamp) {
+          long operationId, String operation, String computer, long timestamp) {
     QuerySignature basicSignature = extendedQuerySignature.getBasicSignature();
-    Map<String, Map<String, long[][]>> operationExecutionTimesPerSlave = operationExecutionTimesPerSlaveAndQuery
+    Map<String, Map<Long, long[][]>> operationExecutionTimesPerSlave = operationExecutionTimesPerSlaveAndQuery
             .get(basicSignature);
     if (operationExecutionTimesPerSlave == null) {
       operationExecutionTimesPerSlave = new TreeMap<>();
       operationExecutionTimesPerSlaveAndQuery.put(basicSignature, operationExecutionTimesPerSlave);
     }
-    Map<String, long[][]> operationsOfSlave = operationExecutionTimesPerSlave.get(computer);
+    Map<Long, long[][]> operationsOfSlave = operationExecutionTimesPerSlave.get(computer);
     if (operationsOfSlave == null) {
       operationsOfSlave = new HashMap<>();
       operationExecutionTimesPerSlave.put(computer, operationsOfSlave);
     }
-    long[][] operationTimes = operationsOfSlave.get(operation);
+    long[][] operationTimes = operationsOfSlave.get(operationId);
     if (operationTimes == null) {
       operationTimes = new long[2][numberOfRepetitions];
-      operationsOfSlave.put(operation, operationTimes);
+      operationsOfSlave.put(operationId, operationTimes);
     }
     if (operationTimes[0].length < extendedQuerySignature.repetition) {
       operationTimes[0] = Arrays.copyOf(operationTimes[0], extendedQuerySignature.repetition);
@@ -184,16 +184,16 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
   @Override
   protected void processQueryOperationSentMappingsToOtherSlaves(
           CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
-          ExtendedQuerySignature extendedQuerySignature, String operation, String computer,
-          long[] emittedValuesToOtherSlaves) {
+          ExtendedQuerySignature extendedQuerySignature, long operationId, String operation,
+          String computer, long[] emittedValuesToOtherSlaves) {
   }
 
   @Override
   protected void processQueryOperationEnd(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, String operation,
-          String computer, long timestamp, long[] emittedMappings) {
+          int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, long operationId,
+          String operation, String computer, long timestamp, long[] emittedMappings) {
     long[][] operationTimes = operationExecutionTimesPerSlaveAndQuery
-            .get(extendedQuerySignature.getBasicSignature()).get(computer).get(operation);
+            .get(extendedQuerySignature.getBasicSignature()).get(computer).get(operationId);
     if (operationTimes[0].length < extendedQuerySignature.repetition) {
       operationTimes[0] = Arrays.copyOf(operationTimes[0], extendedQuerySignature.repetition);
     }
@@ -264,7 +264,7 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
 
     }
     StringBuilder sb = new StringBuilder();
-    Map<String, Map<String, long[][]>> perQuery = operationExecutionTimesPerSlaveAndQuery
+    Map<String, Map<Long, long[][]>> perQuery = operationExecutionTimesPerSlaveAndQuery
             .get(query.getBasicSignature());
     int minIndex = 0;
     long minExecutionTime = Long.MAX_VALUE;
@@ -281,11 +281,11 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
         minExecutionTime = executionTime;
       }
     }
-    for (Entry<String, Map<String, long[][]>> slaveEntry : perQuery.entrySet()) {
-      Set<Entry<String, long[][]>> entrySet = slaveEntry.getValue().entrySet();
+    for (Entry<String, Map<Long, long[][]>> slaveEntry : perQuery.entrySet()) {
+      Set<Entry<Long, long[][]>> entrySet = slaveEntry.getValue().entrySet();
       Element[] elements = new Element[entrySet.size()];
       int next = 0;
-      for (Entry<String, long[][]> operationEntry : entrySet) {
+      for (Entry<Long, long[][]> operationEntry : entrySet) {
         long[][] repetitions = operationEntry.getValue();
         long averageExecutionTime = repetitions[0][minIndex];
         long averageStartTime = repetitions[1][minIndex];
@@ -296,8 +296,9 @@ public class QueryOperationTimesPerSlave extends QueryOperationListener {
         if (averageExecutionTime >= 31536000000L/* =1year */) {
           averageExecutionTime = -1000;
         }
-        elements[next++] = new Element(operationEntry.getKey(), averageStartTime,
-                averageExecutionTime);
+        elements[next++] = new Element(
+                getOperationName(query.getBasicSignature(), operationEntry.getKey()),
+                averageStartTime, averageExecutionTime);
       }
       Arrays.sort(elements);
       for (Element element : elements) {

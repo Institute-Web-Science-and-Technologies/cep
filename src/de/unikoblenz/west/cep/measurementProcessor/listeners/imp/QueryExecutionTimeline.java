@@ -117,20 +117,20 @@ public class QueryExecutionTimeline extends QueryOperationListener {
   @Override
   protected void processQueryOperationStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
-          String operation, String computer, long timestamp) {
+          long operationId, String operation, String computer, long timestamp) {
   }
 
   @Override
   protected void processQueryOperationSentMappingsToOtherSlaves(
           CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
-          ExtendedQuerySignature extendedQuerySignature, String operation, String computer,
-          long[] emittedValuesToOtherSlaves) {
+          ExtendedQuerySignature extendedQuerySignature, long operationId, String operation,
+          String computer, long[] emittedValuesToOtherSlaves) {
   }
 
   @Override
   protected void processQueryOperationEnd(CoverStrategyType graphCoverStrategy, int nHopReplication,
-          int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, String operation,
-          String computer, long timestamp, long[] emittedMappings) {
+          int numberOfChunks, ExtendedQuerySignature extendedQuerySignature, long operationId,
+          String operation, String computer, long timestamp, long[] emittedMappings) {
   }
 
   @Override

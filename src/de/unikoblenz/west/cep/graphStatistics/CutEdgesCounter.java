@@ -115,10 +115,11 @@ public class CutEdgesCounter {
           byte[] object = stmt.getObject();
           byte[] chunkOwner = map.get(object);
           // chunkOwner==null -> this object does not occur as subject
-          if ((chunkOwner != null) && (NumberConversion.bytes2int(chunkOwner) != chunkId)) {
+          if ((chunkOwner != null)) {
             // this is a cut edge
-            numberOfOutgoingCutEdges[chunkId][NumberConversion.bytes2int(chunkOwner)]++;
-            numberOfIngoingCutEdges[NumberConversion.bytes2int(chunkOwner)][chunkId]++;
+            int otherChunkId = NumberConversion.bytes2int(chunkOwner);
+            numberOfOutgoingCutEdges[chunkId][otherChunkId]++;
+            numberOfIngoingCutEdges[otherChunkId][chunkId]++;
           }
         }
       } catch (IOException | RocksDBException e) {
@@ -184,7 +185,7 @@ public class CutEdgesCounter {
     try {
       out.print("CHUNK_ID\tCHUNK_NAME");
       for (int i = 0; i < chunks.length; i++) {
-        out.print("\tCUT_EDGES_TO_CHUNK_" + i + "\tCUT_EDGES_FROM_CHUNK_" + i);
+        out.print("\tEDGES_TO_CHUNK_" + i + "\tEDGES_FROM_CHUNK_" + i);
       }
       out.println("\tTOTAL_CUT_OUT_EDGES\tTOTAL_CUT_IN_EDGES");
       for (int i = 0; i < chunks.length; i++) {
@@ -196,8 +197,10 @@ public class CutEdgesCounter {
         long[] inEdges = counter.getNumberOfIngoingCutEdges()[i];
         for (int j = 0; j < chunks.length; j++) {
           out.print("\t" + outEdges[j] + "\t" + inEdges[j]);
-          totalCutOutEdges += outEdges[j];
-          totalCutInEdges += inEdges[j];
+          if (i != j) {
+            totalCutOutEdges += outEdges[j];
+            totalCutInEdges += inEdges[j];
+          }
         }
         out.println("\t" + totalCutOutEdges + "\t" + totalCutInEdges);
       }

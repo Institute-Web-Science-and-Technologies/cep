@@ -165,7 +165,7 @@ public class CutEdgesCounter {
       out = new PrintStream(new BufferedOutputStream(new FileOutputStream(new File(args[1]))));
       args = Arrays.copyOfRange(args, 2, args.length);
     }
-    File[] chunks = new File(args[hasOutputFile ? 2 : 0]).listFiles(new FileFilter() {
+    File[] chunks = new File(args[0]).listFiles(new FileFilter() {
       @Override
       public boolean accept(File pathname) {
         String simpleName = pathname.getName();

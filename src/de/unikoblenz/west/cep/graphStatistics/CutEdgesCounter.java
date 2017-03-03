@@ -77,11 +77,13 @@ public class CutEdgesCounter {
   }
 
   private void collectSubjectOwnership(RocksDB map, File[] chunks) {
+    System.out.println("Collecting subject ownership");
     try {
       WriteOptions writeOpts = new WriteOptions();
       WriteBatch writeBatch = new WriteBatch();
       int batchSize = 0;
       for (int chunkId = 0; chunkId < chunks.length; chunkId++) {
+        System.out.println("\tprocessing " + chunks[chunkId].getName());
         byte[] id = NumberConversion.int2bytes(chunkId);
         try (EncodedFileInputStream in = new EncodedFileInputStream(EncodingFileFormat.EEE,
                 chunks[chunkId]);) {
@@ -108,9 +110,11 @@ public class CutEdgesCounter {
   }
 
   private void collectStatistics(RocksDB map, File[] chunks) {
+    System.out.println("Collecting statistics");
     for (int chunkId = 0; chunkId < chunks.length; chunkId++) {
       try (EncodedFileInputStream in = new EncodedFileInputStream(EncodingFileFormat.EEE,
               chunks[chunkId]);) {
+        System.out.println("\tprocessing " + chunks[chunkId].getName());
         for (Statement stmt : in) {
           byte[] object = stmt.getObject();
           byte[] chunkOwner = map.get(object);

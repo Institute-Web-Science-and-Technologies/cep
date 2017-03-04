@@ -94,6 +94,7 @@ public class CutEdgesCounter {
             if (batchSize >= ((64 * 1024 * 1024) / (Integer.BYTES + Long.BYTES))) {
               map.write(writeOpts, writeBatch);
               batchSize = 0;
+              writeBatch = new WriteBatch();
             }
           }
         } catch (IOException e) {
@@ -103,6 +104,7 @@ public class CutEdgesCounter {
       if (batchSize > 0) {
         map.write(writeOpts, writeBatch);
         batchSize = 0;
+        writeBatch = null;
       }
     } catch (RocksDBException e) {
       throw new RuntimeException(e);

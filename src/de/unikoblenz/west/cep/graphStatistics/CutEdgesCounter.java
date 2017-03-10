@@ -54,6 +54,8 @@ public class CutEdgesCounter {
       options.setMaxOpenFiles(1000);
       options.setAllowOsBuffer(true);
       options.setWriteBufferSize(64 * 1024 * 1024);
+      options.setTargetFileSizeBase(64 * 1024 * 1024);
+      options.setArenaBlockSize(32 * 1024);
       map = RocksDB.open(options, workingDir + File.separator + "map");
       collectSubjectOwnership(map, chunks);
       map.compactRange();

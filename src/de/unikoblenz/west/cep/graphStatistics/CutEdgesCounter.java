@@ -59,7 +59,6 @@ public class CutEdgesCounter {
       options.setArenaBlockSize(32 * 1024);
       map = RocksDB.open(options, workingDir + File.separator + "map");
       collectSubjectOwnership(map, chunks);
-      map.compactRange();
       collectStatistics(map, chunks);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -102,12 +101,15 @@ public class CutEdgesCounter {
             }
           }
           map.flush(fOptions);
+          map.compactRange();
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
       }
       if (batchSize > 0) {
         map.write(writeOpts, writeBatch);
+        map.flush(fOptions);
+        map.compactRange();
         batchSize = 0;
         writeBatch = null;
       }

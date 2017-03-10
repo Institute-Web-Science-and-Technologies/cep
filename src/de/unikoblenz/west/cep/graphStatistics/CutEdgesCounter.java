@@ -1,5 +1,6 @@
 package de.unikoblenz.west.cep.graphStatistics;
 
+import org.rocksdb.FlushOptions;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -80,6 +81,7 @@ public class CutEdgesCounter {
 
   private void collectSubjectOwnership(RocksDB map, File[] chunks) {
     System.out.println("Collecting subject ownership");
+    FlushOptions fOptions = new FlushOptions();
     try {
       WriteOptions writeOpts = new WriteOptions();
       WriteBatch writeBatch = new WriteBatch();
@@ -99,6 +101,7 @@ public class CutEdgesCounter {
               writeBatch = new WriteBatch();
             }
           }
+          map.flush(fOptions);
         } catch (IOException e) {
           throw new RuntimeException(e);
         }

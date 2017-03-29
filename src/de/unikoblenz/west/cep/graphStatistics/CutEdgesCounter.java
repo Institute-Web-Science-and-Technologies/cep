@@ -54,9 +54,10 @@ public class CutEdgesCounter {
       options.setMaxOpenFiles(1000);
       options.setAllowOsBuffer(true);
       options.setWriteBufferSize(64 * 1024 * 1024);
+      // options.setTargetFileSizeBase(64 * 1024 * 1024);
+      // options.setArenaBlockSize(32 * 1024);
       map = RocksDB.open(options, workingDir + File.separator + "map");
       collectSubjectOwnership(map, chunks);
-      map.compactRange();
       collectStatistics(map, chunks);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -78,6 +79,7 @@ public class CutEdgesCounter {
 
   private void collectSubjectOwnership(RocksDB map, File[] chunks) {
     System.out.println("Collecting subject ownership");
+    // FlushOptions fOptions = new FlushOptions();
     try {
       WriteOptions writeOpts = new WriteOptions();
       WriteBatch writeBatch = new WriteBatch();
@@ -91,8 +93,11 @@ public class CutEdgesCounter {
             byte[] subject = stmt.getSubject();
             writeBatch.put(subject, id);
             batchSize++;
-            if (batchSize >= ((64 * 1024 * 1024) / (Integer.BYTES + Long.BYTES))) {
+            if (batchSize >= 100000) { // ((64 * 1024 * 1024) / (Integer.BYTES +
+                                       // Long.BYTES))) {
               map.write(writeOpts, writeBatch);
+              // map.flush(fOptions);
+              map.compactRange();
               batchSize = 0;
               writeBatch = new WriteBatch();
             }
@@ -103,6 +108,8 @@ public class CutEdgesCounter {
       }
       if (batchSize > 0) {
         map.write(writeOpts, writeBatch);
+        // map.flush(fOptions);
+        map.compactRange();
         batchSize = 0;
         writeBatch = null;
       }

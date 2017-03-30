@@ -36,8 +36,11 @@ public abstract class QueryMinListener extends QueryListener {
       ExtendedQuerySignature query = new ExtendedQuerySignature(
               Integer.parseInt(measurements[5]) - 1, currentQueryFileName, treeType,
               currentQueryRepetition);
-      processQueryResult(graphCoverStrategy, nHopReplication, numberOfChunks, query,
-              Long.parseLong(measurements[4]), 0, 0);
+      // processQueryResult(graphCoverStrategy, nHopReplication, numberOfChunks,
+      // query,
+      // Long.parseLong(measurements[4]), 0, 0);
+      processQueryResult(graphCoverStrategy, nHopReplication, numberOfChunks, query, Long.MAX_VALUE,
+              0, 0);
     }
     super.processMeasurement(measurements);
     if (measurementType != null) {

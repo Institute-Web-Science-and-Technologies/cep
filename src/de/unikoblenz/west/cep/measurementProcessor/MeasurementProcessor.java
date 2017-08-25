@@ -25,6 +25,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.jena.query.ARQ;
 import org.apache.jena.query.QueryFactory;
 
 import de.uni_koblenz.west.koral.common.measurement.MeasurementCollector;
@@ -106,6 +107,8 @@ public class MeasurementProcessor implements Closeable {
     Map<String, String> query2fileName = new HashMap<>();
     for (File queryFile : queryDir.listFiles(new QueryFileFilter())) {
       try {
+        // workaround for bug in Jena ARQ
+        ARQ.init();
         String queryString = QueryFactory.create(readQueryFromFile(queryFile)).serialize()
                 .replace(MeasurementCollector.columnSeparator, " ")
                 .replace(MeasurementCollector.rowSeparator, " ");

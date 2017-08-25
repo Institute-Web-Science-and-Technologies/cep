@@ -79,17 +79,17 @@ public class QueryExecutor {
           QueryExecutionTreeType treeType, int currentRepetition) {
     System.out.println("Executing " + queryFile.getName() + " with query execution tree " + treeType
             + " the " + (currentRepetition + 1) + "th time");
-    try (Writer outputWriter = (currentRepetition == 0)
-            && (outputDir != null)
-                    ? new BufferedWriter(new OutputStreamWriter(
+    try (Writer outputWriter = (currentRepetition == 0) && (outputDir != null)
+            ? new BufferedWriter(
+                    new OutputStreamWriter(
                             new GZIPOutputStream(new FileOutputStream(outputDir.getAbsolutePath()
                                     + File.separator + queryFile.getName() + "_result.csv.gz")),
                             "UTF-8"))
-                    : new NullWriter()) {
+            : new NullWriter()) {
 
       KoralClient client = new KoralClient();
       for (int connectionAttempt = 0; connectionAttempt < 100; connectionAttempt++) {
-        client.startUp(masterIp);
+        client.startUp(null, masterIp);
         try {
           client.processQueryFromFile(queryFile, outputWriter, treeType, false);
           client.shutDown();
@@ -143,8 +143,8 @@ public class QueryExecutor {
     Option output = Option.builder("o").longOpt("output").hasArg().argName("dirctory")
             .desc("Directory where the query results are stored.").required(false).build();
 
-    Option koralMasterIP = Option.builder("m").longOpt("master").hasArg().argName("ip:port")
-            .desc("IP an port of the Koral master. If port is not specified the default port is used.")
+    Option koralMasterIP = Option.builder("m").longOpt("master").hasArg().argName("ip:port").desc(
+            "IP an port of the Koral master. If port is not specified the default port is used.")
             .required(true).build();
 
     Option repetitions = Option.builder("r").longOpt("repetitions").hasArg().argName("int")

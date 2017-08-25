@@ -52,22 +52,28 @@ with open(inputFile, 'rb') as f:
   reader = csv.reader(f, delimiter='\t')
   reader.next()
   for row in reader:
-    if row[5]=='SUBJECT_SUBJECT_JOIN':
+    if row[6]=='SUBJECT_SUBJECT_JOIN':
       continue;
     cover = ""
-    if int(row[2]) != 0:
-      cover += row[2] + "HOP\\_"
-    cover += row[0].replace('_','\\_')
+    if int(row[3]) != 0:
+      cover += row[3] + ("HOP\\_" if imageType=="latex" else "HOP_")
+    if imageType=="latex":
+      cover += row[0].replace('_','\\_')
+    else:
+      cover += row[0]
     scale = row[1]
-    treeType = row[3]
+    treeType = row[4]
     if not treeType in treeTypes:
       treeTypes[treeType] = {}
     if not cover in treeTypes[treeType]:
       treeTypes[treeType][cover] = {}
     if not scale in treeTypes[treeType][cover]:
       treeTypes[treeType][cover][scale] = {}
-    query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " \\#tp=" + str(int(row[6])+1) + " \\#ds=" + row[7] + " sel=" + row[8]
-    treeTypes[treeType][cover][scale][query] = { "Package Transport":long(row[9])}
+    if imageType=="latex":
+      query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " \\#tp=" + str(int(row[7])+1) + " \\#ds=" + row[8] + " sel=" + row[9]
+    else:
+      query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " #tp=" + str(int(row[7])+1) + " #ds=" + row[8] + " sel=" + row[9]
+    treeTypes[treeType][cover][scale][query] = { "Package Transport":long(row[10])}
 
 for measurementType in ["Package Transport"]:
   for treeType in treeTypes.keys():
@@ -103,15 +109,18 @@ for measurementType in ["Package Transport"]:
       bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
       rects = []
       colormap = plt.cm.gist_ncar
-      colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)*len(scaleSet))]
+      colors = [colormap(i) for i in np.linspace(0, 0.9, len(list(sorted(treeTypes[treeType].keys())))+1)]
       c=0
       for i, cover in enumerate(coverSet):
         for j, scale in enumerate(scaleSet):
-          colorValue = colors[c]
-          rects.append(plt.bar(index + c * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover + ' ' + scale + ' slaves'))
+          colorValue = colors[list(sorted(treeTypes[treeType].keys())).index(cover)+1]
+          rects.append(plt.bar(index + c * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover))
           c+=1
       plt.xlabel("Queries")
-      plt.ylabel("\\parbox{200pt}{\centering " + measurementType+'\\\\(change to '+baseCover+' in \\%)'+"}")
+      if imageType=="latex":
+        plt.ylabel("\\parbox{200pt}{\centering " + measurementType+'\\\\(change to '+baseCover+' in \\%)'+"}")
+      else:
+        plt.ylabel(measurementType+'\n(change to '+baseCover+' in %)')
       plt.xticks(index + 0.5, np.array(queryGroups))
       plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
       #plt.axis('tight')
@@ -129,30 +138,30 @@ for measurementType in ["Package Transport"]:
         latex.latexify(scale=1)
 
       # create diagramm sorted by scale
-      n_groups = len(queryGroups)
-      fig, ax = plt.subplots()
-      index = np.arange(n_groups)
-      bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
-      rects = []
-      colormap = plt.cm.gist_ncar
-      colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)*len(scaleSet))]
-      c=0
-      for i, scale in enumerate(scaleSet):
-        for j, cover in enumerate(coverSet):
-          colorValue = colors[c]
-          rects.append(plt.bar(index + c * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover  + ' ' + scale + ' slaves'))
-          c+=1
-      plt.xlabel("Queries")
-      plt.ylabel("\\parbox{200pt}{\centering " + measurementType+'\\\\(change to '+baseCover+' in \\%)'+"}")
-      plt.xticks(index + 0.5, np.array(queryGroups))
-      plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
-      #plt.axis('tight')
-      #plt.title(measurementType + ' for ' + treeType + ' trees sorted by number of chunks' + " relative to " + baseCover,y=1.25)
-      if imageType=="latex":
-        plt.legend(bbox_to_anchor=(-0.115, 1.04, 1.115, .102), loc=3, ncol=3, mode="expand", borderaxespad=0.)
-        fig.tight_layout(rect=(-0.02,-0.035,1.02,0.92))
-        latex.savefig(outputDir,'packageTransport'+'_relativeTo_'+baseCover+'_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByNumberOfChunks')
-      else:
-        plt.legend(bbox_to_anchor=(-0.4, 1.04, 1.4, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
-        plt.savefig(outputDir+'/PackageTransport'+'_relativeTo_'+baseCover+'_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByNumberOfChunks.'+imageType, bbox_inches='tight')
-      plt.close('all')
+      #n_groups = len(queryGroups)
+      #fig, ax = plt.subplots()
+      #index = np.arange(n_groups)
+      #bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
+      #rects = []
+      #colormap = plt.cm.gist_ncar
+      #colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)*len(scaleSet))]
+      #c=0
+      #for i, scale in enumerate(scaleSet):
+      #  for j, cover in enumerate(coverSet):
+      #    colorValue = colors[c]
+      #    rects.append(plt.bar(index + c * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover  + ' ' + scale + ' slaves'))
+      #    c+=1
+      #plt.xlabel("Queries")
+      #plt.ylabel("\\parbox{200pt}{\centering " + measurementType+'\\\\(change to '+baseCover+' in \\%)'+"}")
+      #plt.xticks(index + 0.5, np.array(queryGroups))
+      #plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
+      ##plt.axis('tight')
+      ##plt.title(measurementType + ' for ' + treeType + ' trees sorted by number of chunks' + " relative to " + baseCover,y=1.25)
+      #if imageType=="latex":
+      #  plt.legend(bbox_to_anchor=(-0.115, 1.04, 1.115, .102), loc=3, ncol=3, mode="expand", borderaxespad=0.)
+      #  fig.tight_layout(rect=(-0.02,-0.035,1.02,0.92))
+      #  latex.savefig(outputDir,'packageTransport'+'_relativeTo_'+baseCover+'_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByNumberOfChunks')
+      #else:
+      #  plt.legend(bbox_to_anchor=(-0.4, 1.04, 1.4, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+      #  plt.savefig(outputDir+'/PackageTransport'+'_relativeTo_'+baseCover+'_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByNumberOfChunks.'+imageType, bbox_inches='tight')
+      #plt.close('all')

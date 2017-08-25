@@ -55,21 +55,27 @@ with open(inputFile, 'rb') as f:
   reader.next()
   for row in reader:
     cover = ""
-    if int(row[2]) != 0:
-      cover += row[2] + "HOP\\_"
-    cover += row[0].replace('_','\\_')
+    if int(row[3]) != 0:
+      cover += row[3] + ("HOP\\_" if imageType=="latex" else "HOP_")
+    if imageType=="latex":
+      cover += row[0].replace('_','\\_')
+    else:
+      cover += row[0]
     scale = row[1]
-    treeType = row[3]
+    treeType = row[4]
     if not treeType in treeTypes:
       treeTypes[treeType] = {}
     if not cover in treeTypes[treeType]:
       treeTypes[treeType][cover] = {}
     if not scale in treeTypes[treeType][cover]:
       treeTypes[treeType][cover][scale] = {}
-    query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " \\#tp=" + str(int(row[6])+1) + " \\#ds=" + row[7] + " sel=" + row[8]
+    if imageType=="latex":
+      query = ("ss" if row[6]=='SUBJECT_SUBJECT_JOIN' else "so") + " \\#tp=" + str(int(row[7])+1) + " \\#ds=" + row[8] + " sel=" + row[9]
+    else:
+      query = ("ss" if row[6]=='SUBJECT_SUBJECT_JOIN' else "so") + " #tp=" + str(int(row[7])+1) + " #ds=" + row[8] + " sel=" + row[9]
     #if query=="ss \\#tp=8 \\#ds=1 sel=0.001" or query=="ss \\#tp=2 \\#ds=1 sel=0.01":
     #  continue;
-    treeTypes[treeType][cover][scale][query] = { "Execution Time":long(row[9])}
+    treeTypes[treeType][cover][scale][query] = { "Execution Time":long(row[12])}
 
 for measurementType in ["Execution Time"]:
   for treeType in treeTypes.keys():
@@ -104,15 +110,19 @@ for measurementType in ["Execution Time"]:
       index = np.arange(n_groups)
       bar_width = 1/float(len(coverSet)*len(scaleSet)+1)
       rects = []
-      colors = ["#ffd600", "#ff1924", "#0055c9", "#a5cf00", "#6200d9", "#82fcff", "#fc9200", "#00cfe6"]
+      colormap = plt.cm.gist_ncar
+      colors = [colormap(i) for i in np.linspace(0, 0.9, len(list(sorted(treeTypes[treeType].keys())))+1)]
       c=0
       for i, cover in enumerate(coverSet):
         for j, scale in enumerate(scaleSet):
-          colorValue = colors[c]
+          colorValue = colors[list(sorted(treeTypes[treeType].keys())).index(cover)+1]
           rects.append(plt.bar(index + 0.5*bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover, linewidth=0.5, log=True, bottom=0))
           c+=1
       plt.xlabel("Queries", labelpad=-3)
-      plt.ylabel("\\parbox{200pt}{\centering " + measurementType+' (log scale, \\\\change to '+baseCover+' in \\%)'+"}")
+      if imageType=="latex":
+        plt.ylabel("\\parbox{200pt}{\centering " + measurementType+' (log scale, \\\\change to '+baseCover+' in \\%)'+"}")
+      else:
+        plt.ylabel(measurementType+' (log scale, \nchange to '+baseCover+' in %)')
       plt.xticks(index + 0.5, np.array(queryGroups))
       ax.tick_params(axis='x', which='major', pad=0)
       ax.set_yscale('symlog', linthreshy=1e1)

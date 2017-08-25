@@ -51,9 +51,9 @@ with open(inputFile, 'rb') as f:
     coverName = ""
     if int(row[3]) != 0:
       coverName += row[3] + "HOP\\_"
-    coverName = "\\parbox{50pt}{\centering " + coverName + row[0].replace("HIERARCHICAL","HIER").replace('MIN_EDGE_CUT','MEC') + '\\\\' + row[1] + ' slaves}'
+    coverName = coverName + row[0].replace("HIERARCHICAL","HIER").replace('MIN_EDGE_CUT','MEC')
     coverNames.append(coverName)
-    coverCreationTimes.append(long(row[4])/1000./3600.)
+    coverCreationTimes.append(long(row[5])/1000./3600.)
 
 coverNames = np.array(coverNames)
 coverCreationTimes = np.array(coverCreationTimes)
@@ -69,9 +69,9 @@ width = 0.5       # the width of the bars: can also be len(x) sequence
 
 
 colormap = plt.cm.gist_ncar
-colors = [colormap(i) for i in np.linspace(0, 0.9, 8)]
+colors = [colormap(i) for i in np.linspace(0, 0.9, N+1)]
 
-p2 = plt.bar(ind, coverCreationTimes, width, color=colors[1], linewidth=0.5, label='cover creation', align="center")
+p2 = plt.bar(ind, coverCreationTimes, width, color=colors[1:N+1], linewidth=0.5, label='cover creation', align="center")
 
 plt.ylabel('Time (in h)')
 plt.xticks(ind, coverNames)

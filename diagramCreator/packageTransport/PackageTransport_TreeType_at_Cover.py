@@ -28,7 +28,7 @@ import sys
 import csv
 
 if len(sys.argv) != 4:
-  print("You must have the following arguments: <computationalEffort.csv> <outputDir> <imageType>")
+  print("You must have the following arguments: <packageTransport.csv> <outputDir> <imageType>")
   sys.exit()
 
 inputFile = sys.argv[1]
@@ -39,13 +39,13 @@ if not os.path.exists(outputDir):
   os.makedirs(outputDir)
 
 # for totalComputationalEffort, entropy, standard deviation
-# for each tree type create a diagram that
+# for each cover create a diagram that
 # shows for each query
-# the computational effort per cover in a separate bar
+# the computational effort per tree type in a separate bar
 
 # required map: treetype -> cover -> query -> measurmentType -> value
 
-treeTypes = {}
+coverTypes = {}
 
 with open(inputFile, 'rb') as f:
   reader = csv.reader(f, delimiter='\t')
@@ -59,70 +59,72 @@ with open(inputFile, 'rb') as f:
     cover += row[0]
     scale = row[1]
     treeType = row[3]
-    if not treeType in treeTypes:
-      treeTypes[treeType] = {}
-    if not cover in treeTypes[treeType]:
-      treeTypes[treeType][cover] = {}
-    if not scale in treeTypes[treeType][cover]:
-      treeTypes[treeType][cover][scale] = {}
+    if not cover in coverTypes:
+      coverTypes[cover] = {}
+    if not treeType in coverTypes[cover]:
+      coverTypes[cover][treeType] = {}
+    if not scale in coverTypes[cover][treeType]:
+      coverTypes[cover][treeType][scale] = {}
     query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " #tp=" + str(int(row[6])+1) + " #ds=" + row[7] + " sel=" + row[8]
-    treeTypes[treeType][cover][scale][query] = { "Data Transfer":long(row[9])}
+    coverTypes[cover][treeType][scale][query] = { "Package Transport":long(row[9])}
 
-for measurementType in ["Data Transfer"]:
-  for treeType in treeTypes.keys():
-    coverSet = list(sorted(treeTypes[treeType].keys()))
-    scaleSet = list(sorted(treeTypes[treeType][coverSet[0]].keys()))
+for measurementType in ["PackageTransport"]:
+  for cover in coverTypes.keys():
+    treeTypeSet = list(sorted(coverTypes[cover].keys()))
+    scaleSet = list(sorted(coverTypes[cover][treeTypeSet[0]].keys()))
     dataRows = {}
     queryGroups = []
-    for i, cover in enumerate(coverSet):
-      dataRows[cover] = {}
+    for i, treeType in enumerate(treeTypeSet):
+      dataRows[treeType] = {}
       for j, scale in enumerate(scaleSet):
         if i == 0:
-          queryGroups = list(sorted(treeTypes[treeType][cover][scale].keys()))
-        dataRows[cover][scale] = []
+          queryGroups = list(sorted(coverTypes[cover][treeType][scale].keys()))
+        dataRows[treeType][scale] = []
         for query in queryGroups:
-          dataRows[cover][scale].append(treeTypes[treeType][cover][scale][query][measurementType]);
+          dataRows[treeType][scale].append(coverTypes[cover][treeType][scale][query][measurementType]);
 
-    # create diagramm sorted by cover
+    # create diagramm sorted by tree type
     n_groups = len(queryGroups)
     fig, ax = plt.subplots()
     index = np.arange(n_groups)
-    bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
+    bar_width =  1/float(len(treeTypeSet)*len(scaleSet)+2+len(treeTypeSet)*1)
     rects = []
     colormap = plt.cm.gist_ncar
-    colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)*len(scaleSet))]
-    for i, cover in enumerate(coverSet):
+    colors = [colormap(i) for i in np.linspace(0, 0.9, len(treeTypeSet)*len(scaleSet))]
+    for i, treeType in enumerate(treeTypeSet):
       for j, scale in enumerate(scaleSet):
-        colorValue = colors[(i*len(coverSet)+j)]
-        rects.append(plt.bar(index + (i*len(coverSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover + ' ' + scale + ' chunks', log=True, bottom=1))
+        colorValue = colors[(i*len(treeTypeSet)+j)]
+        rects.append(plt.bar(index + (i*len(treeTypeSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[treeType][scale]), bar_width, color=colorValue, label=treeType + ' ' + scale + ' chunks', log=True, bottom=1))
     plt.xlabel("Queries")
-    plt.ylabel(measurementType+' (log-scale)')
+    plt.ylabel(measurementType)
+    plt.title('Package Transport ' + cover, y=1.12)
     plt.xticks(index + 0.5, np.array(queryGroups))
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     #plt.axis('tight')
-    #plt.title(measurementType + ' for ' + treeType + ' trees sorted by cover strategy',y=1.37)
+    plt.title(measurementType + ' for ' + cover + ' cover sorted by tree type',y=1.37)
     plt.legend(bbox_to_anchor=(-0.2, 1.04, 1.2, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
-    plt.savefig(outputDir+'/dataTransfer_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByCover.'+imageType, bbox_inches='tight')
+    plt.savefig(outputDir+'/packageTransport_'+measurementType+'_cover-'+cover+'_forAll_treeTypes_sortedByTreeType.'+imageType, bbox_inches='tight')
     plt.close('all')
 
-    # create diagramm sorted by scale
+    # create diagramm sorted by number of chunks
     n_groups = len(queryGroups)
     fig, ax = plt.subplots()
     index = np.arange(n_groups)
-    bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
+    bar_width =  1/float(len(treeTypeSet)*len(scaleSet)+2+len(treeTypeSet)*1)
     rects = []
     colormap = plt.cm.gist_ncar
-    colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)*len(scaleSet))]
+    colors = [colormap(i) for i in np.linspace(0, 0.9, len(treeTypeSet)*len(scaleSet))]
     for i, scale in enumerate(scaleSet):
-      for j, cover in enumerate(coverSet):
+      for j, treeType in enumerate(treeTypeSet):
         colorValue = colors[(i*len(scaleSet)+j)]
-        rects.append(plt.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover  + ' ' + scale + ' chunks', log=True, bottom=1))
+        rects.append(plt.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[treeType][scale]), bar_width, color=colorValue, label=treeType + ' ' + scale + ' chunks', log=True, bottom=1))
     plt.xlabel("Queries")
-    plt.ylabel(measurementType+' (log-scale)')
+    plt.ylabel(measurementType)
+    plt.title('Package Transport ' + cover, y=1.12)
     plt.xticks(index + 0.5, np.array(queryGroups))
     plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
     #plt.axis('tight')
-    #plt.title(measurementType + ' for ' + treeType + ' trees sorted by number of chunks',y=1.37)
+    plt.title(measurementType + ' for ' + cover + ' cover sorted by number of chunks',y=1.37)
     plt.legend(bbox_to_anchor=(-0.2, 1.04, 1.2, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
-    plt.savefig(outputDir+'/dataTransfer_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByNumberOfChunks.'+imageType, bbox_inches='tight')
+    plt.savefig(outputDir+'/packageTransport_'+measurementType+'_cover-'+cover+'_forAll_treeTypes_sortedByNumberOfChunks.'+imageType, bbox_inches='tight')
     plt.close('all')

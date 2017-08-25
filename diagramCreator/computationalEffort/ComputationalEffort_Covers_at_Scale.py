@@ -45,6 +45,8 @@ if not os.path.exists(outputDir):
 
 # required map: treetype -> cover -> query -> measurmentType -> value
 
+matplotlib.rcParams.update({'font.size': 16})
+
 scales = {}
 
 with open(inputFile, 'rb') as f:
@@ -97,11 +99,11 @@ for measurementType in ["Total", "Entropy", "Gini Coefficient"]:
       if measurementType == "Total":
         plt.ylabel(measurementType + " (log-scale)")
       else:
-        plt.ylabel(measurementType)
-      plt.title('Computational effort for query execution tree type ' + treeType + ' and ' + scale + ' chunks', y=1.15, x=0.4)
+        plt.ylabel('Workload Imbalance')
+      #plt.title('Computational effort for query execution tree type ' + treeType + ' and ' + scale + ' chunks', y=1.15, x=0.4)
       plt.xticks(index + 0.5, np.array(queryGroups))
       plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
       #plt.axis('tight')
-      plt.legend(bbox_to_anchor=(0., 1.04, 1., .102), loc=3, ncol=3, mode="expand", borderaxespad=0.)
+      plt.legend(bbox_to_anchor=(-0.3, 1.04, 1.3, .102), loc=3, ncol=3, mode="expand", borderaxespad=0.,fontsize=16)
       plt.savefig(outputDir+'/computationalEffort_'+measurementType+'_numberOfChunks-'+scale+'_treeType-'+treeType+'.'+imageType, bbox_inches='tight')
       plt.close('all')

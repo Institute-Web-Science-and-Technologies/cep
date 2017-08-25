@@ -44,16 +44,15 @@ if not os.path.exists(outputDir):
 # the computational effort per cover in a separate bar
 
 # required map: treetype -> cover -> query -> measurmentType -> value
+matplotlib.rcParams.update({'font.size': 24})
 
 def plotSortedByCover(ax, scaleSet, coverSet, dataRows, queryGroups, measurementType):
   for i, cover in enumerate(coverSet):
     dataRows[cover] = {}
     for j, scale in enumerate(scaleSet):
-      dataRows[cover][scale] = [[],[],[]]
+      dataRows[cover][scale] = []
       for query in sorted(list(queryGroups)):
-        dataRows[cover][scale][0].append(treeTypes[treeType][cover][scale][query][measurementType][0]);
-        dataRows[cover][scale][1].append(treeTypes[treeType][cover][scale][query][measurementType][1]);
-        dataRows[cover][scale][2].append(treeTypes[treeType][cover][scale][query][measurementType][2]);
+        dataRows[cover][scale].append(treeTypes[treeType][cover][scale][query][measurementType][2]);
   n_groups = len(queryGroups)
   index = np.arange(n_groups)
   bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
@@ -66,10 +65,7 @@ def plotSortedByCover(ax, scaleSet, coverSet, dataRows, queryGroups, measurement
     for j, scale in enumerate(scaleSet):
       #colorValue = "{:f}".format(colorBase*(j*len(coverSet)+i))
       color=colors[i*len(coverSet)+j]
-      #bars.append(ax.bar(index + (i*len(coverSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale][0]), bar_width, color=color, edgecolor="{:f}".format(0.6), linewidth=2, hatch='//', label=cover + ' ' + scale + ' chunks parsing', log=False, bottom=1))
-      #bars.append(ax.bar(index + (i*len(coverSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale][1]), bar_width, color=color, edgecolor="{:f}".format(0.4), linewidth=2, hatch='.', label=cover + ' ' + scale + ' chunks submitting', log=False, bottom=1+np.array(dataRows[cover][scale][0])))
-      #bars.append(ax.bar(index + (i*len(coverSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale][2]), bar_width, color=color, label=cover + ' ' + scale + ' chunks executing', log=False, bottom=1+np.array(dataRows[cover][scale][0])+np.array(dataRows[cover][scale][1])))
-      bars.append(ax.bar(index + (i*len(coverSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale][2]), bar_width, color=color, label=cover + ' ' + scale + ' chunks', log=False))
+      bars.append(ax.bar(index + (i*len(coverSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=color, label=cover + ' ' + scale,))#  log=False, bottom=1+np.array(dataRows[cover][scale][0])+np.array(dataRows[cover][scale][1])))
   ax.set_xticks(index + 0.5)
   ax.set_xticklabels(sorted(list(queryGroups)), rotation=45, horizontalalignment='right')
   #plt.axis('tight')
@@ -79,11 +75,9 @@ def plotSortedByScale(ax, scaleSet, coverSet, dataRows, queryGroups, measurement
   for i, cover in enumerate(coverSet):
     dataRows[cover] = {}
     for j, scale in enumerate(scaleSet):
-      dataRows[cover][scale] = [[],[],[]]
+      dataRows[cover][scale] = []
       for query in sorted(list(queryGroups)):
-        dataRows[cover][scale][0].append(treeTypes[treeType][cover][scale][query][measurementType][0]);
-        dataRows[cover][scale][1].append(treeTypes[treeType][cover][scale][query][measurementType][1]);
-        dataRows[cover][scale][2].append(treeTypes[treeType][cover][scale][query][measurementType][2]);
+        dataRows[cover][scale].append(treeTypes[treeType][cover][scale][query][measurementType][2]);
   n_groups = len(queryGroups)
   index = np.arange(n_groups)
   bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
@@ -95,11 +89,9 @@ def plotSortedByScale(ax, scaleSet, coverSet, dataRows, queryGroups, measurement
   for i, scale in enumerate(scaleSet):
     for j, cover in enumerate(coverSet):
       #colorValue = "{:f}".format(colorBase*(j*len(coverSet)+i))
+      #print scale +" "+cover+ ": "+str(dataRows[cover][scale])
       color=colors[i*len(scaleSet)+j]
-      #bars.append(ax.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale][0]), bar_width, color=color, edgecolor="{:f}".format(0.6), linewidth=2, hatch='//', label=cover + ' ' + scale + ' chunks parsing', log=False, bottom=1))
-      #bars.append(ax.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale][1]), bar_width, color=color, edgecolor="{:f}".format(0.4), linewidth=2, hatch='.', label=cover + ' ' + scale + ' chunks submitting', log=False, bottom=1+np.array(dataRows[cover][scale][0])))
-      #bars.append(ax.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale][2]), bar_width, color=color, label=cover + ' ' + scale + ' chunks executing', log=False, bottom=1+np.array(dataRows[cover][scale][0])+np.array(dataRows[cover][scale][1])))
-      bars.append(ax.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale][2]), bar_width, color=color, label=cover + ' ' + scale + ' chunks', log=False))
+      bars.append(ax.bar(index + (i*len(scaleSet) + j) * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=color, label=cover + ' ' + scale))#, log=False, bottom=1+np.array(dataRows[cover][scale][0])+np.array(dataRows[cover][scale][1])))
   ax.set_xticks(index + 0.5)
   ax.set_xticklabels(sorted(list(queryGroups)), rotation=45, horizontalalignment='right')
   #plt.axis('tight')
@@ -120,14 +112,14 @@ with open(inputFile, 'rb') as f:
     cover += row[0]
     scale = row[1]
     treeType = row[3]
-    if not treeType in treeTypes:
-      treeTypes[treeType] = {}
-    if not cover in treeTypes[treeType]:
-      treeTypes[treeType][cover] = {}
-    if not scale in treeTypes[treeType][cover]:
-      treeTypes[treeType][cover][scale] = {}
+    if not scale in treeTypes:
+      treeTypes[scale] = {}
+    if not treeType in treeTypes[scale]:
+      treeTypes[scale][treeType] = {}
+    if not cover in treeTypes[scale][treeType]:
+      treeTypes[scale][treeType][cover] = {}
     query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " #tp=" + str(int(row[6])+1) + " #ds=" + row[7] + " sel=" + row[8]
-    treeTypes[treeType][cover][scale][query] = { "Execution Time":[(long(row[9])/1000),(long(row[10])/1000),(long(row[11])/1000)]}
+    treeTypes[scale][treeType][cover][query] = { "Execution Time":[(long(row[9])/1000),(long(row[10])/1000),(long(row[11])/1000)]}
 
 for measurementType in ["Execution Time"]:
   for treeType in treeTypes.keys():
@@ -149,44 +141,45 @@ for measurementType in ["Execution Time"]:
             midTimeQueries.add(query)
     queryGroups = queryGroups.difference(longTimeQueries).difference(midTimeQueries)
 
-    # create diagramm sorted by cover
-    nColl=len(queryGroups)+len(midTimeQueries)+len(longTimeQueries)
-    fig = plt.figure()
-    fig2 = plt.figure(figsize=(fig.get_figwidth()*(len(longTimeQueries)+len(midTimeQueries)+len(queryGroups))/5,fig.get_figheight()*2))
-    if len(queryGroups)>0:
-      ax1 = plt.subplot2grid((1,nColl+2), (0, 0), colspan=len(queryGroups))
-      bars = plotSortedByCover(ax1, scaleSet, coverSet, dataRows, queryGroups, measurementType)
-    plt.ylabel(measurementType + " (in sec)")
-    if len(midTimeQueries)>0:
-      ax2 = plt.subplot2grid((1,nColl+2), (0, len(queryGroups)+1), colspan=len(midTimeQueries))
-      bars = plotSortedByCover(ax2, scaleSet, coverSet, dataRows, midTimeQueries, measurementType)
-    plt.xlabel("Queries")
-    if len(longTimeQueries)>0:
-      ax3 = plt.subplot2grid((1,nColl+2), (0, len(queryGroups)+len(midTimeQueries)+2), colspan=len(longTimeQueries))
-      bars = plotSortedByCover(ax3, scaleSet, coverSet, dataRows, longTimeQueries, measurementType)
-    plt.suptitle(measurementType + ' for ' + treeType + ' trees sorted by cover strategy',y=1.18)
-    plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.05, 1, .8, 1), mode="expand", borderaxespad=0.)
-    #plt.subplots_adjust(wspace=1)
-    plt.savefig(outputDir+'/queryExecution_'+measurementType+'_treeType-'+treeType+'_sortedByCover.'+imageType, bbox_inches='tight')
-    plt.close('all')
+#    # create diagramm sorted by cover
+#    nColl=len(queryGroups)+len(midTimeQueries)+len(longTimeQueries)
+#    fig = plt.figure()
+#    fig2 = plt.figure(figsize=(fig.get_figwidth()*(len(longTimeQueries)+len(midTimeQueries)+len(queryGroups))/3,fig.get_figheight()*2))
+#    if len(queryGroups) >0 :
+#      ax1 = plt.subplot2grid((1,nColl+2), (0, 0), colspan=len(queryGroups))
+#      bars = plotSortedByCover(ax1, scaleSet, coverSet, dataRows, queryGroups, measurementType)
+#    plt.ylabel(measurementType + " (in sec)")
+#    if len(midTimeQueries) >0 :
+#      ax2 = plt.subplot2grid((1,nColl+2), (0, len(queryGroups)+1), colspan=len(midTimeQueries))
+#      bars=plotSortedByCover(ax2, scaleSet, coverSet, dataRows, midTimeQueries, measurementType)
+#    plt.xlabel("Queries")
+#    if len(longTimeQueries) >0 :
+#      ax3 = plt.subplot2grid((1,nColl+2), (0, len(queryGroups)+len(midTimeQueries)+2), colspan=len(longTimeQueries))
+#      bars = plotSortedByCover(ax3, scaleSet, coverSet, dataRows, longTimeQueries, measurementType)
+#    #plt.suptitle(measurementType + ' for ' + treeType + ' trees sorted by cover strategy',y=1.18)
+#    plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.07, 1.16, .6, 1), mode="expand", borderaxespad=0., fontsize=20)
+#    #plt.subplots_adjust(wspace=1)
+#    plt.savefig(outputDir+'/queryExecution_'+measurementType+'_scale-'+treeType+'_groupedByTreeType.'+imageType, bbox_inches='tight')
+#    plt.close('all')
 
     # create diagramm sorted by scale
+    #print "scale: "+treeType
     nColl=len(queryGroups)+len(midTimeQueries)+len(longTimeQueries)
     fig = plt.figure()
-    fig2 = plt.figure(figsize=(fig.get_figwidth()*(len(longTimeQueries)+len(midTimeQueries)+len(queryGroups))/5,fig.get_figheight()*2))
-    if len(queryGroups)>0:
+    fig2 = plt.figure(figsize=(fig.get_figwidth()*(len(longTimeQueries)+len(midTimeQueries)+len(queryGroups))/3,fig.get_figheight()*2))
+    if len(queryGroups) >0 :
       ax1 = plt.subplot2grid((1,nColl+2), (0, 0), colspan=len(queryGroups))
       bars = plotSortedByScale(ax1, scaleSet, coverSet, dataRows, queryGroups, measurementType)
     plt.ylabel(measurementType + " (in sec)")
-    if len(midTimeQueries)>0:
+    if len(midTimeQueries) >0 :
       ax2 = plt.subplot2grid((1,nColl+2), (0, len(queryGroups)+1), colspan=len(midTimeQueries))
       bars = plotSortedByScale(ax2, scaleSet, coverSet, dataRows, midTimeQueries, measurementType)
     plt.xlabel("Queries")
-    if len(longTimeQueries)>0:
+    if len(longTimeQueries) >0 :
       ax3 = plt.subplot2grid((1,nColl+2), (0, len(queryGroups)+len(midTimeQueries)+2), colspan=len(longTimeQueries))
       bars = plotSortedByScale(ax3, scaleSet, coverSet, dataRows, longTimeQueries, measurementType)
-    plt.suptitle(measurementType + ' for ' + treeType + ' trees sorted by number of chunks',y=1.18)
-    plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.05, 1, .8, 1), mode="expand", borderaxespad=0.)
+    #plt.suptitle(measurementType + ' for ' + treeType + ' trees sorted by number of chunks',y=1.18)
+    plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.07, 1.16, .6, 1), mode="expand", borderaxespad=0., fontsize=20)
     #plt.subplots_adjust(wspace=1)
-    plt.savefig(outputDir+'/queryExecution_'+measurementType+'_treeType-'+treeType+'_sortedByNumberOfChunks.'+imageType, bbox_inches='tight')
+    plt.savefig(outputDir+'/queryExecution_'+measurementType+'_scale-'+treeType+'_groupedByCover.'+imageType, bbox_inches='tight')
     plt.close('all')

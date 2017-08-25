@@ -26,8 +26,9 @@ import matplotlib.pyplot as plt
 import os
 import sys
 import csv
+import latexPlot as latex
 
-if len(sys.argv) != 4:
+if len(sys.argv) < 4:
   print("You must have the following arguments: <executionTimelines.csv> <outputDir> <imageType>")
   sys.exit()
 
@@ -44,7 +45,7 @@ if not os.path.exists(outputDir):
 # the computational effort per cover in a separate bar
 
 # required map: treetype -> cover -> query -> measurmentType -> value
-matplotlib.rcParams.update({'font.size': 28})
+#matplotlib.rcParams.update({'font.size': 28})
 
 def plotSortedByCover(ax, scale, coverSet, dataRows, queryGroups, measurementType):
   for i, cover in enumerate(coverSet):
@@ -60,11 +61,13 @@ def plotSortedByCover(ax, scale, coverSet, dataRows, queryGroups, measurementTyp
   colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)+1)]
   plt.gca().set_color_cycle(colors)
   bars = []
+  #print "\t"+str(sorted(list(queryGroups))
   for i, cover in enumerate(coverSet):
+    #print "\t"+cover+": "+str(dataRows[cover][2])
     color=colors[i+1]
     #bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][0]), bar_width, color=color, edgecolor="{:f}".format(0), linewidth=2, hatch='+', label=cover + ' parsing', log=False, bottom=1))
     #bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][1]), bar_width, color=color, edgecolor="{:f}".format(0), linewidth=2, hatch='/', label=cover + ' submitting', log=False, bottom=1+np.array(dataRows[cover][0])))
-    bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][2]), bar_width, color=color, label=cover))# + ' executing', log=False, bottom=1+np.array(dataRows[cover][0])+np.array(dataRows[cover][1])))
+    bars.append(ax.bar(index + i * bar_width + 0.5*bar_width, np.array(dataRows[cover][2]), bar_width, color=color, label=cover, linewidth=0.5))# + ' executing', log=False, bottom=1+np.array(dataRows[cover][0])+np.array(dataRows[cover][1])))
   ax.set_xticks(index + 0.5)
   ax.set_xticklabels(sorted(list(queryGroups)), rotation=45, horizontalalignment='right')
   return bars
@@ -78,24 +81,27 @@ with open(inputFile, 'rb') as f:
   reader = csv.reader(f, delimiter='\t')
   reader.next()
   for row in reader:
+    if row[2] != '1000000000':
+      continue;
     cover = ""
-    if int(row[2]) != 0:
-      cover += row[2] + "HOP_"
-    cover += row[0]
+    if int(row[3]) != 0:
+      cover += row[3] + "HOP_"
+    cover += row[0].replace('_','\\_')
     scale = row[1]
-    treeType = row[3]
+    treeType = row[4]
     if not scale in scales:
       scales[scale] = {}
     if not treeType in scales[scale]:
       scales[scale][treeType] = {}
     if not cover in scales[scale][treeType]:
       scales[scale][treeType][cover] = {}
-    query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " #tp=" + str(int(row[6])+1) + " #ds=" + row[7] + " sel=" + row[8]
-    scales[scale][treeType][cover][query] = { "Execution Time":[(long(row[9])/1000),(long(row[10])/1000),(long(row[11])/1000)]}
+    query = ("ss" if row[6]=='SUBJECT_SUBJECT_JOIN' else "so") + " \\#tp=" + str(int(row[7])+1) + " \\#ds=" + row[8] + " sel=" + row[9]
+    scales[scale][treeType][cover][query] = { "Execution Time":[(long(row[10])/1000),(long(row[11])/1000),(long(row[12])/1000)]}
 
 for measurementType in ["Execution Time"]:
   for scale in scales.keys():
     for treeType in scales[scale].keys():
+      #print treeType+"-"+scale
       coverSet = list(sorted(scales[scale][treeType].keys()))
       dataRows = {}
       longTimeQueries = set();
@@ -110,10 +116,13 @@ for measurementType in ["Execution Time"]:
             midTimeQueries.add(query)
       queryGroups = queryGroups.difference(longTimeQueries).difference(midTimeQueries)
 
+      if imageType=="latex":
+        latex.latexify(fig_height=5,scale=1)
+
       # create diagramm sorted by cover
       nColl=len(queryGroups)+len(midTimeQueries)+len(longTimeQueries)
       fig = plt.figure()
-      fig2 = plt.figure(figsize=(fig.get_figwidth()*(len(longTimeQueries)+len(midTimeQueries)+len(queryGroups))/5,fig.get_figheight()*2))
+      #fig2 = plt.figure(figsize=(fig.get_figwidth()*(len(longTimeQueries)+len(midTimeQueries)+len(queryGroups))/5,fig.get_figheight()*2))
       bars = []
       if len(queryGroups) > 0:
         ax1 = plt.subplot2grid((1,nColl+2), (0, 0), colspan=len(queryGroups))
@@ -122,12 +131,22 @@ for measurementType in ["Execution Time"]:
       if len(midTimeQueries) > 0:
         ax2 = plt.subplot2grid((1,nColl+2), (0, len(queryGroups)+1), colspan=len(midTimeQueries))
         bars = plotSortedByCover(ax2, scale, coverSet, dataRows, midTimeQueries, measurementType)
-      plt.xlabel("Queries")
+      #plt.xlabel("Queries")
       if len(longTimeQueries) > 0:
         ax3 = plt.subplot2grid((1,nColl+2), (0, len(queryGroups)+len(midTimeQueries)+2), colspan=len(longTimeQueries))
         bars = plotSortedByCover(ax3, scale, coverSet, dataRows, longTimeQueries, measurementType)
-      plt.suptitle('Plain query execution time for tree type ' + treeType + ' and ' + scale + ' chunks',y=1.05)
-      plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(.1, 1.22, 0.8, 1), mode="expand", borderaxespad=0.)
+      #plt.suptitle('Plain query execution time for tree type ' + treeType + ' and ' + scale + ' chunks',y=1.05)
+      plt.figlegend(bars, map(getLabel,bars), loc=3, ncol=3, bbox_to_anchor=(0.15, 0.95, 0.75, 1), mode="expand", borderaxespad=0.)
       #plt.subplots_adjust(left=0.1, right=1.3, wspace=4)
-      plt.savefig(outputDir+'/plainQueryExecutionTime_'+measurementType+'_numberOfChunks-'+scale+'_treeType-'+treeType+'.'+imageType, bbox_inches='tight')
+      fig.text(0.5, 0.01, 'Queries', ha='center')
+      if imageType=="latex":
+        if len(queryGroups) > 0 and len(midTimeQueries) > 0 and len(longTimeQueries) > 0:
+          fig.subplots_adjust(left=0.15,bottom=0.26,right=0.999,top=0.93)
+        else:
+          fig.subplots_adjust(left=0.15,bottom=0.26,right=1.06,top=0.93)
+      #  fig.tight_layout(rect=(0,0,0.9,1))
+      if imageType=="latex":
+        latex.savefig(outputDir,'plainQueryExecutionTime_executionTime_numberOfChunks-'+scale+'_treeType-'+treeType)
+      else:
+        plt.savefig(outputDir+'/plainQueryExecutionTime_executionTime_numberOfChunks-'+scale+'_treeType-'+treeType+'.'+imageType, bbox_inches='tight')
       plt.close('all')

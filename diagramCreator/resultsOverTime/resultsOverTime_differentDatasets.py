@@ -41,7 +41,10 @@ if not os.path.exists(outputDir):
   os.makedirs(outputDir)
 
 def isAborted(query):
-  return query=="so-tp8-ds3-sel0.001" or query=="ss-tp2-ds1-sel0.001" or query=="ss-tp8-ds1-sel0.001" or query=="ss-tp8-ds1-sel0.01" or query=="ss-tp8-ds3-sel0.001";
+  return query=="so-tp8-ds3-sel0.001" or query=="so-tp8-ds3-sel0.01" or query=="ss-tp2-ds1-sel0.001" or query=="ss-tp8-ds1-sel0.001" or query=="ss-tp8-ds1-sel0.01" or query=="ss-tp8-ds3-sel0.001";
+
+def prettyPrint(x):
+  return str(x/1000000000)+'G' if x/1000000000>0 else str(x/1000000)+'M'
 
 queries = {}
 
@@ -51,13 +54,13 @@ with open(inputFile, 'rb') as f:
   for row in reader:
     if row[4]!='BUSHY':
       continue;
-    if row[2]!='1000000000':
+    if row[1]!='20':
       continue;
     cover = ""
     if int(row[3]) != 0:
       cover += row[3] + "HOP\\_"
     cover += row[0].replace('_','\\_')
-    scale = row[1]
+    scale = long(row[2])
     treeType = row[4]
     query = ("ss" if row[6]=='SUBJECT_SUBJECT_JOIN' else "so") + "-tp" + str(int(row[7])+1) + "-ds" + row[8] + "-sel" + row[9]
     #query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " \\#tp=" + str(int(row[6])+1) + " \\#ds=" + row[7] + " sel=" + row[8]
@@ -104,7 +107,7 @@ for query in sorted(queries.keys()):
         colors = ["#EC84EE", "#FF0000", "#8B0000"]
       for i, scale in enumerate(scaleSet):
         colorValue = colors[i]
-        plt.plot(queries[query][cover][treeType][scale]['time'], queries[query][cover][treeType][scale]['percent'], label=cover+" "+scale+' slaves', color=colorValue, linewidth=2)
+        plt.plot(queries[query][cover][treeType][scale]['time'], queries[query][cover][treeType][scale]['percent'], label=cover+" "+prettyPrint(scale)+' triples', color=colorValue, linewidth=2)
       #plt.title(query + ' for ' + treeType + ' trees and '+cover+' cover',y=1.02)
       plt.xlabel("Time (in sec)")
       plt.ylabel("\\% of returned results")

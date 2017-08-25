@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 import csv
+import latexPlot as latex
 
 if len(sys.argv) != 4:
   print("You must have the following arguments: <computationalEffort.csv> <outputDir> <imageType>")
@@ -45,20 +46,16 @@ if not os.path.exists(outputDir):
 
 # required map: treetype -> cover -> query -> measurmentType -> value
 
-matplotlib.rcParams.update({'font.size': 18})
-
 treeTypes = {}
 
 with open(inputFile, 'rb') as f:
   reader = csv.reader(f, delimiter='\t')
   reader.next()
   for row in reader:
-    if row[5]=='SUBJECT_SUBJECT_JOIN':
-      continue;
     cover = ""
     if int(row[2]) != 0:
-      cover += row[2] + "HOP_"
-    cover += row[0]
+      cover += row[2] + "HOP\\_"
+    cover += row[0].replace('_','\\_')
     scale = row[1]
     treeType = row[3]
     if not treeType in treeTypes:
@@ -67,10 +64,10 @@ with open(inputFile, 'rb') as f:
       treeTypes[treeType][cover] = {}
     if not scale in treeTypes[treeType][cover]:
       treeTypes[treeType][cover][scale] = {}
-    query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " #tp=" + str(int(row[6])+1) + " #ds=" + row[7] + " sel=" + row[8]
-    treeTypes[treeType][cover][scale][query] = { "Data Transfer":long(row[9])}
+    query = ("ss" if row[5]=='SUBJECT_SUBJECT_JOIN' else "so") + " \\#tp=" + str(int(row[6])+1) + " \\#ds=" + row[7] + " sel=" + row[8]
+    treeTypes[treeType][cover][scale][query] = { "Computational Effort":long(row[9]), "Entropy":float(row[10]), "Workload Imbalance":float(row[12])}
 
-for measurementType in ["Data Transfer"]:
+for measurementType in ["Computational Effort"]:
   for treeType in treeTypes.keys():
     for baseCover in treeTypes[treeType].keys():
       coverSet = list(sorted(treeTypes[treeType].keys()))
@@ -88,35 +85,14 @@ for measurementType in ["Data Transfer"]:
             baseDataTransfer = treeTypes[treeType][baseCover][scale][query][measurementType]
             currentDataTransfer = treeTypes[treeType][cover][scale][query][measurementType]
             if baseDataTransfer > 0:
-              dataRows[cover][scale].append((currentDataTransfer-baseDataTransfer)/float(baseDataTransfer));
+              dataRows[cover][scale].append((currentDataTransfer-baseDataTransfer)/float(baseDataTransfer)*100);
             elif currentDataTransfer == 0:
               dataRows[cover][scale].append(0);
             else:
               dataRows[cover][scale].append(currentDataTransfer);
 
-      # create diagramm sorted by cover
-      n_groups = len(queryGroups)
-      fig, ax = plt.subplots()
-      index = np.arange(n_groups)
-      bar_width = 1/float(len(coverSet)*len(scaleSet)+2+len(coverSet)*1)
-      rects = []
-      colormap = plt.cm.gist_ncar
-      colors = [colormap(i) for i in np.linspace(0, 0.9, len(coverSet)*len(scaleSet))]
-      c=0
-      for i, cover in enumerate(coverSet):
-        for j, scale in enumerate(scaleSet):
-          colorValue = colors[c]
-          rects.append(plt.bar(index + c * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover + ' ' + scale + ' chunks'))
-          c+=1
-      plt.xlabel("Queries")
-      plt.ylabel(measurementType+' relative change to '+baseCover+' cover')
-      plt.xticks(index + 0.5, np.array(queryGroups))
-      plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
-      #plt.axis('tight')
-      plt.title(measurementType + ' for ' + treeType + ' trees sorted by cover strategy' + " relative to " + baseCover,y=1.25)
-      plt.legend(bbox_to_anchor=(-0.2, 1.04, 1.2, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
-      plt.savefig(outputDir+'/DataTransfer'+'_relativeTo_'+baseCover+'_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByCover.'+imageType, bbox_inches='tight')
-      plt.close('all')
+      if imageType=="latex":
+        latex.latexify(scale=1)
 
       # create diagramm sorted by scale
       n_groups = len(queryGroups)
@@ -130,14 +106,19 @@ for measurementType in ["Data Transfer"]:
       for i, scale in enumerate(scaleSet):
         for j, cover in enumerate(coverSet):
           colorValue = colors[c]
-          rects.append(plt.bar(index + c * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover  + ' ' + scale + ' comp. nodes'))
+          rects.append(plt.bar(index + c * bar_width + bar_width + i*1*bar_width, np.array(dataRows[cover][scale]), bar_width, color=colorValue, label=cover  + ' ' + scale + ' slaves'))
           c+=1
       plt.xlabel("Queries")
-      plt.ylabel(measurementType+'\n(change to '+baseCover+' in %)')
+      plt.ylabel("\\parbox{200pt}{\centering " + measurementType+'\\\\(change to '+baseCover+' in \\%)'+"}")
       plt.xticks(index + 0.5, np.array(queryGroups))
       plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
       #plt.axis('tight')
       #plt.title(measurementType + ' for ' + treeType + ' trees sorted by number of chunks' + " relative to " + baseCover,y=1.25)
-      plt.legend(bbox_to_anchor=(-0.4, 1.04, 1.4, .102), loc=3, ncol=2, mode="expand", borderaxespad=0., fontsize=16)
-      plt.savefig(outputDir+'/DataTransfer'+'_relativeTo_'+baseCover+'_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByNumberOfChunks.'+imageType, bbox_inches='tight')
+      if imageType=="latex":
+        plt.legend(bbox_to_anchor=(-0.115, 1.04, 1.115, .102), loc=3, ncol=3, mode="expand", borderaxespad=0.)
+        fig.tight_layout(rect=(-0.02,-0.035,1.02,0.92))
+        latex.savefig(outputDir,'computationalEffort'+'_relativeTo_'+baseCover+'_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByNumberOfChunks')
+      else:
+        plt.legend(bbox_to_anchor=(-0.4, 1.04, 1.4, .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+        plt.savefig(outputDir+'/computationalEffort'+'_relativeTo_'+baseCover+'_'+measurementType+'_treeType-'+treeType+'_forAll_covers_sortedByNumberOfChunks.'+imageType, bbox_inches='tight')
       plt.close('all')

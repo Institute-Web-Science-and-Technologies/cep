@@ -52,7 +52,6 @@ public class CutEdgesCounter {
       Options options = new Options();
       options.setCreateIfMissing(true);
       options.setMaxOpenFiles(1000);
-      options.setAllowOsBuffer(true);
       options.setWriteBufferSize(64 * 1024 * 1024);
       // options.setTargetFileSizeBase(64 * 1024 * 1024);
       // options.setArenaBlockSize(32 * 1024);
@@ -103,6 +102,7 @@ public class CutEdgesCounter {
             }
           }
         } catch (IOException e) {
+          writeBatch.close();
           throw new RuntimeException(e);
         }
       }

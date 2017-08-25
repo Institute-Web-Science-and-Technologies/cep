@@ -45,10 +45,10 @@ public abstract class QueryOperationListener extends QueryListener {
     super.processMeasurement(measurements);
     long timestamp = Long.parseLong(measurements[4]);
     String computer = measurements[0];
-    int index = computer.lastIndexOf(':');
-    if (index >= 0) {
-      computer = computer.substring(0, index);
-    }
+    // int index = computer.lastIndexOf(':');
+    // if (index >= 0) {
+    // computer = computer.substring(0, index);
+    // }
     if (measurementType != null) {
       switch (measurementType) {
         case QUERY_COORDINATOR_START:
@@ -85,9 +85,10 @@ public abstract class QueryOperationListener extends QueryListener {
           break;
         case QUERY_COORDINATOR_SEND_QUERY_TO_SLAVE:
           processQueryCoordinatorSendQueryToSlaves(graphCoverStrategy, nHopReplication,
-                  numberOfChunks, new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
+                  numberOfChunks,
+                  new ExtendedQuerySignature(Integer.parseInt(measurements[5]),
                           currentQueryFileName, treeType, currentQueryRepetition),
-                  timestamp);
+                  computer, timestamp);
           break;
         case QUERY_SLAVE_QUERY_CREATION_START:
           processSlaveCreatesQueryStart(graphCoverStrategy, nHopReplication, numberOfChunks,
@@ -175,7 +176,7 @@ public abstract class QueryOperationListener extends QueryListener {
 
   protected abstract void processQueryCoordinatorSendQueryToSlaves(
           CoverStrategyType graphCoverStrategy, int nHopReplication, int numberOfChunks,
-          ExtendedQuerySignature extendedQuerySignature, long timestamp);
+          ExtendedQuerySignature extendedQuerySignature, String computer, long timestamp);
 
   protected abstract void processSlaveCreatesQueryStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, String computer,

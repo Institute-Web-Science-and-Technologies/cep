@@ -88,13 +88,15 @@ public class ComputationalEffort extends QueryComputationEffortListener {
     for (long value : numberOfComparisonsPerSlave[minRepitition]) {
       totalNumberOfcomputations += value;
     }
-    writeLine("\t" + totalNumberOfcomputations + "\t"
-            + Utilities.computeEntropy(numberOfComparisonsPerSlave[minRepitition],
-                    totalNumberOfcomputations)
-            + "\t"
-            + Utilities.computeStandardDeviation(numberOfComparisonsPerSlave[minRepitition],
-                    totalNumberOfcomputations)
-            + "\t" + Utilities.computeGiniCoefficient(numberOfComparisonsPerSlave[minRepitition]));
+    writeLine(
+            "\t" + totalNumberOfcomputations + "\t"
+                    + Utilities.computeEntropy(
+                            numberOfComparisonsPerSlave[minRepitition], totalNumberOfcomputations)
+                    + "\t"
+                    + Utilities.computeStandardDeviation(numberOfComparisonsPerSlave[minRepitition],
+                            totalNumberOfcomputations)
+                    + "\t"
+                    + Utilities.computeGiniCoefficient(numberOfComparisonsPerSlave[minRepitition]));
   }
 
 }

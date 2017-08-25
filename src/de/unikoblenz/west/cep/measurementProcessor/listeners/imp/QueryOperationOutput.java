@@ -54,7 +54,7 @@ public class QueryOperationOutput extends QueryOperationListener {
   @Override
   protected void processQueryCoordinatorSendQueryToSlaves(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
-          long timestamp) {
+          String computer, long timestamp) {
   }
 
   @Override

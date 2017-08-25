@@ -62,7 +62,17 @@ public class QueryOperationInput extends QueryOperationListener {
   @Override
   protected void processQueryCoordinatorSendQueryToSlaves(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, ExtendedQuerySignature extendedQuerySignature,
-          long timestamp) {
+          String computer, long timestamp) {
+    if (extendedQuerySignature.repetition > 1) {
+      return;
+    }
+    QuerySignature basicSignature = extendedQuerySignature.getBasicSignature();
+    Map<Integer, String> slaveIds = this.slaveIds.get(basicSignature);
+    if (slaveIds == null) {
+      slaveIds = new HashMap<>();
+      slaveIds.put(0, computer);
+      this.slaveIds.put(basicSignature, slaveIds);
+    }
   }
 
   @Override
@@ -99,11 +109,11 @@ public class QueryOperationInput extends QueryOperationListener {
     }
     QuerySignature basicSignature = extendedQuerySignature.getBasicSignature();
     Map<Integer, String> slaveIds = this.slaveIds.get(basicSignature);
-    if (slaveIds == null) {
-      slaveIds = new HashMap<>();
-      slaveIds.put(0, "master");
-      this.slaveIds.put(basicSignature, slaveIds);
-    }
+    // if (slaveIds == null) {
+    // slaveIds = new HashMap<>();
+    // slaveIds.put(0, "master");
+    // this.slaveIds.put(basicSignature, slaveIds);
+    // }
     if (slaveIds.containsValue(computer)) {
       return;
     }
@@ -214,25 +224,35 @@ public class QueryOperationInput extends QueryOperationListener {
         closestId = slaveId.getKey();
       }
     }
+    if (closestId == Integer.MAX_VALUE) {
+      closestId = 0;
+    }
     // extract number of slave
-    String[] nameAndPort = ids[closestId].split(Pattern.quote(":"));
-    Matcher matcher = Pattern.compile("\\d+$").matcher(nameAndPort[0]);
-    if (matcher.find()) {
-      String prefix = nameAndPort[0].substring(0, matcher.start());
-      String suffix = nameAndPort[0].substring(matcher.start(), matcher.end());
-      int slaveId = 0;
-      for (char c : suffix.toCharArray()) {
-        slaveId *= 10;
-        slaveId += Integer.parseUnsignedInt(Character.toString(c));
+    String computerId = ids[closestId];
+    if (computerId.startsWith("slave") || computerId.equals("master")) {
+      String[] nameAndPort = computerId.split(Pattern.quote(":"));
+      Matcher matcher = Pattern.compile("\\d+$").matcher(nameAndPort[0]);
+      if (matcher.find()) {
+        String prefix = nameAndPort[0].substring(0, matcher.start());
+        String suffix = nameAndPort[0].substring(matcher.start(), matcher.end());
+        int slaveId = 0;
+        for (char c : suffix.toCharArray()) {
+          slaveId *= 10;
+          slaveId += Integer.parseUnsignedInt(Character.toString(c));
+        }
+        slaveId += id - closestId;
+        String newSuffix = Integer.toString(slaveId);
+        while (newSuffix.length() < suffix.length()) {
+          newSuffix = "0" + newSuffix;
+        }
+        String slaveName = prefix + newSuffix + (nameAndPort.length > 1 ? nameAndPort[1] : "");
+        return slaveName;
+      } else {
+        return "slave" + id;
       }
-      slaveId += id - closestId;
-      String newSuffix = Integer.toString(slaveId);
-      while (newSuffix.length() < suffix.length()) {
-        newSuffix = "0" + newSuffix;
-      }
-      return prefix + newSuffix + (nameAndPort.length > 1 ? nameAndPort[1] : "");
     } else {
-      return "slave" + id;
+      // TODO adjust for IP names
+      return "";
     }
   }
 

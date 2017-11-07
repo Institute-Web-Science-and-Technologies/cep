@@ -56,10 +56,10 @@ public class Utilities {
         return Integer.parseInt(computerId.split("slave[0]*")[1]);
       }
     } else {
-      Integer id = computerName2Id.get(computerId);
+      Integer id = Utilities.computerName2Id.get(computerId);
       if (id == null) {
-        id = nextId++;
-        computerName2Id.put(computerId, id);
+        id = Utilities.nextId++;
+        Utilities.computerName2Id.put(computerId, id);
       }
       return id.intValue();
     }
@@ -107,6 +107,9 @@ public class Utilities {
    * @return
    */
   public static double computeGiniCoefficient(long[] values) {
+    if (values.length == 1) {
+      return 0d;
+    }
     long[] sortedValues = Arrays.copyOf(values, values.length);
     Arrays.sort(sortedValues);
     long numerator = 0;

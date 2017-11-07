@@ -41,6 +41,8 @@ public class LoadTime extends LoadGraphTimeListener {
 
   private long coverCreationTime;
 
+  private long finalEncodingStartTime;
+
   private long finalEncodingTime;
 
   private long nHopReplicationTime;
@@ -114,13 +116,13 @@ public class LoadTime extends LoadGraphTimeListener {
   @Override
   protected void processFinalDictionaryEncodingStart(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, int numberOfTriples, long startTime) {
-    finalEncodingTime = startTime;
+    finalEncodingStartTime = startTime;
   }
 
   @Override
   protected void processFinalDictionaryEncodingEnd(CoverStrategyType graphCoverStrategy,
           int nHopReplication, int numberOfChunks, int numberOfTriples, long endTime) {
-    finalEncodingTime = endTime - finalEncodingTime;
+    finalEncodingTime += endTime - finalEncodingStartTime;
   }
 
   @Override

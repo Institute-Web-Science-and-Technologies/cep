@@ -54,6 +54,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -240,9 +241,10 @@ public class MeasurementProcessor implements Closeable {
           Class<? extends MeasurementListener>[] listeners) {
     for (Class<? extends MeasurementListener> listenerClas : listeners) {
       try {
-        MeasurementListener listener = listenerClas.newInstance();
+        MeasurementListener listener = listenerClas.getDeclaredConstructor().newInstance();
         measurementProcessor.registerListener(listener);
-      } catch (InstantiationException | IllegalAccessException e) {
+      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+              | InvocationTargetException | NoSuchMethodException | SecurityException e) {
         throw new RuntimeException(e);
       }
     }

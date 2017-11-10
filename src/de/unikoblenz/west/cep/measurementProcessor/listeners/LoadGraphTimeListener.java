@@ -69,10 +69,8 @@ public abstract class LoadGraphTimeListener implements MeasurementListener {
                   numberOfTriples, Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_COVER_CREATION_END:
-          if (nHopReplication == 0) {
-            processGraphCoverCreationEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
-                    numberOfTriples, Long.parseLong(measurements[4]));
-          }
+          processGraphCoverCreationEnd(graphCoverStrategy, nHopReplication, numberOfChunks,
+                  numberOfTriples, Long.parseLong(measurements[4]));
           break;
         case LOAD_GRAPH_FINAL_ENCODING_START:
           processFinalDictionaryEncodingStart(graphCoverStrategy, nHopReplication, numberOfChunks,
